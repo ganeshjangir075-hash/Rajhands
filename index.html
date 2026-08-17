@@ -162,6 +162,9 @@
   .chip:hover svg{color:var(--accent)}
   .icons{display:flex;gap:22px;margin-left:auto}
   .profile-wrap{position:relative;display:flex}
+  .hdr-av{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .hdr-av img.hdr-avphoto{width:26px;height:26px;min-width:26px;min-height:26px;max-width:26px;max-height:26px;border-radius:50% !important;object-fit:cover;object-position:center;display:block;aspect-ratio:1/1;flex-shrink:0}
+  .hamburger .hdr-av img.hdr-avphoto{width:33px;height:33px;min-width:33px;min-height:33px;max-width:33px;max-height:33px}
   .profile-menu{position:absolute;top:100%;right:0;margin-top:6px;width:240px;background:#fff;
     border-radius:10px;box-shadow:0 10px 30px rgba(40,44,63,.16);border:1px solid var(--line);
     padding:8px 0;opacity:0;visibility:hidden;transform:translateY(6px);transition:.18s;z-index:120}
@@ -201,20 +204,21 @@
   .pf-av{position:absolute;inset:5px;border-radius:50%;background:linear-gradient(135deg,#2b2233,#4a2740);color:#fff;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:34px;display:flex;align-items:center;justify-content:center}
   .pf-avimg{position:absolute;inset:5px;border-radius:50%;object-fit:cover;width:calc(100% - 10px);height:calc(100% - 10px)}
   .pf-edit{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:3px 12px;border-radius:12px;cursor:pointer;border:2px solid #fff;white-space:nowrap}
-  .pf-name{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:21px;color:var(--ink);margin-top:10px;line-height:1.1}
+  .pf-name{font-family:'Inter',sans-serif;font-weight:700;font-size:18px;color:var(--ink);margin-top:10px;line-height:1.2}
   .pf-email{font-size:12.5px;color:var(--ink-soft);margin-top:3px}
   .pf-menu{padding:6px 0}
-  .pf-row{display:flex;align-items:center;gap:13px;width:100%;padding:14px 18px;border:none;background:none;cursor:pointer;text-align:left;border-bottom:1px solid var(--line);font-size:14px;color:#3e4152;font-family:inherit}
+  .pf-row{display:flex;align-items:center;gap:13px;width:100%;padding:13px 18px;border:none;background:none;cursor:pointer;text-align:left;font-size:14px;color:#3e4152;font-family:inherit}
   .pf-row:hover{background:var(--bg-soft)}
   .pf-row-ic{width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
   .pf-row-ic svg{width:20px;height:20px;stroke:var(--ink);fill:none;stroke-width:1.7}
   .pf-row-lb{flex:1;font-weight:500}
-  .pf-row-ch{width:17px;height:17px;stroke:#9aa7bc;fill:none;stroke-width:2;transition:transform .18s;flex-shrink:0}
-  .pf-row-ch.open{transform:rotate(180deg)}
-  .pf-sub{background:var(--bg-soft);border-bottom:1px solid var(--line)}
+  .pf-row-ch{display:none}
+  .pf-row-ch.chev-caret{display:block;width:16px;height:16px;stroke:#9aa7bc;fill:none;stroke-width:2;transition:transform .18s;flex-shrink:0}
+  .pf-row-ch.chev-caret.open{transform:rotate(180deg)}
+  .pf-sub{background:var(--bg-soft)}
   .pf-subcards{display:flex;gap:14px;padding:15px 18px;flex-wrap:wrap;justify-content:center}
   .pf-subcard{display:flex;flex-direction:column;align-items:center;gap:7px;background:none;border:none;cursor:pointer;width:84px;font-family:inherit;color:var(--ink)}
-  .pf-subcard .box{width:50px;height:50px;border-radius:12px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center}
+  .pf-subcard .box{width:52px;height:52px;border-radius:50% !important;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center}
   .pf-subcard .box svg{width:22px;height:22px;stroke:var(--accent);fill:none;stroke-width:1.7}
   .pf-subcard span{font-size:11.5px;font-weight:600;line-height:1.25}
   .pf-legal{display:flex;flex-direction:column;padding:4px 0 8px}
@@ -258,25 +262,25 @@
   .oc-name{font-size:14px;font-weight:700;color:var(--ink);line-height:1.3}
   .oc-meta{font-size:11.5px;color:var(--ink-soft);margin-top:3px;letter-spacing:.3px}
   .oc-chev{width:18px;height:18px;stroke:#9aa7bc;fill:none;stroke-width:2;flex-shrink:0}
-  .oc-actions{display:flex;gap:9px;padding:0 15px 14px;flex-wrap:wrap}
-  .oc-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:9px 14px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-family:inherit}
-  .oc-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .oc-actions{display:flex;gap:8px;padding:0 15px 14px;flex-wrap:nowrap}
+  .oc-btn{flex:1;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:11.5px;font-weight:700;padding:9px 6px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-family:inherit;white-space:nowrap}
+  .oc-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0}
   .oc-btn.danger{color:#c0392b;border-color:#f0c4c0}
   .oc-note{display:flex;align-items:center;gap:7px;padding:12px 15px;border-top:1px solid var(--line);font-size:12.5px;font-weight:700;color:#1f9d55}
   .oc-note svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
   .oc-note.red{color:#c0392b}
-  .oc-track{padding:4px 15px 15px}
-  .oc-trackbar{position:relative;height:3px;background:#e4e4ea;margin:16px 6px 22px}
+  .oc-track{padding:4px 15px 15px;overflow:hidden}
+  .oc-trackbar{position:relative;height:3px;background:#e4e4ea;margin:16px 28px 24px}
   .oc-trackfill{position:absolute;left:0;top:0;height:100%;background:var(--accent)}
   .oc-tdot{position:absolute;top:50%;width:12px;height:12px;border-radius:50% !important;background:#e4e4ea;transform:translate(-50%,-50%)}
   .oc-tdot.done{background:var(--accent)}
-  .oc-tdot span{position:absolute;top:15px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--ink-soft);white-space:nowrap;font-weight:600}
+  .oc-tdot span{position:absolute;top:15px;left:50%;transform:translateX(-50%);font-size:8.5px;color:var(--ink-soft);white-space:nowrap;font-weight:600;text-align:center;line-height:1.15}
   .oc-tdot.done span{color:var(--ink)}
   /* ---- Order Detail page ---- */
   .od-hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:22px 20px 8px}
   .od-photo{width:150px;aspect-ratio:4/5;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
   .od-photo svg{width:88px;height:88px}
-  .od-title{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:22px;color:var(--ink);line-height:1.15}
+  .od-title{font-family:'Inter',sans-serif;font-weight:800;font-size:18px;color:var(--ink);line-height:1.25}
   .od-sub{font-size:12px;color:var(--ink-soft);letter-spacing:.4px;margin-top:5px}
   .od-oid{font-size:12px;color:var(--ink-soft);letter-spacing:.4px;margin-top:3px}
   .od-arrive{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:#c47d16;margin-top:9px}
@@ -699,6 +703,9 @@
   }
   @media(max-width:560px){
     .secure span{display:none}
+    .secure svg{width:22px;height:22px}
+    .cart-empty svg{width:56px;height:56px;margin-bottom:14px}
+    .cart-empty button{padding:11px 26px;font-size:12.5px}
     .bi-thumb{width:90px;height:120px}
   }
 
@@ -934,6 +941,8 @@
   .addr-box{background:#fff;width:calc(100% - 24px);max-width:520px;margin:0 12px 12px;border-radius:16px;padding:18px 18px 22px;max-height:86vh;overflow:auto;animation:sheetUp .25s ease}
   @media(min-width:861px){ .addr-overlay{align-items:center} .addr-box{border-radius:16px;margin:0} }
   #loginOverlay{align-items:center}
+  #loginBox{max-width:380px;padding:16px 16px 18px;border-radius:8px !important}
+  @media(min-width:861px){ #loginBox{border-radius:8px !important} }
   .addr-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
   .addr-head h3{font-size:16.5px;font-weight:800}
   .addr-head button.x{font-size:26px;color:var(--ink-soft);line-height:1;background:none}
@@ -1061,12 +1070,12 @@
   :root{--nv:#1a1a1a;--nv-line:#e6e6ea;--nv-gray:#9a9aa6;--nv-cream:#f5f3ee;--nv-lav:#ece9f8;--nv-lavtx:#5b4fd0;--nv-gold:#e6a817;--nv-off:#c2703f}
   .hd-cat{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--nv-gray)}
   .hd-titlerow{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-top:8px}
-  .hd-title{font-size:30px;font-weight:700;line-height:1.12;letter-spacing:-.4px;color:var(--nv);margin:0}
-  .hd-heart{width:42px;height:42px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:.15s}
-  .hd-heart svg{width:24px;height:24px;fill:none;stroke:var(--nv);stroke-width:1.6}
+  .hd-title{font-size:26px;font-weight:700;line-height:1.15;letter-spacing:-.4px;color:var(--nv);margin:0}
+  .hd-heart{width:34px;height:34px;margin-top:-2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:.15s}
+  .hd-heart svg{width:24px;height:24px;fill:none;stroke:#b8b8c0;stroke-width:1.4}
   .hd-heart.on svg{fill:var(--accent);stroke:var(--accent)}
   .hd-heart:hover{background:var(--nv-cream)}
-  .hd-rating{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13.5px;color:#6b6b76;cursor:pointer}
+  .hd-rating{display:flex;align-items:center;gap:6px;margin-top:2px;font-size:13.5px;color:#6b6b76;cursor:pointer}
   .hd-rating svg{width:15px;height:15px;fill:var(--green)}
   .hd-rating b{color:var(--nv);font-weight:700}
   .hd-sku{font-size:11.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--nv-gray);margin-top:6px}
@@ -1091,6 +1100,9 @@
   .hd-sw img,.hd-sw .swsvg{width:100%;height:100%;object-fit:cover;display:block}
   .hd-sw .swsvg{display:flex;align-items:center;justify-content:center}
   .hd-sizes{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  @keyframes sizeShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+  .hd-sizes.size-shake{animation:sizeShake .45s}
+  .hd-sizes.size-shake .hd-size{border-color:#c0392b}
   .hd-size{min-width:46px;height:42px;padding:0 12px;border:1px solid var(--nv-line);background:#fff;border-radius:8px;font-size:14px;font-weight:600;color:var(--nv);cursor:pointer;transition:.15s}
   .hd-size:hover{border-color:var(--nv)}
   .hd-size.on{border-color:var(--nv);background:var(--nv);color:#fff}
@@ -1104,7 +1116,7 @@
   .hd-addcart:hover{background:#000000}
   .hd-buynow{width:100%;background:#fff;color:var(--nv);border:1px solid var(--nv-line);border-radius:8px;padding:16px;font-size:15px;font-weight:600;transition:.15s}
   .hd-buynow:hover{border-color:var(--nv);background:var(--nv-cream)}
-  .hd-features{display:flex;justify-content:space-evenly;align-items:flex-start;gap:8px}
+  .hd-features{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:0 10px}
   .hd-feat{flex:0 1 auto}
   .hd-feat{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px}
   .hd-feat svg{width:32px;height:32px;flex-shrink:0;stroke:var(--nv);fill:none;stroke-width:1.4}
@@ -1141,14 +1153,23 @@
   .hd-buynow:hover{border-color:#d6336c;background:#fbe7ee}
   .hd-feat svg{stroke:#d6336c}
   .hd-feat-tx b{color:#282c3f}
-  .hd-tab.on{background:#fbe7ee;border-color:#d6336c;color:#d6336c}
+  .hd-tab.on{background:#fbe7ee;border-color:#d6336c;color:#d6336c;border-bottom:1.5px solid #fbe7ee;margin-bottom:-1.5px;z-index:3}
   .hd-tab:hover{border-color:#d6336c}
-  .hd-tabbox{background:#fff7f9;border-color:#f0c9d6}
+  .hd-tabbox{background:#fff7f9;border-color:#d6336c}
   @media(max-width:860px){
-    .hd-title{font-size:24px}
-    .hd-price .now{font-size:24px}
+    .hd-title{font-size:19px;line-height:1.2}
+    .hd-price .now{font-size:21px}
     .hd-features{gap:6px}
     .feat-br{display:inline}
+    .hd-addcart{font-size:13px;padding:12px 8px}
+    .hd-addcart svg{width:16px;height:16px}
+    .hd-buynow{font-size:13px;padding:12px}
+    .hd-stepper button{width:36px;height:44px;font-size:17px}
+    .hd-stepper span{min-width:34px;font-size:14px}
+    .hd-size{min-width:44px;height:40px;padding:0 10px;font-size:13px}
+    .hd-color{width:36px;height:36px}
+    .hd-color .chip{width:25px;height:25px}
+    .hd-sizeguide{font-size:11.5px}
   }
   @media(max-width:560px){
     .hd-tabs{gap:4px;flex-wrap:nowrap;width:100%;padding-bottom:1px}
@@ -1470,8 +1491,8 @@
     header{position:static;box-shadow:none}
     .main-nav{display:none}
     .nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
-    .hamburger{display:flex;align-items:center;justify-content:center;justify-self:start;width:38px;height:38px;padding:0}
-    .hamburger svg{width:30px;height:30px}
+    .hamburger{display:flex;align-items:center;justify-content:center;justify-self:start;width:42px;height:42px;padding:0}
+    .hamburger svg{width:34px;height:34px}
     .logo{text-align:center}
     .icons{gap:16px;justify-self:end;margin-left:0}
     .profile-wrap{display:none}
@@ -1530,7 +1551,7 @@
       padding:13px;border-radius:8px;font-size:14px;font-weight:700}
   }
   /* ---- Square corners across PDP (buttons, options, cards, images) ---- */
-  #productView, #productView *{border-radius:0 !important}
+  #productView, #productView *{border-radius:3px !important}
   /* keep PDP image-slider dots and colour swatches round even inside the square-corners PDP override */
   #productView .pdp-cdots span{border-radius:999px !important}
   #productView .hd-color{border-radius:50% !important}
@@ -1593,8 +1614,8 @@
     body{padding-bottom:60px}
     header .hdr-wishlist,header .hdr-bag{display:none !important}
   }
-  /* ---- Square corners site-wide (listing, categories, cards, everything) ---- */
-  *,*::before,*::after{border-radius:0 !important}
+  /* ---- Very subtle rounding site-wide (listing, categories, cards, everything) ---- */
+  *,*::before,*::after{border-radius:3px !important}
   /* keep the profile avatar perfectly round despite the square-corners override */
   .pf-avwrap,.pf-avring,.pf-av,.pf-avimg{border-radius:50% !important}
 </style>
@@ -1622,14 +1643,14 @@
 <header>
   <div class="nav">
     <button class="hamburger" onclick="openProfileSheet()" aria-label="Login / Profile">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <defs><clipPath id="profileClip"><circle cx="12" cy="12" r="10.4"/></clipPath></defs>
+      <span class="hdr-av" id="hdrAvMobile"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <defs><clipPath id="profileClip"><circle cx="12" cy="12" r="10.6"/></clipPath></defs>
         <circle cx="12" cy="12" r="11" fill="#f9dbe6" stroke="#d6336c" stroke-width="1"/>
         <g clip-path="url(#profileClip)">
-          <circle cx="12" cy="9.4" r="3.6" fill="#d6336c"/>
-          <circle cx="12" cy="21" r="8.2" fill="#d6336c"/>
+          <circle cx="12" cy="9.2" r="3.7" fill="#d6336c"/>
+          <circle cx="12" cy="23" r="9.6" fill="#d6336c"/>
         </g>
-      </svg>
+      </svg></span>
     </button>
     <div class="logo" style="cursor:pointer" onclick="goHome()">ZE<span>VAR</span><small>fine jewellery</small></div>
     <nav class="main-nav">
@@ -1652,7 +1673,7 @@
       </button>
       <div class="profile-wrap">
         <a class="icon-btn" href="#" onclick="return false">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <span class="hdr-av" id="hdrAvDesktop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
           Profile
         </a>
         <div class="profile-menu">
@@ -1704,7 +1725,7 @@
   <div class="nav-overlay" id="profileOverlay" onclick="closeProfileSheet()"></div>
   <aside class="nav-drawer" id="profileDrawer" aria-label="Account">
     <div class="nav-drawer-head" id="profileHead"></div>
-    <div id="profileBody" style="padding:6px 0 26px"></div>
+    <div id="profileBody" style="padding:6px 0 90px"></div>
   </aside>
   <div class="addr-overlay" id="loginOverlay" onclick="if(event.target===this)loginBack()">
     <div class="addr-box" id="loginBox"></div>
@@ -2516,7 +2537,7 @@ function goAcct(view){
   renderAcct();
 }
 function backAcct(){ state.acctView='menu'; renderAcct(); }
-function acctLogout(){ state.loggedIn=false; state.userName=''; state.userEmail=''; goAcct('menu'); if(typeof syncProfileUI==='function')syncProfileUI(); toast('Logged out'); }
+function acctLogout(){ state.loggedIn=false; state.userName=''; state.userEmail=''; state.userPhoto=''; goAcct('menu'); if(typeof syncProfileUI==='function')syncProfileUI(); if(typeof syncHeaderAvatar==='function')syncHeaderAvatar(); toast('Logged out'); }
 
 // ---------- LOGIN / SIGN UP — separate popup, own flow ----------
 function acctGoLogin(){
@@ -2528,6 +2549,20 @@ function openLoginModal(){
   renderLoginModal();
   document.getElementById('loginOverlay').classList.add('open');
   lockScroll(); armGuard('login');
+}
+// show a welcome login/sign-up popup shortly after the site loads (once, only if logged out)
+let _autoLoginShown=false;
+function maybeAutoLogin(){
+  if(_autoLoginShown) return;
+  if(state.loggedIn) return;
+  // don't interrupt if the user is already in a sheet/modal/cart
+  const busy=['loginOverlay','profileDrawer','addrSheet','ordModalOverlay','searchDrop'].some(id=>{const e=document.getElementById(id);return e&&e.classList.contains('open');})
+    || (document.getElementById('cartPage')||{}).classList?.contains('show');
+  if(busy){ setTimeout(maybeAutoLogin,4000); return; }
+  _autoLoginShown=true;
+  state.loginMode='signup';
+  openLoginModal();
+  state.loginMode='signup'; renderLoginModal();
 }
 function closeLoginModal(){ backKind('login'); }
 function _hideLoginModal(){
@@ -2561,9 +2596,9 @@ function renderLoginModal(){
   if(!box) return;
   const isSignup = state.loginMode==='signup';
   box.innerHTML=`
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
-      <button onclick="loginBack()" aria-label="Back" style="color:var(--ink);background:none;border:none;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;padding:0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:18px;height:18px"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px">
       <h3 style="font-size:16px;font-weight:800">${isSignup?'Create Account':'Login'}</h3>
+      <button onclick="closeLoginModal()" aria-label="Close" style="color:var(--ink-soft);background:none;border:none;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;padding:0;font-size:20px;line-height:1">✕</button>
     </div>
     <label style="font-size:12px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:6px">Email Address</label>
     <input id="loginEmail" type="email" placeholder="you@example.com" style="width:100%;border:1.5px solid var(--line);padding:0 12px;height:44px;font-size:14px;outline:none;font-family:inherit;margin-bottom:14px">
@@ -2574,7 +2609,7 @@ function renderLoginModal(){
       ${isSignup?'Already have an account?':'New here?'}
       <span onclick="loginToggleMode()" style="color:var(--accent);font-weight:800;cursor:pointer">${isSignup?'Login':'Create Account'}</span>
     </p>
-    <p style="font-size:11px;color:var(--ink-soft);margin-top:14px;line-height:1.5">By continuing, you agree to Zevar's Terms of Use &amp; Privacy Policy.</p>`;
+    <p style="font-size:11px;color:var(--ink-soft);margin-top:16px;line-height:1.6;text-align:center;max-width:280px;margin-left:auto;margin-right:auto">By continuing, you agree to Zevar's<br><span style="color:var(--ink);font-weight:600">Terms of Use</span> &amp; <span style="color:var(--ink);font-weight:600">Privacy Policy</span>.</p>`;
 }
 function acctSaveProfile(){
   const n=document.getElementById('acctName');
@@ -2587,14 +2622,41 @@ function pfPickPhoto(){ const i=document.getElementById('pfPhotoInput'); if(i) i
 function pfPhotoChosen(e){
   const f=e.target.files&&e.target.files[0]; if(!f) return;
   const r=new FileReader();
-  r.onload=ev=>{ state.userPhoto=ev.target.result; renderAcct(); };
+  r.onload=ev=>{ state.userPhoto=ev.target.result; syncHeaderAvatar(); renderAcct(); };
   r.readAsDataURL(f);
+}
+// show the user's uploaded photo in the main header profile icons (mobile + desktop)
+function syncHeaderAvatar(){
+  const DEF={
+    hdrAvMobile:`<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="profileClip"><circle cx="12" cy="12" r="10.6"/></clipPath></defs><circle cx="12" cy="12" r="11" fill="#f9dbe6" stroke="#d6336c" stroke-width="1"/><g clip-path="url(#profileClip)"><circle cx="12" cy="9.2" r="3.7" fill="#d6336c"/><circle cx="12" cy="23" r="9.6" fill="#d6336c"/></g></svg>`,
+    hdrAvDesktop:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>`
+  };
+  ['hdrAvMobile','hdrAvDesktop'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.innerHTML = state.userPhoto ? `<img class="hdr-avphoto" src="${state.userPhoto}" alt="Profile">` : DEF[id];
+  });
 }
 // ---- expandable sections ----
 function pfToggle(key){
   if(key==='manage') state.acctManageOpen=!state.acctManageOpen;
   else if(key==='legal') state.acctLegalOpen=!state.acctLegalOpen;
   renderAcct();
+  // auto-collapse the opened dropdown if it isn't used within a few seconds
+  clearTimeout(_pfSubTimer);
+  const open=(key==='manage'&&state.acctManageOpen)||(key==='legal'&&state.acctLegalOpen);
+  if(open) startPfSubIdle(key);
+}
+let _pfSubTimer=null;
+function startPfSubIdle(key){
+  clearTimeout(_pfSubTimer);
+  _pfSubTimer=setTimeout(()=>{
+    if(key==='manage'&&state.acctManageOpen){ state.acctManageOpen=false; renderAcct(); }
+    else if(key==='legal'&&state.acctLegalOpen){ state.acctLegalOpen=false; renderAcct(); }
+  },3500);
+}
+function resetPfSubIdle(){
+  if(state.acctManageOpen) startPfSubIdle('manage');
+  else if(state.acctLegalOpen) startPfSubIdle('legal');
 }
 // ---- account details ----
 function pfSaveDetails(){
@@ -2611,12 +2673,13 @@ function pfDeleteAccount(){
   if(!confirm("Delete your account? This will sign you out and remove your profile. This can't be undone.")) return;
   state.loggedIn=false; state.userName=''; state.userEmail='';
   state.userPhoto=''; state.userMobile=''; state.userAltMobile=''; state.userHint='';
-  goAcct('menu'); toast('Account deleted');
+  goAcct('menu'); if(typeof syncProfileUI==='function')syncProfileUI(); if(typeof syncHeaderAvatar==='function')syncHeaderAvatar(); toast('Account deleted');
 }
 function pfLegal(doc){ state.legalDoc=doc; goAcct('legal'); }
 
 // ---- My Orders: one sample of every order type ----
 const ORDER_STEPS=['Confirmed','Packed','Shipped','Out for Delivery','Delivered'];
+const ORD_SHORT={'Confirmed':'Confirmed','Packed':'Packed','Shipped':'Shipped','Out for Delivery':'Out for<br>Delivery','Delivered':'Delivered'};
 const SAMPLE_ORDERS=[
   {id:'ZV72841', pi:0, qty:1, step:0, status:'Confirmed', sub:'Arriving by 19 Aug – 21 Aug', sku:'ZV-RNG-004', size:'Size 14'},
   {id:'ZV72790', pi:2, qty:2, step:2, status:'In Transit', sub:'Arriving by 15 Aug – 17 Aug', sku:'ZV-EAR-007', size:''},
@@ -2642,13 +2705,13 @@ function canCancelOrder(o){
 function ordCard(o){
   const p=PRODUCTS[o.pi]||PRODUCTS[0];
   const stc=ordStClass(o.status);
-  const meta=[o.sku?`SKU · ${o.sku}`:'', o.size?o.size:''].filter(Boolean).join('&nbsp;&nbsp;·&nbsp;&nbsp;');
+  const meta=[o.sku?`SKU · ${o.sku}`:'', o.size?o.size:'', p.mat?p.mat:''].filter(Boolean).join('&nbsp;&nbsp;·&nbsp;&nbsp;');
   const trackOpen=state.orderTrackOpen&&state.orderTrackOpen[o.id];
   let tracker='';
   if(trackOpen && !o.cancelled){
     const n=ORDER_STEPS.length, pct=(o.step/(n-1))*100;
     tracker=`<div class="oc-track"><div class="oc-trackbar"><div class="oc-trackfill" style="width:${pct}%"></div>`+
-      ORDER_STEPS.map((s,i)=>`<div class="oc-tdot ${i<=o.step?'done':''}" style="left:${(i/(n-1))*100}%"><span>${s.split(' ')[0]}</span></div>`).join('')+
+      ORDER_STEPS.map((s,i)=>`<div class="oc-tdot ${i<=o.step?'done':''}" style="left:${(i/(n-1))*100}%"><span>${ORD_SHORT[s]||s}</span></div>`).join('')+
       `</div></div>`;
   }
   let footer='';
@@ -2686,7 +2749,16 @@ function ordCard(o){
 function ordTrack(id){
   if(!state.orderTrackOpen) state.orderTrackOpen={};
   state.orderTrackOpen[id]=!state.orderTrackOpen[id];
-  renderAcct();
+  // re-render only the list (not the whole drawer) and keep scroll position
+  const wrap=document.getElementById('ordListWrap');
+  const scroller=document.getElementById('profileDrawer');
+  if(wrap){
+    const y=scroller?scroller.scrollTop:0;
+    wrap.innerHTML=ordListHTML();
+    if(scroller) scroller.scrollTop=y;
+  } else {
+    renderAcct();
+  }
 }
 function ordCancel(id){ openOrdModal('cancel', id); }
 
@@ -2839,7 +2911,7 @@ function orderDetailHTML(){
   const o=SAMPLE_ORDERS.find(x=>x.id===state.orderDetailId)||SAMPLE_ORDERS[0];
   const p=PRODUCTS[o.pi]||PRODUCTS[0];
   const stc=ordStClass(o.status);
-  const meta=[o.sku,o.size].filter(Boolean).join(' · ');
+  const meta=[o.sku, o.size, p.mat].filter(Boolean).join(' · ');
   const arriveClass=o.cancelled?'r':(o.status==='Delivered'?'g':'');
   const arriveTxt=o.cancelled?'Order cancelled':(o.status==='Delivered'?'Delivered':o.sub.replace(/^on\s/,'Arriving '));
   const name=state.userName||'Zevar Customer';
@@ -2931,15 +3003,18 @@ function renderAcct(){
   const closeBtn=`<button class="nav-close" onclick="closeProfileSheet()" aria-label="Close" style="color:var(--ink-soft)">×</button>`;
 
   if(v==='menu'){
-    head.innerHTML=`<div class="nav-head-title">My Profile</div>${closeBtn}`;
-    head.style.background='linear-gradient(135deg,#2b2233,#4a2740)';
-    head.querySelector('.nav-head-title').style.color='#fff';
-    head.querySelector('.nav-close').style.color='rgba(255,255,255,.85)';
+    head.innerHTML='';
+    head.style.background='transparent';
+    head.style.borderBottom='none';
+    head.style.minHeight='0';
+    head.style.padding='0';
+    const closeX=`<button onclick="closeProfileSheet()" aria-label="Close" style="position:absolute;top:12px;right:12px;z-index:5;background:none;border:none;color:var(--ink-soft);font-size:22px;line-height:1;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer">×</button>`;
+    body.style.position='relative';
 
     if(!state.loggedIn){
-      body.innerHTML=`
-        <div style="padding:0 18px 14px;border-bottom:1px solid var(--line);margin:14px 0 6px">
-          <b style="font-size:15px;font-weight:800;display:block">Welcome</b>
+      body.innerHTML=closeX+`
+        <div style="padding:26px 18px 14px;border-bottom:1px solid var(--line);margin:0 0 6px">
+          <b style="font-size:16px;font-weight:800;display:block">Welcome</b>
           <p style="font-size:12.5px;color:var(--ink-soft);margin:3px 0 12px">To access account &amp; manage orders</p>
           <button onclick="acctGoLogin()" style="border:1px solid var(--accent);color:var(--accent);background:#fff;width:100%;padding:10px;font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px">Login / Sign Up</button>
         </div>`;
@@ -2948,8 +3023,8 @@ function renderAcct(){
       const av = state.userPhoto
         ? `<img class="pf-avimg" src="${state.userPhoto}" alt="Profile">`
         : `<div class="pf-av">${initial}</div>`;
-      body.innerHTML=`
-        <div class="pf-hero">
+      body.innerHTML=closeX+`
+        <div class="pf-hero" style="padding-top:30px">
           <div class="pf-avwrap">
             <div class="pf-avring"></div>
             ${av}
@@ -2981,7 +3056,7 @@ function renderAcct(){
           <span class="pf-row-lb">Manage Account &amp; Address</span>
           <svg class="pf-row-ch ${mOpen?'open':''}" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
         </button>
-        ${mOpen?`<div class="pf-sub"><div class="pf-subcards">
+        ${mOpen?`<div class="pf-sub" onpointerdown="resetPfSubIdle()" onpointermove="resetPfSubIdle()"><div class="pf-subcards">
           <button class="pf-subcard" onclick="goAcct('details')"><span class="box"><svg viewBox="0 0 24 24"><path d="M4 20a8 8 0 0 1 16 0"/><circle cx="12" cy="8" r="4"/></svg></span><span>Account Details</span></button>
           <button class="pf-subcard" onclick="pfGoAddresses()"><span class="box"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span>Addresses</span></button>
         </div></div>`:''}
@@ -2991,7 +3066,7 @@ function renderAcct(){
           <span class="pf-row-lb">Legal &amp; Policies</span>
           <svg class="pf-row-ch ${lOpen?'open':''}" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
         </button>
-        ${lOpen?`<div class="pf-sub"><div class="pf-legal">
+        ${lOpen?`<div class="pf-sub" onpointerdown="resetPfSubIdle()" onpointermove="resetPfSubIdle()"><div class="pf-legal">
           <a onclick="pfLegal('faq')">FAQ's</a>
           <a onclick="pfLegal('about')">About Us</a>
           <a onclick="pfLegal('terms')">Terms of Use</a>
@@ -3003,7 +3078,7 @@ function renderAcct(){
           <span class="pf-row-lb">Help &amp; Contact</span>${CH}
         </button>
       </div>
-      ${state.loggedIn?`<div style="padding:6px 18px 22px"><button onclick="acctLogout()" style="width:100%;border:1px solid var(--line);background:#fff;color:var(--accent);padding:12px;font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;justify-content:center;gap:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:17px;height:17px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Log Out</button></div>`:''}
+      ${state.loggedIn?`<div style="padding:14px 18px 40px;text-align:center"><span onclick="acctLogout()" style="display:inline-flex;align-items:center;gap:7px;color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.4px;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Log out</span></div>`:''}
     `;
   } else if(v==='details'){
     head.innerHTML=`${backBtn}<div class="nav-head-title">Account Details</div><span style="width:30px"></span>`;
@@ -3032,7 +3107,7 @@ function renderAcct(){
         <p style="font-size:11.5px;color:var(--ink-soft);margin:-6px 0 12px">This will help recover your account if needed.</p>
         <div class="pf-fld"><label>Hint Name</label><input id="pfHint" value="${state.userHint||''}" placeholder="e.g. Home"></div>
         <button onclick="pfSaveDetails()" style="width:100%;background:var(--accent);color:#fff;padding:12px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Save Details</button>
-        <button onclick="pfDeleteAccount()" style="width:100%;background:#fff;color:#c0392b;border:1px solid var(--line);padding:12px;font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-top:10px">Delete Account</button>
+        <div style="text-align:center;margin-top:18px"><span onclick="pfDeleteAccount()" style="font-size:12px;color:#c0392b;cursor:pointer;border-bottom:1px solid transparent">Delete account</span></div>
       </div>`;
   } else if(v==='legal'){
     const DOCS={
@@ -3120,6 +3195,11 @@ function _showHome(){ state.wishView=false; document.getElementById('shopView').
   window.scrollTo({top:0,behavior:'instant'}); syncBotNav(); }
 
 function openCart(){
+  // close other sheets/drawers first (but not the cart itself)
+  ['profileDrawer','profileOverlay','searchDrop','addrSheet','ordModalOverlay','loginOverlay'].forEach(id=>{const e=document.getElementById(id); if(e) e.classList.remove('open');});
+  navGuards = navGuards.filter(g=> g!=='profile' && g!=='search');
+  if(typeof stopSearchIdle==='function') stopSearchIdle();
+  if(typeof state!=='undefined') state.ordModal=null;
   renderCart();
   document.getElementById('cartPage').classList.add('show');
   lockScroll();
@@ -3349,7 +3429,7 @@ function buildProduct(id){
   const colourSw = COLOURS.map((c,i)=>`<button class="hd-color ${i===0?'on':''}" onclick="hdColour(this,'${c[0]}')" title="${c[0]}"><span class="chip" style="background:${c[1]}"></span></button>`).join('');
   const SIZES = {Rings:['6','7','8','9','10','12'],Bangles:['2.4','2.6','2.8'],Necklaces:['16 in','18 in','20 in'],Earrings:['Free Size'],Sets:['Free Size']}[p.cat] || ['Free Size'];
   const hasGuide = (p.cat==='Rings'||p.cat==='Bangles');
-  pdpSel={id:id, base:p.price, mrp:p.mrp, qty:1, gift:false};
+  pdpSel={id:id, base:p.price, mrp:p.mrp, qty:1, gift:false, size:(SIZES.length===1?SIZES[0]:null), needsSize:(SIZES.length>1)};
   // tab contents
   HD_TABS={
     details:[['Material',metalLabel],['Category',p.cat],['Colour',COLOURS[0][0]],['Occasion','Festive / Daily'],['Finish','BIS-standard']],
@@ -3387,7 +3467,7 @@ function buildProduct(id){
       </div>
       <button class="hd-addcart" onclick="pdpAddSmart()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7V6a3 3 0 0 1 6 0v1"/></svg><span id="pdpBagLbl">Add to Bag</span></button>
     </div>
-    <button class="hd-buynow" onclick="pdpAddSmart();openCart()">Buy now</button>
+    <button class="hd-buynow" onclick="if(pdpAddSmart())openCart()">Buy now</button>
     <div class="hd-finish" style="margin-top:16px" id="hdDeliveryWrap">${deliveryBlockHTML()}</div>
     <div class="hd-div"></div>
     <div class="hd-features">
@@ -3446,6 +3526,7 @@ function hdColour(btn,name){
 function hdSize(btn,name){
   btn.parentElement.querySelectorAll('.hd-size').forEach(s=>s.classList.remove('on')); btn.classList.add('on');
   const el=document.getElementById('hdSizeName'); if(el) el.textContent=name;
+  if(typeof pdpSel!=='undefined') pdpSel.size=name;
 }
 /* ============================================================
    ACCOUNT + ADDRESS BOOK + DELIVER-TO  (self-contained)
@@ -3488,7 +3569,7 @@ function deliveryBlockHTML(){
           <div class="d-top">${a.name} ${tag}
             <button class="d-change" onclick="openAddrSheet()">Change</button></div>
           <div class="d-line">${a.line}, ${a.city}, ${a.state} — <b>${a.pin}</b></div>
-          <div class="d-eta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Delivery by ${etaFromPin(a.pin)} · Cash on delivery available</div>
+          <div class="d-eta">Delivery by ${etaFromPin(a.pin)} · Cash on delivery available</div>
         </div>
       </div>`;
   }
@@ -3741,11 +3822,20 @@ function pdpRefresh(){
   set('pdpBagLbl','Add to Bag');
 }
 function pdpAddSmart(){
-  const s=pdpSel; if(s.id==null) return;
+  const s=pdpSel; if(s.id==null) return false;
+  // require a size selection before proceeding
+  if(s.needsSize && !s.size){
+    const row=document.querySelector('.hd-sizes');
+    if(row){ row.classList.add('size-shake'); setTimeout(()=>row.classList.remove('size-shake'),500); row.scrollIntoView({behavior:'smooth',block:'center'}); }
+    const lbl=document.getElementById('hdSizeName'); if(lbl){ lbl.textContent='Please select'; lbl.style.color='#c0392b'; }
+    toast('Please select a size first');
+    return false;
+  }
   for(let k=0;k<s.qty;k++){ const first=!(s.id in state.bag); state.bag[s.id]=(state.bag[s.id]||0)+1; if(first) selected.add(s.id); }
   updateBagBadge();
   toast(`Added to cart ✓`);
   if(document.getElementById('cartPage').classList.contains('show')) renderCart();
+  return true;
 }
 function toggleBreakup(btn){ const b=btn.nextElementSibling; b.hidden=!b.hidden; btn.classList.toggle('open',!b.hidden); }
 function toggleFaq(el){ el.classList.toggle('open'); }
@@ -4053,12 +4143,25 @@ function goShop(cat){
   applyShopView(cat);
   if(!wasShop) armGuard('shop');
 }
+// close any open overlay/drawer so bottom-nav navigation always works
+function closeAllSheets(){
+  ['profileDrawer','profileOverlay','searchDrop','addrSheet','ordModalOverlay','loginOverlay','navDrawer','navOverlay'].forEach(id=>{
+    const e=document.getElementById(id); if(e){ e.classList.remove('open'); }
+  });
+  const cp=document.getElementById('cartPage'); if(cp) cp.classList.remove('show');
+  navGuards = navGuards.filter(g=> g==='product' || g==='shop');
+  if(typeof stopSearchIdle==='function') stopSearchIdle();
+  if(typeof state!=='undefined'){ state.ordModal=null; }
+  if(typeof unlockScroll==='function') unlockScroll();
+}
 function goHome(){
+  closeAllSheets();
   if(currentView==='home' && !state.wishView) return;
   navGuards = navGuards.filter(g=> g!=='product' && g!=='shop');
   _showHome();
 }
 function goWishlist(){
+  closeAllSheets();
   state.wishView=true;
   state.cats=new Set(); state.mats=new Set(); state.minDisc=0; state.maxPrice=50000;
   const si=document.getElementById('searchInput'); if(si) si.value='';
@@ -4324,6 +4427,8 @@ refreshAnnounce(); guardScrollTaps(); buildFootTerms(); syncNotify();
 // mobile splash: fade out after a moment
 setTimeout(()=>{ const sp=document.getElementById('splash');
   if(sp){ sp.classList.add('hide'); setTimeout(()=>{ sp.style.display='none'; },600); } }, 1900);
+// welcome login/sign-up popup ~4s after load (only if not logged in)
+setTimeout(()=>{ if(typeof maybeAutoLogin==='function') maybeAutoLogin(); }, 4000);
 </script>
 </body>
 </html>
