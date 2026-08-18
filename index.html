@@ -1157,11 +1157,11 @@
   .hd-feat-tx span{font-size:11.5px;color:#7a7a84;line-height:1.3}
   .hd-feat-tx span b{font-size:11.5px;letter-spacing:0;text-transform:none;color:var(--nv)}
   .hd-desc{font-size:14.5px;line-height:1.7;color:#55555f;margin:12px 0 20px}
-  .hd-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:0;position:relative;z-index:2}
-  .hd-tab{padding:9px 16px;border:1.5px solid var(--nv-line);border-bottom:none;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;color:var(--nv);background:#fff;transition:.15s;position:relative}
+  .hd-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;position:relative;z-index:2}
+  .hd-tab{padding:9px 16px;border:1.5px solid var(--nv-line);border-radius:8px;font-size:13px;font-weight:600;color:var(--nv);background:#fff;transition:.15s;position:relative}
   .hd-tab:hover{border-color:var(--nv)}
   .hd-tab.on{background:var(--nv-lav);border-color:var(--nv-lav);color:var(--nv-lavtx);z-index:3}
-  .hd-tabbox{background:var(--nv-cream);border:1.5px solid var(--nv-line);border-radius:0 10px 10px 10px;padding:24px 24px 22px;margin-top:0}
+  .hd-tabbox{background:var(--nv-cream);border:1.5px solid var(--nv-line);border-radius:10px;padding:24px 24px 22px;margin-top:0}
   .hd-kv{display:flex;gap:8px;padding:8px 0;font-size:14px;line-height:1.5}
   .hd-kv .k{color:var(--nv);font-weight:700;min-width:96px}
   .hd-kv .v{color:#55555f}
@@ -1183,7 +1183,7 @@
   .hd-buynow:hover{border-color:#d6336c;background:#fbe7ee}
   .hd-feat svg{stroke:#d6336c}
   .hd-feat-tx b{color:#282c3f}
-  .hd-tab.on{background:#fbe7ee;border-color:#d6336c;color:#d6336c;border-bottom:1.5px solid #fbe7ee;margin-bottom:-1.5px;z-index:3}
+  .hd-tab.on{background:#fbe7ee;border-color:#d6336c;color:#d6336c;z-index:3}
   .hd-tab:hover{border-color:#d6336c}
   .hd-tabbox{background:#fff7f9;border-color:#d6336c}
   @media(max-width:860px){
@@ -1202,8 +1202,8 @@
     .hd-sizeguide{font-size:11.5px}
   }
   @media(max-width:560px){
-    .hd-tabs{gap:4px;flex-wrap:nowrap;width:100%;padding-bottom:1px}
-    .hd-tab{flex:1 1 0;min-width:0;padding:9px 4px;font-size:11.5px;border-radius:8px 8px 0 0;white-space:nowrap;text-align:center}
+    .hd-tabs{gap:4px;flex-wrap:nowrap;width:100%;padding-bottom:1px;margin-bottom:10px}
+    .hd-tab{flex:1 1 0;min-width:0;padding:9px 4px;font-size:11.5px;border-radius:8px;white-space:nowrap;text-align:center}
     .hd-tabbox{padding:20px 18px}
     .hd-kv{padding:7px 0;font-size:13.5px}
     .hd-kv .k{min-width:88px}
@@ -3251,7 +3251,7 @@ function renderAcct(){
     }
 
     const CH=`<svg class="pf-row-ch" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>`;
-    const mOpen=state.acctManageOpen, lOpen=state.acctLegalOpen;
+    const lOpen=state.acctLegalOpen;
     body.innerHTML+=`
       <div class="pf-menu">
         <button class="pf-row" onclick="goAcct('orders')">
@@ -3267,15 +3267,14 @@ function renderAcct(){
           <span class="pf-row-lb">Cart</span>${CH}
         </button>
 
-        <button class="pf-row" onclick="pfToggle('manage')">
+        <button class="pf-row" onclick="goAcct('details')">
           <span class="pf-row-ic"><svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span>
-          <span class="pf-row-lb">Manage Account &amp; Address</span>
-          <svg class="pf-row-ch ${mOpen?'open':''}" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          <span class="pf-row-lb">Account Details</span>${CH}
         </button>
-        ${mOpen?`<div class="pf-sub" onpointerdown="resetPfSubIdle()" onpointermove="resetPfSubIdle()"><div class="pf-subcards">
-          <button class="pf-subcard" onclick="goAcct('details')"><span class="box"><svg viewBox="0 0 24 24"><path d="M4 20a8 8 0 0 1 16 0"/><circle cx="12" cy="8" r="4"/></svg></span><span>Account Details</span></button>
-          <button class="pf-subcard" onclick="pfGoAddresses()"><span class="box"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span>Addresses</span></button>
-        </div></div>`:''}
+        <button class="pf-row" onclick="pfGoAddresses()">
+          <span class="pf-row-ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+          <span class="pf-row-lb">Addresses</span>${CH}
+        </button>
 
         <button class="pf-row" onclick="pfToggle('legal')">
           <span class="pf-row-ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h2"/></svg></span>
