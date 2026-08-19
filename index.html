@@ -11,16 +11,16 @@
 <style>
   :root{
     --bg:#ffffff;
-    --bg-soft:#faf6f3;
-    --ink:#282c3f;
-    --ink-soft:#7e808c;
-    --accent:#d6336c;
-    --accent-dark:#b5285a;
-    --gold:#b58a3c;
-    --line:#ededf0;
+    --bg-soft:#f0e6d2;
+    --ink:#1f3d61;
+    --ink-soft:#5c7089;
+    --accent:#1f3d61;
+    --accent-dark:#14283f;
+    --gold:#c3b898;
+    --line:#e3d9c0;
     --green:#03a685;
-    --shadow:0 2px 16px rgba(40,44,63,.08);
-    --shadow-hover:0 8px 28px rgba(40,44,63,.14);
+    --shadow:0 2px 16px rgba(31,61,97,.08);
+    --shadow-hover:0 8px 28px rgba(31,61,97,.14);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
@@ -70,7 +70,7 @@
 
   /* ---------- TOP ANNOUNCEMENT STRIP ---------- */
   .announce{display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
-    background:linear-gradient(90deg,#2b2233,#4a2740);color:#fff;font-size:13px;font-weight:500;
+    background:linear-gradient(90deg,#1f3d61,#14283f);color:#fff;font-size:13px;font-weight:500;
     padding:10px 18px;text-align:center;letter-spacing:.2px}
   .ann-inner{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;
     position:relative;z-index:2}
@@ -157,7 +157,7 @@
   .pop-chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{display:flex;align-items:center;gap:6px;padding:7px 13px;border:1px solid var(--line);
     border-radius:18px;font-size:12.5px;font-weight:600;color:#3e4152;cursor:pointer;transition:.15s}
-  .chip:hover{border-color:var(--accent);color:var(--accent);background:#fdeef3}
+  .chip:hover{border-color:var(--accent);color:var(--accent);background:#f0e6d2}
   .chip svg{width:13px;height:13px;color:var(--ink-soft)}
   .chip:hover svg{color:var(--accent)}
   .icons{display:flex;gap:22px;margin-left:auto}
@@ -201,7 +201,7 @@
   .pf-hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:22px 18px 18px;border-bottom:1px solid var(--line)}
   .pf-avwrap{position:relative;width:86px;height:86px;margin-bottom:8px}
   .pf-avring{position:absolute;inset:0;border-radius:50%;border:2px dashed var(--accent);opacity:.55}
-  .pf-av{position:absolute;inset:5px;border-radius:50%;background:linear-gradient(135deg,#2b2233,#4a2740);color:#fff;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:34px;display:flex;align-items:center;justify-content:center}
+  .pf-av{position:absolute;inset:5px;border-radius:50%;background:linear-gradient(135deg,#1f3d61,#14283f);color:#fff;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:34px;display:flex;align-items:center;justify-content:center}
   .pf-avimg{position:absolute;inset:5px;border-radius:50%;object-fit:cover;width:calc(100% - 10px);height:calc(100% - 10px)}
   .pf-edit{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:3px 12px;border-radius:12px;cursor:pointer;border:2px solid #fff;white-space:nowrap}
   .pf-name{font-family:'Inter',sans-serif;font-weight:700;font-size:18px;color:var(--ink);margin-top:10px;line-height:1.2}
@@ -345,7 +345,7 @@
   .omodal-sub{font-size:12.5px;color:var(--ink-soft);line-height:1.55;margin-bottom:16px}
   .omodal-tags{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:16px}
   .omodal-tag{font-size:12.5px;font-weight:600;padding:8px 14px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;font-family:inherit;border-radius:999px !important}
-  .omodal-tag.sel{background:#2b2233;color:#fff;border-color:#2b2233}
+  .omodal-tag.sel{background:#1f3d61;color:#fff;border-color:#1f3d61}
   .omodal-label{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-soft);margin:4px 0 9px}
   .omodal-text{width:100%;border:1.5px solid var(--line);padding:11px 13px;font-size:13.5px;font-family:inherit;color:var(--ink);outline:none;resize:vertical;margin-bottom:16px}
   .omodal-text:focus{border-color:var(--accent)}
@@ -357,8 +357,8 @@
   .omodal-do.danger{background:#c0392b}
   .omodal-addr{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
   .omodal-apick{display:flex;flex-direction:column;gap:3px;text-align:left;border:1.5px solid var(--line);background:#fff;padding:12px 14px;cursor:pointer;font-family:inherit}
-  .omodal-apick.sel{border-color:var(--accent);background:#fff5f8}
-  .omodal-atag{align-self:flex-start;font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;background:#2b2233;color:#fff;padding:2px 9px;border-radius:999px !important}
+  .omodal-apick.sel{border-color:var(--accent);background:#f5f1e8}
+  .omodal-atag{align-self:flex-start;font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;background:#1f3d61;color:#fff;padding:2px 9px;border-radius:999px !important}
   .omodal-atext{font-size:12.5px;color:var(--ink);line-height:1.45}
   .omodal-addnew{background:none;border:none;color:var(--accent);font-size:13px;font-weight:800;cursor:pointer;padding:4px 0;margin-bottom:14px;text-align:left;font-family:inherit}
   .hamburger{display:none;flex-direction:column;gap:4px;padding:8px}
@@ -423,7 +423,7 @@
   .sort-menu button{display:block;width:100%;text-align:left;padding:10px 12px;
     font-size:13px;border-radius:6px;color:#3e4152}
   .sort-menu button:hover{background:var(--bg-soft)}
-  .sort-menu button.active{color:var(--accent);font-weight:700;background:#fdeef3}
+  .sort-menu button.active{color:var(--accent);font-weight:700;background:#f0e6d2}
   .filter-toggle{display:none}
 
   /* ---------- PRODUCT GRID (Myntra-mobile style) ---------- */
@@ -488,7 +488,7 @@
 
   .deal{display:inline-block;margin-top:5px;font-size:10.5px;font-weight:800;
     padding:2px 8px;border-radius:3px;letter-spacing:.2px}
-  .deal.pink{background:linear-gradient(90deg,#ff3f8e,#ff5c9d);color:#fff}
+  .deal.pink{background:linear-gradient(90deg,#1f3d61,#3a5a85);color:#fff}
   .deal.green{color:#03a685;padding-left:0}
   .delivery{display:flex;align-items:center;gap:7px;margin-top:5px;font-size:11px;
     color:var(--ink-soft);font-weight:500}
@@ -573,11 +573,11 @@
 
   .home-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
   .banner-strip{margin-top:44px;border-radius:14px;overflow:hidden;padding:34px 40px;
-    background:linear-gradient(120deg,#2b2233,#4a2740);display:flex;align-items:center;
+    background:linear-gradient(120deg,#1f3d61,#14283f);display:flex;align-items:center;
     justify-content:space-between;gap:24px;flex-wrap:wrap}
   .banner-strip .bs-text h3{font-family:'Inter',sans-serif;color:#fff;font-size:24px;font-weight:800;letter-spacing:-.3px;margin-bottom:6px}
   .banner-strip .bs-text p{color:rgba(255,255,255,.75);font-size:15px}
-  .banner-strip .bs-btn{background:var(--gold);color:#2b2233;padding:14px 32px;border-radius:8px;
+  .banner-strip .bs-btn{background:var(--gold);color:#1f3d61;padding:14px 32px;border-radius:8px;
     font-size:14px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
 
   @media(max-width:1000px){
@@ -620,6 +620,11 @@
     box-shadow:0 1px 6px rgba(40,44,63,.05)}
   .cart-topbar-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;
     justify-content:space-between;padding:14px 24px;gap:16px}
+  .cart-topbar-left{display:flex;align-items:center;gap:14px}
+  .cart-back-btn{display:flex;align-items:center;justify-content:center;width:34px;height:34px;
+    border-radius:50%;color:var(--ink);flex-shrink:0;transition:.15s}
+  .cart-back-btn svg{width:22px;height:22px}
+  .cart-back-btn:hover{background:var(--bg-soft)}
   .cart-logo{font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:26px;
     letter-spacing:2px;cursor:pointer}
   .cart-logo span{color:var(--accent)}
@@ -634,13 +639,13 @@
   .cart-grid{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr 340px;
     gap:24px;padding:22px 24px 60px;align-items:start}
 
-  .pincode{background:#fff7f9;border:1px solid #ffe0e9;border-radius:8px;
+  .pincode{background:#f5f1e8;border:1px solid #e3d9c0;border-radius:8px;
     display:flex;align-items:center;justify-content:space-between;padding:16px 18px;
     margin-bottom:20px;gap:12px;flex-wrap:wrap}
   .pincode span{font-size:14px;font-weight:600}
   .pin-btn{border:1px solid var(--accent);color:var(--accent);background:#fff;
     padding:11px 20px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:.5px}
-  .pin-btn:hover{background:#fff0f5}
+  .pin-btn:hover{background:#f5f1e8}
 
   .select-bar{display:flex;align-items:center;padding:12px 2px 16px;
     border-bottom:1px solid var(--line);margin-bottom:6px;gap:16px}
@@ -692,8 +697,8 @@
   .coupon-row .cl svg{width:18px;height:18px;color:var(--ink-soft)}
   .apply-btn{border:1px solid var(--accent);color:var(--accent);background:#fff;
     padding:8px 20px;border-radius:5px;font-size:13px;font-weight:700}
-  .apply-btn:hover{background:#fff0f5}
-  .gift-box{display:flex;gap:12px;background:#fff7f9;border-radius:8px;padding:14px}
+  .apply-btn:hover{background:#f5f1e8}
+  .gift-box{display:flex;gap:12px;background:#f5f1e8;border-radius:8px;padding:14px}
   .gift-box .ribbon{font-size:28px}
   .gift-box b{font-size:14px}
   .gift-box p{font-size:12px;color:var(--ink-soft);margin:3px 0 8px}
@@ -714,9 +719,27 @@
     font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
   @media(max-width:820px){
     .cart-grid{grid-template-columns:1fr}
-    .steps{display:none}
+    .cart-logo{display:none}
     .cart-topbar-inner{padding:12px 16px}
+    .cart-topbar-inner{justify-content:space-between}
+    .steps{gap:5px;font-size:11px;letter-spacing:1px}
+    .steps .st{padding-bottom:3px;border-bottom:2px solid transparent}
+    .steps .st.active{border-bottom-color:var(--accent)}
+    .steps .dots{font-size:0}
+    .steps .dots::before{content:"›";font-size:12px;color:#d5d6dd}
     .cart-grid{padding:18px 16px 50px}
+    #bagPriceBox .place-order{display:none}
+    .cart-grid{padding-bottom:90px}
+  }
+  .cart-sticky-bar{display:none}
+  @media(max-width:820px){
+    .cart-sticky-bar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:12;
+      background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 20px rgba(40,44,63,.08);
+      padding:12px 16px;align-items:center;justify-content:space-between;gap:14px}
+    .csb-total{display:flex;flex-direction:column;line-height:1.25}
+    .csb-total span{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px}
+    .csb-total b{font-size:17px;color:var(--ink)}
+    .cart-sticky-bar .place-order.csb-btn{width:auto;flex:0 0 auto;min-width:170px;margin-top:0}
   }
   @media(max-width:560px){
     .secure span{display:none}
@@ -724,29 +747,34 @@
     .cart-empty svg{width:56px;height:56px;margin-bottom:14px}
     .cart-empty button{padding:11px 26px;font-size:12.5px}
     .bi-thumb{width:90px;height:120px}
+    .select-bar{flex-wrap:wrap;row-gap:8px}
+    .select-bar .sb-actions{flex:1 1 100%;margin-left:0;justify-content:flex-end;margin-top:2px}
+    .select-bar .sb-actions button{padding:0 10px;font-size:11px}
+    .cart-sticky-bar .place-order.csb-btn{min-width:0;flex:1 1 auto}
+    .csb-total b{font-size:15px}
   }
 
   /* ---------- PRODUCT DETAIL PAGE ---------- */
   /* ---- Myntra theme override (PDP only) ---- */
   #productView{
-    --accent:#d6336c;
-    --accent-dark:#ff1f4d;
-    --gold:#ff9f00;
+    --accent:#1f3d61;
+    --accent-dark:#14283f;
+    --gold:#c3b898;
     --green:#14958f;
-    --bg-soft:#f5f5f6;
-    --line:#eaeaec;
-    --ink-soft:#94969f;
+    --bg-soft:#f0e6d2;
+    --line:#e3d9c0;
+    --ink-soft:#5c7089;
   }
-  #productView .pdp-price2 .off{color:#ff905a}
-  #productView .pdp-urgency .u-hot{background:#fbe7ee;color:#d6336c}
-  #productView .pdp-urgency .u-hot .dot{background:#d6336c}
-  #productView .pdp-urgency .u-stock{color:#ff905a}
+  #productView .pdp-price2 .off{color:#14283f}
+  #productView .pdp-urgency .u-hot{background:#f0e6d2;color:#1f3d61}
+  #productView .pdp-urgency .u-hot .dot{background:#1f3d61}
+  #productView .pdp-urgency .u-stock{color:#14283f}
   #productView .pdp-timer{background:linear-gradient(90deg,#282c3f,#44475c)}
   #productView .pdp-ratingline .rl-badge{background:#14958f}
-  #productView .pdp-ratingline .rl-best{color:#ff905a;background:#fff4ec;border:1px solid #ffd9b7}
-  #productView .pdp-fbt .fbt-add{background:#d6336c}
-  #productView .pdp-fbt .fbt-add:hover{background:#ff1f4d}
-  #productView .pdp-fbt .fbt-card.this{border-color:#d6336c;box-shadow:0 0 0 1px #d6336c}
+  #productView .pdp-ratingline .rl-best{color:#14283f;background:#f0e6d2;border:1px solid #e3d9c0}
+  #productView .pdp-fbt .fbt-add{background:#1f3d61}
+  #productView .pdp-fbt .fbt-add:hover{background:#14283f}
+  #productView .pdp-fbt .fbt-card.this{border-color:#1f3d61;box-shadow:0 0 0 1px #1f3d61}
   .pdp-wrap{max-width:1280px;margin:0 auto;padding:16px 24px 40px}
   .pdp-crumb{font-size:12px;color:var(--ink-soft);margin-bottom:16px}
   .pdp-crumb b{color:var(--ink)}
@@ -771,9 +799,32 @@
   .pdp-arrow.next{right:8px}
   .pdp-cdots span{cursor:pointer}
   @media(max-width:860px){ .pdp-arrow{display:none} }
-  .pdp-slide{flex:0 0 100%;scroll-snap-align:center;height:100%}
-  .pdp-slide img{width:100%;height:100%;object-fit:cover}
-  .pdp-slide .msvg{width:100%;height:100%}
+  .pdp-slide{flex:0 0 100%;scroll-snap-align:center;height:100%;position:relative}
+  .pdp-slide img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+  .pdp-slide .msvg{width:100%;height:100%;cursor:zoom-in}
+  .pdp-slide video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
+  .pdp-zoombtn{position:absolute;bottom:12px;left:12px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.92);
+    box-shadow:0 2px 8px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;z-index:3;transition:.15s;cursor:pointer}
+  .pdp-zoombtn:hover{transform:scale(1.08)}
+  .pdp-zoombtn svg{width:17px;height:17px;stroke:var(--ink);fill:none;stroke-width:2}
+  .pdp-vidbadge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.6);color:#fff;font-size:10.5px;font-weight:700;
+    letter-spacing:.5px;padding:3px 9px;border-radius:20px;z-index:3;display:flex;align-items:center;gap:5px}
+  .pdp-vidbadge svg{width:11px;height:11px;fill:#fff}
+  /* ---- zoom lightbox ---- */
+  .pdp-zoom{position:fixed;inset:0;background:#0b0b0e;z-index:9999;display:none;align-items:center;justify-content:center;touch-action:none;overscroll-behavior:contain}
+  .pdp-zoom.open{display:flex}
+  .pz-close{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.14);
+    color:#fff;border:none;font-size:19px;line-height:1;z-index:2;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .pz-counter{position:absolute;top:20px;left:50%;transform:translateX(-50%);color:#fff;font-size:12.5px;font-weight:700;
+    background:rgba(255,255,255,.14);padding:5px 13px;border-radius:20px;z-index:2;letter-spacing:.3px}
+  .pz-hint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.65);font-size:11.5px;
+    letter-spacing:.3px;z-index:2;pointer-events:none}
+  .pz-stage{width:100%;height:100%;overflow:hidden;position:relative}
+  .pz-img{max-width:96%;max-height:96%;position:absolute;top:50%;left:50%;transform-origin:center center;
+    will-change:transform;user-select:none;-webkit-user-drag:none;object-fit:contain;pointer-events:none}
+  .pz-svgwrap{position:absolute;top:50%;left:50%;width:82vw;max-width:520px;aspect-ratio:4/5;transform-origin:center center;
+    will-change:transform;display:flex;align-items:center;justify-content:center;border-radius:16px;pointer-events:none}
+  .pz-svgwrap svg{width:60%;height:60%}
   .pdp-heart{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;background:#fff;
     box-shadow:0 2px 8px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;z-index:3;transition:.15s}
   .pdp-heart:hover{transform:scale(1.08)}
@@ -806,12 +857,12 @@
   .pdp-ratingline .rl-cnt{font-size:12.5px;color:var(--ink-soft);font-weight:600;text-decoration:underline;text-underline-offset:2px}
   .pdp-ratingline .rl-best{font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:#b5602a;background:#fff3e6;border:1px solid #ffd9b0;padding:3px 8px;border-radius:20px}
   .pdp-urgency{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}
-  .pdp-urgency .u-hot{background:#fff1f4;color:#c81e50;font-size:12.5px;font-weight:700;padding:6px 11px;border-radius:20px;display:inline-flex;align-items:center;gap:6px}
+  .pdp-urgency .u-hot{background:#f5f1e8;color:#c81e50;font-size:12.5px;font-weight:700;padding:6px 11px;border-radius:20px;display:inline-flex;align-items:center;gap:6px}
   .pdp-urgency .u-hot b{font-weight:800}
   .pdp-urgency .u-hot .dot{width:7px;height:7px;border-radius:50%;background:#e0431f;box-shadow:0 0 0 0 rgba(224,67,31,.5);animation:pulse 1.6s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,67,31,.5)}70%{box-shadow:0 0 0 7px rgba(224,67,31,0)}100%{box-shadow:0 0 0 0 rgba(224,67,31,0)}}
   .pdp-urgency .u-stock{color:#e0431f;font-size:12.5px;font-weight:800}
-  .pdp-timer{display:flex;align-items:center;gap:9px;background:linear-gradient(90deg,#2b2233,#4a2740);color:#fff;border-radius:9px;padding:10px 13px;font-size:13px;font-weight:600;margin:14px 0}
+  .pdp-timer{display:flex;align-items:center;gap:9px;background:linear-gradient(90deg,#1f3d61,#14283f);color:#fff;border-radius:9px;padding:10px 13px;font-size:13px;font-weight:600;margin:14px 0}
   .pdp-timer svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:1.8;flex-shrink:0}
   .pdp-timer b{font-variant-numeric:tabular-nums;font-weight:800;background:rgba(255,255,255,.18);padding:3px 8px;border-radius:5px;letter-spacing:.5px;margin-left:auto}
   .pdp-trust{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
@@ -855,7 +906,7 @@
   .pk-tier{position:relative;border:1.5px solid var(--line);border-radius:12px;padding:16px 8px 12px;background:#fff;
     display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:.15s;text-align:center}
   .pk-tier:hover{border-color:var(--ink-soft)}
-  .pk-tier.on{border-color:var(--accent);background:#fff5f8;box-shadow:0 0 0 1px var(--accent)}
+  .pk-tier.on{border-color:var(--accent);background:#f5f1e8;box-shadow:0 0 0 1px var(--accent)}
   .pk-tier .pk-tag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;
     font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:3px 9px;border-radius:20px;white-space:nowrap}
   .pk-tier .pk-qty{font-size:13px;font-weight:800}
@@ -864,7 +915,7 @@
   .pk-tier:first-child .pk-per{color:var(--ink-soft)}
   .pdp-buyopt{display:flex;flex-direction:column;gap:10px;margin:18px 0}
   .pdp-buyopt .bo{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:10px;padding:13px 14px;cursor:pointer;transition:.15s}
-  .pdp-buyopt .bo.on{border-color:var(--accent);background:#fff5f8}
+  .pdp-buyopt .bo.on{border-color:var(--accent);background:#f5f1e8}
   .pdp-buyopt .bo-radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;position:relative;transition:.15s}
   .pdp-buyopt .bo.on .bo-radio{border-color:var(--accent)}
   .pdp-buyopt .bo.on .bo-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
@@ -926,7 +977,7 @@
   .qty-stepper button:hover{background:var(--bg-soft)}
   .qty-stepper span{min-width:34px;text-align:center;font-size:15px;font-weight:800}
   .pdp-giftopt{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;margin:14px 0;cursor:pointer;transition:.15s}
-  .pdp-giftopt.on{border-color:var(--accent);background:#fff5f8}
+  .pdp-giftopt.on{border-color:var(--accent);background:#f5f1e8}
   .gift-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);flex-shrink:0;position:relative;transition:.15s}
   .gift-check.on{border-color:var(--accent);background:var(--accent)}
   .gift-check.on::after{content:'';position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
@@ -978,23 +1029,63 @@
   #addrSheet .addr-body-pad{padding:18px 18px 22px}
   .addr-item{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;
     padding:13px 13px;margin-bottom:11px;cursor:pointer;transition:.15s;position:relative}
-  .addr-item.on{border-color:var(--accent);background:#fff7f9;box-shadow:0 0 0 1px var(--accent) inset}
+  .addr-item.on{border-color:var(--accent);background:#f5f1e8;box-shadow:0 0 0 1px var(--accent) inset}
   .addr-item .radio{width:19px;height:19px;border-radius:50%;border:2px solid #cfd0d8;flex-shrink:0;margin-top:2px;position:relative;transition:.15s}
   .addr-item.on .radio{border-color:var(--accent)}
   .addr-item.on .radio:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
   .addr-item .a-body{flex:1;min-width:0}
   .addr-item .a-name{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .addr-item .a-tag{font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--accent);
-    background:#ffe6ef;border-radius:4px;padding:2px 6px}
+    background:#e3d9c0;border-radius:4px;padding:2px 6px}
   .addr-item .a-tag.def{color:var(--green);background:#e4f7f0}
   .addr-item .a-line{font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin-top:3px}
   .addr-item .a-phone{font-size:12px;color:var(--ink-soft);margin-top:4px}
   .addr-item .a-acts{display:flex;gap:14px;margin-top:9px}
   .addr-item .a-acts button{font-size:12px;font-weight:700;color:var(--accent);background:none;padding:0}
   .addr-item .a-acts button.del{color:var(--ink-soft)}
+
+  /* ---- checkout: back link, payment methods, order success ---- */
+  .checkout-back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;
+    color:var(--ink-soft);background:none;padding:6px 0}
+  .checkout-back svg{width:16px;height:16px}
+  .checkout-back:hover{color:var(--accent)}
+
+  .pay-method{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:.15s}
+  .pay-method:hover{border-color:var(--accent)}
+  .pay-method.on{border-color:var(--accent);background:#f5f1e8;box-shadow:0 0 0 1px var(--accent) inset;margin-bottom:0}
+  .pay-method .radio{width:19px;height:19px;border-radius:50%;border:2px solid #cfd0d8;flex-shrink:0;position:relative;transition:.15s}
+  .pay-method.on .radio{border-color:var(--accent)}
+  .pay-method.on .radio:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
+  .pm-body{flex:1;min-width:0}
+  .pm-label{font-size:14px;font-weight:700;color:var(--ink)}
+  .pm-sub{font-size:12px;color:var(--ink-soft);margin-top:2px}
+
+  .pay-extra{padding:14px 16px 14px 47px;margin-bottom:10px;border-left:1px solid var(--line);
+    border-right:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0 0 12px 12px;margin-top:-10px}
+  .pay-extra input,.pay-extra select{width:100%;border:1px solid var(--line);border-radius:6px;
+    padding:10px 12px;font-size:13px;font-family:inherit;margin-bottom:0;background:#fff;color:var(--ink)}
+  .pay-extra input:focus,.pay-extra select:focus{outline:none;border-color:var(--accent)}
+  .pay-extra-card .pay-extra-row{display:flex;gap:10px;margin-top:10px}
+  .pay-extra-row input{flex:1}
+  .pay-cod-note{font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+
+  .order-success{max-width:520px;margin:70px auto;text-align:center;padding:0 20px 60px}
+  .os-check{width:74px;height:74px;border-radius:50%;background:var(--green);color:#fff;
+    display:flex;align-items:center;justify-content:center;margin:0 auto 22px}
+  .os-check svg{width:36px;height:36px}
+  .order-success h2{font-size:22px;font-weight:800;color:var(--ink);margin-bottom:10px}
+  .order-success p{font-size:14px;color:var(--ink-soft);line-height:1.6;margin-bottom:20px}
+  .os-ids{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:30px}
+  .os-ids span{font-size:12.5px;font-weight:700;letter-spacing:.3px;color:var(--accent);
+    background:#f5f1e8;border:1px solid var(--line);border-radius:20px;padding:6px 14px}
+  .os-actions{display:flex;flex-direction:column;gap:12px;align-items:center}
+  .os-continue{background:none;color:var(--ink-soft);font-size:13px;font-weight:700;padding:6px}
+  .os-continue:hover{color:var(--accent)}
+  @media(max-width:700px){ .order-success{margin:40px auto} }
   .addr-add{width:100%;border:1.5px dashed var(--accent);color:var(--accent);background:#fff;border-radius:12px;
     padding:13px;font-size:13.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:3px}
-  .addr-add:hover{background:#fff5f8}
+  .addr-add:hover{background:#f5f1e8}
   .addr-add svg{width:17px;height:17px}
   /* address / login form */
   .addr-form label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;
@@ -1007,7 +1098,7 @@
   .addr-tags{display:flex;gap:8px;margin-top:6px}
   .addr-tags button{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 14px;
     font-size:12.5px;font-weight:600;color:var(--ink)}
-  .addr-tags button.on{border-color:var(--accent);background:#fff7f9;color:var(--accent)}
+  .addr-tags button.on{border-color:var(--accent);background:#f5f1e8;color:var(--accent)}
   .addr-err{color:#c81e50;font-size:12px;margin-top:10px;display:none}
   .addr-err.show{display:block}
   .addr-save{width:100%;background:var(--accent);color:#fff;border-radius:10px;padding:13px;font-size:14.5px;
@@ -1015,7 +1106,7 @@
   .addr-save:hover{background:var(--accent-dark)}
   .addr-back{background:none;color:var(--ink-soft);font-size:13px;font-weight:600;margin-top:12px;width:100%;padding:6px}
   /* deliver-to card on PDP (replaces pincode box once address saved) */
-  .hd-deliver{background:#fff7f9;border:1px solid #ffe0e9;border-radius:10px;padding:11px 13px;
+  .hd-deliver{background:#f5f1e8;border:1px solid #e3d9c0;border-radius:10px;padding:11px 13px;
     display:flex;align-items:flex-start;gap:10px;margin-top:2px}
   .hd-deliver svg.pin{width:17px;height:17px;color:var(--accent);flex-shrink:0;margin-top:2px}
   .hd-deliver .d-body{flex:1;min-width:0}
@@ -1027,7 +1118,7 @@
   .hd-deliver .d-eta svg{width:14px;height:14px}
   .hd-addbtn{width:100%;border:1px solid var(--accent);color:var(--accent);background:#fff;border-radius:9px;
     padding:11px;font-size:13.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:2px}
-  .hd-addbtn:hover{background:#fff5f8}
+  .hd-addbtn:hover{background:#f5f1e8}
   .hd-addbtn svg{width:16px;height:16px}
   .hd-pin-save{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline;margin-left:6px;font-size:12px}
 
@@ -1037,10 +1128,11 @@
   .ic-gallery .pdp-stage{order:1;width:100%}
   .ic-thumbs{display:flex;flex-direction:row;gap:10px;width:auto;order:2;overflow-x:auto;scrollbar-width:none}
   .ic-thumbs::-webkit-scrollbar{display:none}
-  .ic-thumb{width:72px;flex-shrink:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;aspect-ratio:1/1;padding:0;background:var(--bg-soft);cursor:pointer;transition:.15s}
-  .ic-thumb.on{border-color:#d6336c;box-shadow:0 0 0 1px #d6336c}
+  .ic-thumb{width:58px;flex-shrink:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;aspect-ratio:4/5;padding:0;background:var(--bg-soft);cursor:pointer;transition:.15s;position:relative}
+  .ic-thumb.on{border-color:#1f3d61;box-shadow:0 0 0 1px #1f3d61}
   .ic-thumb img,.ic-thumb .tsvg{width:100%;height:100%;object-fit:cover;display:block}
   .ic-thumb .tsvg{display:flex;align-items:center;justify-content:center}
+  .ic-thumb.is-video::after{content:'';position:absolute;inset:0;margin:auto;width:20px;height:20px;background:rgba(0,0,0,.55);border-radius:50%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:11px}
   .ic-gallery .pdp-stage{flex:1;min-width:0}
   .ic-title{font-size:23px;font-weight:700;line-height:1.28;letter-spacing:.4px;text-transform:uppercase;color:#23232b;margin:0}
   .ic-sku{font-size:12px;letter-spacing:1.6px;color:var(--ic-teal);margin-top:10px;text-transform:uppercase;font-weight:600}
@@ -1093,11 +1185,11 @@
     .ic-gallery .pdp-stage{order:1;flex:0 0 auto;width:100%}
     .ic-thumbs{flex-direction:row;width:auto;order:2;overflow-x:auto;scrollbar-width:none;padding:4px 2px}
     .ic-thumbs::-webkit-scrollbar{display:none}
-    .ic-thumb{width:56px;flex-shrink:0}
+    .ic-thumb{width:46px;flex-shrink:0}
     .ic-title{font-size:20px}
   }
   /* ================= NAVY EDITORIAL PDP ================= */
-  :root{--nv:#1a1a1a;--nv-line:#e6e6ea;--nv-gray:#9a9aa6;--nv-cream:#f5f3ee;--nv-lav:#ece9f8;--nv-lavtx:#5b4fd0;--nv-gold:#e6a817;--nv-off:#c2703f}
+  :root{--nv:#1f3d61;--nv-line:#e3d9c0;--nv-gray:#5c7089;--nv-cream:#f0e6d2;--nv-lav:#f0e6d2;--nv-lavtx:#14283f;--nv-gold:#c3b898;--nv-off:#14283f}
   .hd-cat{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--nv-gray)}
   .hd-titlerow{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-top:8px}
   .hd-title{font-size:26px;font-weight:700;line-height:1.15;letter-spacing:-.4px;color:var(--nv);margin:0}
@@ -1120,8 +1212,8 @@
   .hd-sizeguide{background:none;font-size:12px;color:var(--nv);text-decoration:underline;text-underline-offset:3px;font-weight:600}
   .hd-finish{margin-bottom:12px;margin-top:14px}
   .hd-colors{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
-  .hd-color{width:40px;height:40px;border-radius:50%;padding:0;border:1px solid var(--nv-line);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;background:#fff}
-  .hd-color .chip{width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+  .hd-color{width:40px;height:40px;flex-shrink:0;border-radius:50%!important;-webkit-appearance:none;appearance:none;padding:0;border:1px solid var(--nv-line);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;background:#fff;overflow:hidden}
+  .hd-color .chip{width:28px;height:28px;flex-shrink:0;border-radius:50%!important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
   .hd-color:hover{border-color:var(--nv)}
   .hd-color.on{border-color:var(--nv);box-shadow:0 0 0 1.5px var(--nv)}
   .hd-swatches{display:flex;gap:12px;margin-top:12px}
@@ -1167,25 +1259,25 @@
   .hd-kv .v{color:#55555f}
   .hd-tabtxt{font-size:14px;line-height:1.7;color:#55555f;margin:0}
   /* ---- Myntra theme (PDP) ---- */
-  .hd-heart.on svg{fill:#d6336c;stroke:#d6336c}
+  .hd-heart.on svg{fill:#1f3d61;stroke:#1f3d61}
   .hd-rating svg{fill:var(--green)}
-  .hd-price .off{color:#ff905a;font-weight:700}
-  .hd-color:hover{border-color:#d6336c}
-  .hd-color.on{border-color:#d6336c;box-shadow:0 0 0 1.5px #d6336c}
-  .hd-sw.on{border-color:#d6336c;box-shadow:0 0 0 2px #d6336c}
-  .hd-size:hover{border-color:#d6336c}
-  .hd-size.on{border-color:#d6336c;background:#d6336c;color:#fff}
-  .hd-sizeguide{color:#d6336c}
-  .hd-stepper button:hover{background:#fbe7ee}
-  .hd-addcart{background:#d6336c;color:#fff}
-  .hd-addcart:hover{background:#b5285a}
-  .hd-buynow{background:#fff;color:#d6336c;border:1px solid #d6336c}
-  .hd-buynow:hover{border-color:#d6336c;background:#fbe7ee}
-  .hd-feat svg{stroke:#d6336c}
+  .hd-price .off{color:#14283f;font-weight:700}
+  .hd-color:hover{border-color:#1f3d61}
+  .hd-color.on{border-color:#1f3d61;box-shadow:0 0 0 1.5px #1f3d61}
+  .hd-sw.on{border-color:#1f3d61;box-shadow:0 0 0 2px #1f3d61}
+  .hd-size:hover{border-color:#1f3d61}
+  .hd-size.on{border-color:#1f3d61;background:#1f3d61;color:#fff}
+  .hd-sizeguide{color:#1f3d61}
+  .hd-stepper button:hover{background:#f0e6d2}
+  .hd-addcart{background:#1f3d61;color:#fff}
+  .hd-addcart:hover{background:#14283f}
+  .hd-buynow{background:#fff;color:#1f3d61;border:1px solid #1f3d61}
+  .hd-buynow:hover{border-color:#1f3d61;background:#f0e6d2}
+  .hd-feat svg{stroke:#1f3d61}
   .hd-feat-tx b{color:#282c3f}
-  .hd-tab.on{background:#fbe7ee;border-color:#d6336c;color:#d6336c;z-index:3}
-  .hd-tab:hover{border-color:#d6336c}
-  .hd-tabbox{background:#fff7f9;border-color:#d6336c}
+  .hd-tab.on{background:#f0e6d2;border-color:#1f3d61;color:#1f3d61;z-index:3}
+  .hd-tab:hover{border-color:#1f3d61}
+  .hd-tabbox{background:#f5f1e8;border-color:#1f3d61}
   @media(max-width:860px){
     .hd-title{font-size:19px;line-height:1.2}
     .hd-price .now{font-size:21px}
@@ -1299,16 +1391,16 @@
   @media(min-width:641px){ .pdp-pincode{max-width:340px} }
   .pdp-pincode input{flex:1;border:1px solid var(--line);border-radius:7px;padding:0 12px;height:42px;
     font-family:inherit;font-size:13px;outline:none;color:var(--ink)}
-  .pdp-pincode input:focus{border-color:#d6336c}
-  .pdp-pincode button{border:1px solid #d6336c;color:#d6336c;background:#fff;padding:0 18px;
+  .pdp-pincode input:focus{border-color:#1f3d61}
+  .pdp-pincode button{border:1px solid #1f3d61;color:#1f3d61;background:#fff;padding:0 18px;
     border-radius:7px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;white-space:nowrap}
-  .pdp-pincode button:hover{background:#fbe7ee}
+  .pdp-pincode button:hover{background:#f0e6d2}
   .hd-pin-result{margin-top:10px;font-size:12.5px;display:none}
   .hd-pin-result.show{display:flex;align-items:flex-start;gap:7px}
   .hd-pin-result.ok{color:#1a7a4c}
   .hd-pin-result.bad{color:#c81e50}
   .hd-pin-result svg{width:16px;height:16px;flex-shrink:0;margin-top:1px}
-  .hd-pin-change{color:#d6336c;font-weight:700;cursor:pointer;text-decoration:underline;margin-left:6px;font-size:12px}
+  .hd-pin-change{color:#1f3d61;font-weight:700;cursor:pointer;text-decoration:underline;margin-left:6px;font-size:12px}
   .pdp-offers{list-style:none}
   .pdp-offers li{font-size:13px;color:#3e4152;margin-bottom:10px;padding-left:26px;position:relative;line-height:1.5}
   .pdp-offers li svg{position:absolute;left:0;top:1px;width:17px;height:17px;color:var(--gold)}
@@ -1486,7 +1578,7 @@
   .nav-drawer-head{display:grid;grid-template-columns:auto 1fr auto;align-items:center;column-gap:8px;
     min-height:24px;padding:16px 16px;
     padding-top:calc(16px + env(safe-area-inset-top,0px));
-    background:linear-gradient(135deg,#2b2233,#4a2740);color:#fff;flex-shrink:0;box-sizing:content-box}
+    background:linear-gradient(135deg,#1f3d61,#14283f);color:#fff;flex-shrink:0;box-sizing:content-box}
   .nav-user{display:flex;align-items:center;gap:11px}
   .nav-avatar{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);
     display:flex;align-items:center;justify-content:center}
@@ -1587,8 +1679,8 @@
   #productView, #productView *{border-radius:3px !important}
   /* keep PDP image-slider dots and colour swatches round even inside the square-corners PDP override */
   #productView .pdp-cdots span{border-radius:999px !important}
-  #productView .hd-color{border-radius:50% !important}
-  #productView .hd-color .chip{border-radius:50% !important}
+  #productView .hd-colors .hd-color{border-radius:50% !important}
+  #productView .hd-colors .hd-color .chip{border-radius:50% !important}
   /* ---------- PDP RATINGS & REVIEWS ---------- */
   .rev-summary{display:flex;gap:30px;flex-wrap:wrap;align-items:center;padding:2px 0 18px;border-bottom:1px solid var(--line);margin-bottom:18px}
   .rev-score{text-align:center;min-width:118px}
@@ -1603,7 +1695,7 @@
   .rev-list{display:flex;flex-direction:column;gap:16px}
   .rev-card{border:1px solid var(--line);padding:14px 16px}
   .rev-card .rtop{display:flex;align-items:flex-start;gap:12px}
-  .rev-avatar{width:38px;height:38px;background:#fff2f6;color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+  .rev-avatar{width:38px;height:38px;background:#f5f1e8;color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
   .rev-meta{flex:1;min-width:0}
   .rev-name{font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .rev-ver{font-size:10.5px;font-weight:700;color:var(--green);display:inline-flex;align-items:center;gap:3px}
@@ -1678,10 +1770,10 @@
     <button class="hamburger" onclick="openProfileSheet()" aria-label="Login / Profile">
       <span class="hdr-av" id="hdrAvMobile"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <defs><clipPath id="profileClip"><circle cx="12" cy="12" r="10.6"/></clipPath></defs>
-        <circle cx="12" cy="12" r="11" fill="#f9dbe6" stroke="#d6336c" stroke-width="1"/>
+        <circle cx="12" cy="12" r="11" fill="#f0e6d2" stroke="#1f3d61" stroke-width="1"/>
         <g clip-path="url(#profileClip)">
-          <circle cx="12" cy="9.2" r="3.7" fill="#d6336c"/>
-          <circle cx="12" cy="23" r="9.6" fill="#d6336c"/>
+          <circle cx="12" cy="9.2" r="3.7" fill="#1f3d61"/>
+          <circle cx="12" cy="23" r="9.6" fill="#1f3d61"/>
         </g>
       </svg></span>
     </button>
@@ -1777,7 +1869,7 @@
 <!-- HOME VIEW -->
 <section id="homeView">
   <div class="hero" id="hero">
-    <div class="hero-slide on" style="background:linear-gradient(120deg,#fbe9ef,#f6d3e0)">
+    <div class="hero-slide on" style="background:linear-gradient(120deg,#f0e6d2,#dfe6f0)">
       <div class="htext">
         <div class="eyebrow">Festive Edit 2026</div>
         <h2>The Wedding<br>Jewellery Sale</h2>
@@ -1900,6 +1992,12 @@
     <div class="pdp-crumb" id="pdpCrumb"></div>
     <div class="pdp">
       <div class="pdp-gallery" id="pdpGallery"></div>
+      <div class="pdp-zoom" id="pdpZoom">
+        <button class="pz-close" onclick="backKind('zoom')" aria-label="Close">✕</button>
+        <div class="pz-counter" id="pzCounter"></div>
+        <div class="pz-stage" id="pzStage"></div>
+        <div class="pz-hint" id="pzHint">Pinch or scroll to zoom &middot; drag to pan</div>
+      </div>
       <div class="pdp-info" id="pdpInfo"></div>
     </div>
   </div>
@@ -1983,13 +2081,18 @@
 <section class="cart-page" id="cartPage" aria-label="Shopping bag">
   <div class="cart-topbar">
     <div class="cart-topbar-inner">
-      <div class="cart-logo" onclick="closeCart()">ZE<span>VAR</span></div>
-      <div class="steps">
-        <span class="st active">BAG</span>
+      <div class="cart-topbar-left">
+        <button class="cart-back-btn" onclick="closeCart()" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div class="cart-logo" onclick="closeCart()">ZE<span>VAR</span></div>
+      </div>
+      <div class="steps" id="cartSteps">
+        <span class="st" id="stBag">BAG</span>
         <span class="dots">·······</span>
-        <span class="st">ADDRESS</span>
+        <span class="st" id="stAddr">ADDRESS</span>
         <span class="dots">·······</span>
-        <span class="st">PAYMENT</span>
+        <span class="st" id="stPay">PAYMENT</span>
       </div>
       <div class="secure">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7z"/><path d="m9 12 2 2 4-4"/></svg>
@@ -2023,7 +2126,7 @@
 <script>
 // ---------- JEWELLERY SVG VISUALS (self-contained, always render) ----------
 function jwPal(i){
-  const pal=[['#fbe9ef','#f6c9d8','#d6336c'],['#f6efe4','#ecd8ad','#b58a3c'],
+  const pal=[['#f0e6d2','#d7c9a3','#1f3d61'],['#f6efe4','#ecd8ad','#c3b898'],
     ['#eef1f6','#cfd8e8','#5c6b8a'],['#f0ece8','#dcc9bd','#a9755a'],
     ['#eaf2ef','#c6e0d5','#3f8f78'],['#f3eefa','#dcc8ee','#8b5cc4']];
   return pal[i%pal.length];
@@ -2144,7 +2247,7 @@ const DISCOUNTS=[{l:"10% and above",v:10},{l:"30% and above",v:30},{l:"50% and a
 const SORTS=[["pop","Popularity"],["low","Price: Low to High"],["high","Price: High to Low"],["disc","Better Discount"],["rate","Customer Rating"]];
 
 // ---------- STATE ----------
-const state={cats:new Set(),mats:new Set(),maxPrice:50000,minDisc:0,sort:"pop",wish:new Set(),bag:{},wishView:false,loggedIn:false,userName:'',userEmail:'',userPhoto:'',userPhotoSource:'',userMobile:'',userAltMobile:'',userHint:'',acctView:'menu',acctStack:[],acctManageOpen:false,acctLegalOpen:false,legalDoc:'faq',orderFilter:'All',orderFilterOpen:false,orderQuery:'',orderTrackOpen:{},orderDetailId:null,ordModal:null};
+const state={cats:new Set(),mats:new Set(),maxPrice:50000,minDisc:0,sort:"pop",wish:new Set(),bag:{},wishView:false,loggedIn:false,userName:'',userEmail:'',userPhoto:'',userPhotoSource:'',userMobile:'',userAltMobile:'',userHint:'',acctView:'menu',acctStack:[],acctManageOpen:false,acctLegalOpen:false,legalDoc:'faq',orderFilter:'All',orderFilterOpen:false,orderQuery:'',orderTrackOpen:{},orderDetailId:null,ordModal:null,checkoutStep:'bag',checkoutStack:[],checkoutPayMethod:'cod'};
 
 /* ===== Lightweight analytics (localStorage; read by the admin panel) =====
    NOTE: without a server this only measures activity on THIS browser/deployment.
@@ -2525,6 +2628,8 @@ function applyClose(kind){
   else if(kind==='acct') _acctStepBack();
   else if(kind==='profile') _hideProfileSheet();
   else if(kind==='login') _hideLoginModal();
+  else if(kind==='zoom') closeZoom();
+  else if(kind==='checkoutstep') _checkoutStepBack();
 }
 // go back exactly one level inside the profile sheet (Orders ← Order Detail, etc.)
 function _acctStepBack(){
@@ -2532,10 +2637,16 @@ function _acctStepBack(){
   state.acctView = prev || 'menu';
   renderAcct();
 }
+// go back exactly one level inside checkout (Payment ← Address ← Bag)
+function _checkoutStepBack(){
+  const prev = state.checkoutStack.pop();
+  state.checkoutStep = prev || 'bag';
+  renderCheckout();
+}
 window.addEventListener('popstate',()=>{ if(navGuards.length){ applyClose(navGuards.pop()); } });
 
 // UI-only hide/show helpers (no history)
-function _hideCart(){ document.getElementById('cartPage').classList.remove('show'); unlockScroll(); syncBotNav(); }
+function _hideCart(){ document.getElementById('cartPage').classList.remove('show'); state.checkoutStep='bag'; state.checkoutStack=[]; unlockScroll(); syncBotNav(); }
 function _hideNav(){ document.getElementById('mobileNav').classList.remove('open');
   document.getElementById('navOverlay').classList.remove('open'); unlockScroll(); }
 function _hideSearch(){ document.getElementById('searchDrop').classList.remove('open'); if(typeof stopSearchIdle==='function') stopSearchIdle(); if(typeof adjustTopbar==='function') adjustTopbar(); }
@@ -2648,6 +2759,42 @@ function loginToggleMode(){
   state.loginMode = state.loginMode==='login' ? 'signup' : 'login';
   renderLoginModal();
 }
+// ---- GOOGLE SIGN-IN ----
+// This button is ready for Firebase Authentication. To wire it up for real:
+//   1. Add the Firebase SDK <script> tags (firebase-app + firebase-auth) to this
+//      page's <head>, and your firebaseConfig + firebase.initializeApp(...).
+//   2. Replace the body of this function with:
+//        const provider = new firebase.auth.GoogleAuthProvider();
+//        firebase.auth().signInWithPopup(provider).then(result => {
+//          const user = result.user;
+//          state.loggedIn = true;
+//          state.userName  = user.displayName || '';
+//          state.userEmail = user.email || '';
+//          state.userPhoto = user.photoURL || '';      // Google's own profile photo
+//          state.userPhotoSource = user.photoURL ? 'google' : '';
+//          closeLoginModal();
+//          syncProfileUI(); syncHeaderAvatar();
+//          setTimeout(()=>{ openProfileSheet();
+//            if(state._loginRedirect){ const r=state._loginRedirect; state._loginRedirect=null; goAcct(r); }
+//          }, 300);
+//        }).catch(err => toast(err.message));
+// Until Firebase is added, this demo version simulates a successful Google
+// login so the flow (and the Gravatar-style photo lookup) can still be tried.
+function googleSignIn(){
+  toast('Demo mode — connect Firebase to enable real Google sign-in');
+  const demoEmail = 'demo.user@gmail.com';
+  state.loggedIn = true;
+  state.userName = state.userName || 'Demo User';
+  state.userEmail = demoEmail;
+  if(state.userPhotoSource!=='manual'){ state.userPhoto=''; state.userPhotoSource=''; fetchEmailPhoto(demoEmail); }
+  closeLoginModal();
+  if(typeof syncProfileUI==='function') syncProfileUI();
+  toast('Logged in successfully');
+  setTimeout(()=>{
+    openProfileSheet();
+    if(state._loginRedirect){ const r=state._loginRedirect; state._loginRedirect=null; goAcct(r); }
+  }, 300);
+}
 function loginSubmit(){
   const email=document.getElementById('loginEmail');
   const pass=document.getElementById('loginPassword');
@@ -2678,6 +2825,15 @@ function renderLoginModal(){
     <label style="font-size:12px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:6px">Password</label>
     <input id="loginPassword" type="password" placeholder="At least 6 characters" style="width:100%;border:1.5px solid var(--line);padding:0 12px;height:44px;font-size:14px;outline:none;font-family:inherit;margin-bottom:16px">
     <button onclick="loginSubmit()" style="width:100%;background:var(--accent);color:#fff;padding:12px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.5px">${isSignup?'Create Account':'Login'}</button>
+    <div style="display:flex;align-items:center;gap:10px;margin:16px 0">
+      <div style="flex:1;height:1px;background:var(--line)"></div>
+      <span style="font-size:11px;color:var(--ink-soft);font-weight:700;letter-spacing:.4px">OR</span>
+      <div style="flex:1;height:1px;background:var(--line)"></div>
+    </div>
+    <button onclick="googleSignIn()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#3c4043;border:1.5px solid var(--line);padding:11px;font-size:13.5px;font-weight:700;margin-bottom:16px;cursor:pointer">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.03l2.97-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .98 4.97l2.97 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
     <p style="font-size:12.5px;color:var(--ink-soft);margin-top:16px;text-align:center">
       ${isSignup?'Already have an account?':'New here?'}
       <span onclick="loginToggleMode()" style="color:var(--accent);font-weight:800;cursor:pointer">${isSignup?'Login':'Create Account'}</span>
@@ -2767,7 +2923,7 @@ function md5(str){
 // show the user's uploaded photo in the main header profile icons (mobile + desktop)
 function syncHeaderAvatar(){
   const DEF={
-    hdrAvMobile:`<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="profileClip"><circle cx="12" cy="12" r="10.6"/></clipPath></defs><circle cx="12" cy="12" r="11" fill="#f9dbe6" stroke="#d6336c" stroke-width="1"/><g clip-path="url(#profileClip)"><circle cx="12" cy="9.2" r="3.7" fill="#d6336c"/><circle cx="12" cy="23" r="9.6" fill="#d6336c"/></g></svg>`,
+    hdrAvMobile:`<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="profileClip"><circle cx="12" cy="12" r="10.6"/></clipPath></defs><circle cx="12" cy="12" r="11" fill="#f0e6d2" stroke="#1f3d61" stroke-width="1"/><g clip-path="url(#profileClip)"><circle cx="12" cy="9.2" r="3.7" fill="#1f3d61"/><circle cx="12" cy="23" r="9.6" fill="#1f3d61"/></g></svg>`,
     hdrAvDesktop:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>`
   };
   ['hdrAvMobile','hdrAvDesktop'].forEach(id=>{
@@ -3414,15 +3570,41 @@ function openCart(){
   navGuards = navGuards.filter(g=> g!=='profile' && g!=='search');
   if(typeof stopSearchIdle==='function') stopSearchIdle();
   if(typeof state!=='undefined') state.ordModal=null;
-  renderCart();
+  state.checkoutStep='bag'; state.checkoutStack=[];
+  renderCheckout();
   document.getElementById('cartPage').classList.add('show');
   lockScroll();
   document.getElementById('cartPage').scrollTop=0;
   armGuard('cart');
   syncBotNav();
 }
-function closeCart(){ backKind('cart'); }
+function closeCart(){
+  // unwind any address/payment sub-steps together with the bag itself so the
+  // browser-history stack stays consistent (mirrors closeProfileSheet()).
+  let n=0;
+  for(let i=navGuards.length-1;i>=0;i--){ if(navGuards[i]==='checkoutstep') n++; else break; }
+  state.checkoutStep='bag'; state.checkoutStack=[];
+  const top=navGuards[navGuards.length-1];
+  if(top==='checkoutstep'){ history.go(-(n+1)); }
+  else { backKind('cart'); }
+}
 
+// Computes bag/selection totals — shared by the Bag, Address and Payment screens
+// so the numbers always agree across the checkout flow.
+function cartTotals(){
+  const ids=Object.keys(state.bag).map(Number);
+  let mrpTotal=0, subtotal=0, selCount=0, itemUnits=0;
+  ids.forEach(id=>{
+    if(!selected.has(id)) return;
+    const p=PRODUCTS[id], q=state.bag[id];
+    mrpTotal+=p.mrp*q; subtotal+=p.price*q; selCount++; itemUnits+=q;
+  });
+  const discount=mrpTotal-subtotal;
+  const coupon=couponApplied&&selCount?COUPON_OFF:0;
+  const gift=giftAdded?GIFT_FEE:0;
+  const total=Math.max(0,subtotal-coupon)+gift;
+  return {ids,mrpTotal,subtotal,selCount,itemUnits,discount,coupon,gift,total};
+}
 function renderCart(){
   const ids=Object.keys(state.bag).map(Number);
   const main=document.getElementById('cartMain');
@@ -3467,30 +3649,16 @@ function renderCart(){
     </div>`;
   }).join('');
 
-  // totals (selected only)
-  let mrpTotal=0, subtotal=0, selCount=0, itemUnits=0;
-  ids.forEach(id=>{
-    if(!selected.has(id)) return;
-    const p=PRODUCTS[id], q=state.bag[id];
-    mrpTotal+=p.mrp*q; subtotal+=p.price*q; selCount++; itemUnits+=q;
-  });
-  const discount=mrpTotal-subtotal;
-  const coupon=couponApplied&&selCount?COUPON_OFF:0;
-  const gift=giftAdded?GIFT_FEE:0;
-  const total=Math.max(0,subtotal-coupon)+gift;
-  const allSel=selCount===ids.length;
+  const t=cartTotals();
+  const allSel=t.selCount===ids.length;
 
   main.innerHTML=`<div class="cart-grid">
     <div class="cart-left">
-      <div class="pincode">
-        <span>Check delivery time &amp; services</span>
-        <button class="pin-btn" onclick="toast('Enter your pincode to check delivery')">ENTER PIN CODE</button>
-      </div>
       <div class="select-bar">
         <div class="chk ${allSel?'on':''}" onclick="toggleSelectAll()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg>
         </div>
-        <span class="sel-txt">${selCount}/${ids.length} ITEMS SELECTED</span>
+        <span class="sel-txt">${t.selCount}/${ids.length} ITEMS SELECTED</span>
         <div class="sb-actions">
           <button onclick="removeSelected()">REMOVE</button>
           <span class="sep"></span>
@@ -3501,17 +3669,6 @@ function renderCart(){
     </div>
 
     <aside class="cart-right">
-      <div class="side-box">
-        <div class="side-title">Coupons</div>
-        <div class="coupon-row">
-          <div class="cl">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12l-8-8H4v8l8 8z"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/></svg>
-            Apply Coupons
-          </div>
-          <button class="apply-btn" onclick="applyCoupon()">${couponApplied?'REMOVE':'APPLY'}</button>
-        </div>
-      </div>
-
       <div class="side-box">
         <div class="side-title">Gifting &amp; Personalisation</div>
         <div class="gift-box">
@@ -3525,29 +3682,268 @@ function renderCart(){
       </div>
 
       <div class="side-box">
-        <div class="side-title">Price Details (${itemUnits} ${itemUnits===1?'Item':'Items'})</div>
-        <div class="prow"><span>Total MRP</span><span>₹${mrpTotal.toLocaleString('en-IN')}</span></div>
-        <div class="prow"><span>Discount on MRP</span><span class="save">− ₹${discount.toLocaleString('en-IN')}</span></div>
-        <div class="prow"><span>Coupon Discount</span><span class="save">${coupon?'− ₹'+coupon:'Apply coupon'}</span></div>
-        ${gift?`<div class="prow"><span>Gift Packaging</span><span>₹${gift}</span></div>`:''}
+        <div class="side-title">Coupons</div>
+        <div class="coupon-row">
+          <div class="cl">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12l-8-8H4v8l8 8z"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/></svg>
+            Apply Coupons
+          </div>
+          <button class="apply-btn" onclick="applyCoupon()">${couponApplied?'REMOVE':'APPLY'}</button>
+        </div>
+      </div>
+
+      <div class="side-box" id="bagPriceBox">
+        <div class="side-title">Price Details (${t.itemUnits} ${t.itemUnits===1?'Item':'Items'})</div>
+        <div class="prow"><span>Total MRP</span><span>₹${t.mrpTotal.toLocaleString('en-IN')}</span></div>
+        <div class="prow"><span>Discount on MRP</span><span class="save">− ₹${t.discount.toLocaleString('en-IN')}</span></div>
+        <div class="prow"><span>Coupon Discount</span><span class="save">${t.coupon?'− ₹'+t.coupon:'Apply coupon'}</span></div>
+        ${t.gift?`<div class="prow"><span>Gift Packaging</span><span>₹${t.gift}</span></div>`:''}
         <div class="prow"><span>Shipping Fee</span><span class="save">FREE</span></div>
-        <div class="prow total"><span>Total Amount</span><span>₹${total.toLocaleString('en-IN')}</span></div>
-        <button class="place-order" onclick="placeOrder(${selCount})">Place Order</button>
+        <div class="prow total"><span>Total Amount</span><span>₹${t.total.toLocaleString('en-IN')}</span></div>
+        <button class="place-order" onclick="startCheckout(${t.selCount})">Place Order</button>
+      </div>
+    </aside>
+  </div>
+  <div class="cart-sticky-bar">
+    <div class="csb-total"><span>Total</span><b>₹${t.total.toLocaleString('en-IN')}</b></div>
+    <button class="place-order csb-btn" onclick="startCheckout(${t.selCount})">Place Order</button>
+  </div>`;
+}
+
+// ---------- CHECKOUT: ADDRESS → PAYMENT → SUCCESS ----------
+// Dispatches to the right screen for state.checkoutStep and keeps the
+// BAG / ADDRESS / PAYMENT pills in the topbar in sync.
+function renderCheckout(){
+  const s=document.getElementById('cartSteps');
+  if(s){
+    document.getElementById('stBag').classList.toggle('active', state.checkoutStep==='bag');
+    document.getElementById('stAddr').classList.toggle('active', state.checkoutStep==='address');
+    document.getElementById('stPay').classList.toggle('active', state.checkoutStep==='payment' || state.checkoutStep==='success');
+  }
+  if(state.checkoutStep==='address') renderCheckoutAddress();
+  else if(state.checkoutStep==='payment') renderCheckoutPayment();
+  else if(state.checkoutStep==='success') renderOrderSuccess();
+  else renderCart();
+}
+function goCheckoutStep(step){
+  state.checkoutStack.push(state.checkoutStep);
+  state.checkoutStep=step;
+  armGuard('checkoutstep');
+  renderCheckout();
+  document.getElementById('cartPage').scrollTop=0;
+}
+function startCheckout(n){
+  if(!n){ toast('Select at least one item to continue'); return; }
+  goCheckoutStep('address');
+}
+// If the address sheet is used mid-checkout (Change / Add new), re-render the
+// checkout address screen once it saves so the newly picked address shows up.
+function refreshCheckoutAddress(){ if(state.checkoutStep==='address') renderCheckoutAddress(); }
+
+function renderCheckoutAddress(){
+  const main=document.getElementById('cartMain');
+  const t=cartTotals();
+  const a = (typeof ZADDR!=='undefined') ? zSelected() : null;
+  const addrCard = a ? `
+      <div class="addr-item on" style="cursor:default">
+        <div class="radio"></div>
+        <div class="a-body">
+          <div class="a-name">${a.name} ${a.tag?`<span class="a-tag def">${a.tag}</span>`:''}</div>
+          <div class="a-line">${a.line}, ${a.city}, ${a.state} — ${a.pin}</div>
+          <div class="a-phone">Mobile: ${a.phone}</div>
+          <div class="a-acts"><button onclick="openAddrSheet()">Change address</button></div>
+        </div>
+      </div>` :
+    `<div class="side-box" style="text-align:center;padding:26px 18px">
+        <p style="font-size:14px;color:var(--ink-soft);margin-bottom:14px">You don't have a delivery address saved yet.</p>
+        <button class="place-order" style="max-width:260px;margin:0 auto" onclick="openAddrForm(null)">+ Add delivery address</button>
+      </div>`;
+  main.innerHTML=`<div class="cart-grid">
+    <div class="cart-left">
+      <div class="side-box">
+        <div class="side-title">Deliver to</div>
+        ${addrCard}
+      </div>
+    </div>
+    <aside class="cart-right">
+      <div class="side-box">
+        <div class="side-title">Price Details (${t.itemUnits} ${t.itemUnits===1?'Item':'Items'})</div>
+        <div class="prow"><span>Total MRP</span><span>₹${t.mrpTotal.toLocaleString('en-IN')}</span></div>
+        <div class="prow"><span>Discount on MRP</span><span class="save">− ₹${t.discount.toLocaleString('en-IN')}</span></div>
+        <div class="prow"><span>Coupon Discount</span><span class="save">${t.coupon?'− ₹'+t.coupon:'—'}</span></div>
+        ${t.gift?`<div class="prow"><span>Gift Packaging</span><span>₹${t.gift}</span></div>`:''}
+        <div class="prow"><span>Shipping Fee</span><span class="save">FREE</span></div>
+        <div class="prow total"><span>Total Amount</span><span>₹${t.total.toLocaleString('en-IN')}</span></div>
+        <button class="place-order" onclick="${a?`goCheckoutStep('payment')`:`toast('Add a delivery address to continue')`}">Continue to Payment</button>
       </div>
     </aside>
   </div>`;
 }
-function placeOrder(n){
-  if(!n){ toast('Select at least one item to continue'); return; }
-  toast('This is a demo — order flow coming soon ✨');
+
+function pickPayMethod(m){
+  state.checkoutPayMethod=m;
+  renderCheckoutPayment();
+}
+function renderCheckoutPayment(){
+  const main=document.getElementById('cartMain');
+  const t=cartTotals();
+  const a = (typeof ZADDR!=='undefined') ? zSelected() : null;
+  if(!a){ goCheckoutStep('address'); return; } // safety: no address, bounce back
+  const PM=[
+    {id:'upi',label:'UPI',sub:'Pay via Google Pay, PhonePe, Paytm & more'},
+    {id:'card',label:'Credit / Debit Card',sub:'Visa, Mastercard, RuPay & more'},
+    {id:'netbanking',label:'Net Banking',sub:'All major banks supported'},
+    {id:'cod',label:'Cash on Delivery',sub:'Pay when your order arrives'},
+  ];
+  const methodRows=PM.map(m=>`
+    <div class="pay-method ${state.checkoutPayMethod===m.id?'on':''}" onclick="pickPayMethod('${m.id}')">
+      <div class="radio"></div>
+      <div class="pm-body"><div class="pm-label">${m.label}</div><div class="pm-sub">${m.sub}</div></div>
+    </div>
+    ${state.checkoutPayMethod===m.id ? payMethodExtra(m.id) : ''}`).join('');
+  main.innerHTML=`<div class="cart-grid">
+    <div class="cart-left">
+      <button class="checkout-back" onclick="backKind('checkoutstep')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg> Back to address
+      </button>
+      <div class="side-box" style="margin-top:14px">
+        <div class="side-title">Deliver to</div>
+        <div class="addr-item on" style="cursor:default">
+          <div class="radio"></div>
+          <div class="a-body">
+            <div class="a-name">${a.name}</div>
+            <div class="a-line">${a.line}, ${a.city}, ${a.state} — ${a.pin}</div>
+            <div class="a-acts"><button onclick="goCheckoutStep('address')">Change</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="side-box">
+        <div class="side-title">Select Payment Method</div>
+        ${methodRows}
+      </div>
+    </div>
+    <aside class="cart-right">
+      <div class="side-box">
+        <div class="side-title">Price Details (${t.itemUnits} ${t.itemUnits===1?'Item':'Items'})</div>
+        <div class="prow"><span>Total MRP</span><span>₹${t.mrpTotal.toLocaleString('en-IN')}</span></div>
+        <div class="prow"><span>Discount on MRP</span><span class="save">− ₹${t.discount.toLocaleString('en-IN')}</span></div>
+        <div class="prow"><span>Coupon Discount</span><span class="save">${t.coupon?'− ₹'+t.coupon:'—'}</span></div>
+        ${t.gift?`<div class="prow"><span>Gift Packaging</span><span>₹${t.gift}</span></div>`:''}
+        <div class="prow"><span>Shipping Fee</span><span class="save">FREE</span></div>
+        <div class="prow total"><span>Total Amount</span><span>₹${t.total.toLocaleString('en-IN')}</span></div>
+        <button class="place-order" onclick="confirmPlaceOrder()">${state.checkoutPayMethod==='cod'?'Place Order':'Pay & Place Order'}</button>
+      </div>
+    </aside>
+  </div>`;
+}
+function payMethodExtra(id){
+  if(id==='upi') return `<div class="pay-extra"><input id="pmUpiId" type="text" placeholder="yourname@upi" autocomplete="off"></div>`;
+  if(id==='card') return `<div class="pay-extra pay-extra-card">
+      <input id="pmCardNum" type="text" inputmode="numeric" maxlength="19" placeholder="Card number">
+      <div class="pay-extra-row"><input id="pmCardExp" type="text" maxlength="5" placeholder="MM/YY"><input id="pmCardCvv" type="password" inputmode="numeric" maxlength="3" placeholder="CVV"></div>
+    </div>`;
+  if(id==='netbanking') return `<div class="pay-extra"><select id="pmBank"><option value="">Select your bank</option><option>State Bank of India</option><option>HDFC Bank</option><option>ICICI Bank</option><option>Axis Bank</option><option>Kotak Mahindra Bank</option></select></div>`;
+  return `<div class="pay-extra pay-cod-note">You'll pay in cash when the order is delivered. A small COD handling fee may apply at delivery.</div>`;
+}
+
+// Validates the currently-selected payment method's fields (demo-level checks
+// only — this does not process any real payment).
+function validatePayment(){
+  const m=state.checkoutPayMethod;
+  if(m==='upi'){
+    const v=(document.getElementById('pmUpiId')?.value||'').trim();
+    if(!/^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(v)){ toast('Enter a valid UPI ID'); return false; }
+  } else if(m==='card'){
+    const num=(document.getElementById('pmCardNum')?.value||'').replace(/\s/g,'');
+    const exp=(document.getElementById('pmCardExp')?.value||'').trim();
+    const cvv=(document.getElementById('pmCardCvv')?.value||'').trim();
+    if(!/^\d{12,19}$/.test(num)){ toast('Enter a valid card number'); return false; }
+    if(!/^(0[1-9]|1[0-2])\/\d{2}$/.test(exp)){ toast('Enter card expiry as MM/YY'); return false; }
+    if(!/^\d{3}$/.test(cvv)){ toast('Enter a valid 3-digit CVV'); return false; }
+  } else if(m==='netbanking'){
+    const bank=(document.getElementById('pmBank')?.value||'');
+    if(!bank){ toast('Please select your bank'); return false; }
+  }
+  return true; // cod needs no extra fields
+}
+
+// Finalises the order: creates one order record per ordered product (so each
+// shows up in "My Orders" the way real multi-item orders ship separately),
+// empties those items out of the bag, and moves to the success screen.
+let lastPlacedOrderIds=[];
+function confirmPlaceOrder(){
+  const a=(typeof ZADDR!=='undefined')?zSelected():null;
+  if(!a){ toast('Add a delivery address to continue'); goCheckoutStep('address'); return; }
+  if(!validatePayment()) return;
+  const t=cartTotals();
+  if(!t.selCount){ toast('Select at least one item to continue'); return; }
+  const payLabel={upi:'UPI',card:'Card',netbanking:'Net Banking',cod:'Cash on Delivery'}[state.checkoutPayMethod];
+  const placedAt=new Date();
+  const eta=new Date(placedAt.getTime()+6*86400000);
+  const etaStr=eta.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+  const newIds=[];
+  t.ids.forEach(id=>{
+    if(!selected.has(id)) return;
+    const p=PRODUCTS[id], q=state.bag[id];
+    const orderId='ZV'+Math.floor(70000+Math.random()*29999);
+    SAMPLE_ORDERS.unshift({
+      id:orderId, pi:id, qty:q, step:0, status:'Confirmed',
+      sub:`Arriving by ${etaStr}`, sku:('ZV-'+p.cat.slice(0,3).toUpperCase()+'-'+(100+p.id*7)),
+      size:'', editRequests:[], payMethod:payLabel,
+      deliverTo:`${a.name}, ${a.line}, ${a.city} — ${a.pin}`
+    });
+    newIds.push(orderId);
+    delete state.bag[id];
+    selected.delete(id);
+  });
+  lastPlacedOrderIds=newIds;
+  updateBagBadge();
+  // unwind any address/payment history steps — going back from the success
+  // screen should exit checkout, not re-enter the payment/address forms.
+  navGuards = navGuards.filter(g=>g!=='checkoutstep');
+  state.checkoutStack=[];
+  state.checkoutStep='success';
+  renderCheckout();
+  document.getElementById('cartPage').scrollTop=0;
+}
+function renderOrderSuccess(){
+  const main=document.getElementById('cartMain');
+  const ids=lastPlacedOrderIds;
+  main.innerHTML=`<div class="order-success">
+    <div class="os-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <h2>Order placed successfully!</h2>
+    <p>Thank you for shopping with Zevar. A confirmation has been sent to your registered email/mobile.</p>
+    <div class="os-ids">${ids.map(id=>`<span>${id}</span>`).join('')}</div>
+    <div class="os-actions">
+      <button class="place-order" style="max-width:260px" onclick="viewPlacedOrders()">Track Order</button>
+      <button class="os-continue" onclick="closeCart();goHome()">Continue Shopping</button>
+    </div>
+  </div>`;
+}
+function viewPlacedOrders(){
+  closeCart();
+  setTimeout(()=>{ openProfileSheet(); goAcct('orders'); }, 320);
 }
 // ---------- PRODUCT DETAIL PAGE ----------
 let productReturnView='shop';
+// Returns the gallery items for a product. Supports:
+//   p.imgs  -> array of 4-6 real image URLs (recommended)
+//   p.video -> OPTIONAL short video URL (mp4/webm). When present it's appended
+//              as the last gallery item, shown with a play badge on its thumb.
+// If a product has no p.imgs, five placeholder demo images are generated so
+// the gallery, zoom and thumbnail-strip behaviour can be tried out as-is.
 function pdpImages(p){
-  if(p.imgs && p.imgs.length) return p.imgs.map(u=>({img:u}));
-  return [0,1,2].map(k=>({bg:jwBg(p.id+k),svg:jwSvg(p.cat,p.id+k)}));
+  const items = (p.imgs && p.imgs.length)
+    ? p.imgs.map(u=>({img:u}))
+    : [0,1,2,3,4].map(k=>({bg:jwBg(p.id+k),svg:jwSvg(p.cat,p.id+k)}));
+  if(p.video) items.push({video:p.video, poster:items[0]});
+  return items;
 }
-function slideMarkup(im){ return im.img?`<img src="${im.img}" alt="">`:`<div class="msvg" style="background:${im.bg}">${im.svg}</div>`; }
+function slideMarkup(im,i){
+  if(im.video) return `<video src="${im.video}" playsinline muted loop preload="metadata" onclick="this.paused?this.play():this.pause()"></video><div class="pdp-vidbadge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Video</div>`;
+  return im.img?`<img src="${im.img}" alt="" onclick="openZoom(${i})">`:`<div class="msvg" style="background:${im.bg}" onclick="openZoom(${i})">${im.svg}</div>`;
+}
+function pdpVisibleIndex(){ const c=document.getElementById('pdpCarousel'); if(!c) return 0; return Math.round(c.scrollLeft/(c.clientWidth||1)); }
 function pdpGoto(i){ const c=document.getElementById('pdpCarousel'); if(c) c.scrollTo({left:i*(c.clientWidth||1),behavior:'smooth'}); }
 function pdpStep(dir){ const c=document.getElementById('pdpCarousel'); if(!c) return;
   const w=c.clientWidth||1, n=c.children.length, cur=Math.round(c.scrollLeft/w);
@@ -3577,6 +3973,121 @@ function initPdpCarousel(){
   c.addEventListener('click',e=>{ if(moved){ e.stopPropagation(); e.preventDefault(); } },true);
 }
 function pdpSetMain(id,i){ pdpGoto(i); }
+
+// ---------- IMAGE ZOOM LIGHTBOX ----------
+// Tap the main image (or the magnifier button) to open a full-screen viewer.
+// Supports: pinch-to-zoom, double-tap to zoom, mouse-wheel zoom (desktop),
+// drag-to-pan when zoomed in, and swipe left/right between images when at 1x.
+const pz = {imgs:[], idx:0, scale:1, x:0, y:0, pointers:{}, dragging:false, dragStart:null,
+  pinchStart:0, pinchScaleStart:1, swipeDx:0, lastTap:0, evtsReady:false};
+function openZoom(i){
+  const p = PRODUCTS[pdpSel.id]; if(!p) return;
+  pz.imgs = pdpImages(p).filter(im=>!im.video); // the video slide isn't zoomable
+  if(!pz.imgs.length) return;
+  pz.idx = Math.max(0, Math.min(i||0, pz.imgs.length-1));
+  pz.scale=1; pz.x=0; pz.y=0;
+  document.getElementById('pdpZoom').classList.add('open');
+  renderZoomSlide();
+  if(!pz.evtsReady){ initZoomEvents(); pz.evtsReady=true; }
+  lockScroll();
+  armGuard('zoom');
+  const hint=document.getElementById('pzHint');
+  if(hint){ hint.style.opacity='1'; clearTimeout(pz._hintT); pz._hintT=setTimeout(()=>{ hint.style.transition='opacity .5s'; hint.style.opacity='0'; },2200); }
+}
+function closeZoom(){
+  document.getElementById('pdpZoom').classList.remove('open');
+  unlockScroll();
+}
+function renderZoomSlide(){
+  const stage = document.getElementById('pzStage'); if(!stage) return;
+  const im = pz.imgs[pz.idx];
+  stage.innerHTML = im.img
+    ? `<img class="pz-img" id="pzImg" src="${im.img}" alt="">`
+    : `<div class="pz-svgwrap" id="pzImg" style="background:${im.bg}">${im.svg}</div>`;
+  const counter=document.getElementById('pzCounter');
+  if(counter) counter.textContent = pz.imgs.length>1 ? `${pz.idx+1} / ${pz.imgs.length}` : '';
+  applyZoomTransform();
+}
+function applyZoomTransform(){
+  const el=document.getElementById('pzImg'); if(!el) return;
+  el.style.transform = `translate(-50%,-50%) translate(${pz.x}px,${pz.y}px) scale(${pz.scale})`;
+}
+function pzDist(ids){ const a=pz.pointers[ids[0]], b=pz.pointers[ids[1]]; return Math.hypot(a.x-b.x,a.y-b.y); }
+function pzClampPan(){
+  // keep some resistance so the image can't be dragged arbitrarily far off-stage
+  const maxPan = 140 * pz.scale;
+  pz.x = Math.max(-maxPan, Math.min(maxPan, pz.x));
+  pz.y = Math.max(-maxPan, Math.min(maxPan, pz.y));
+}
+function initZoomEvents(){
+  const stage = document.getElementById('pzStage'); if(!stage) return;
+  stage.addEventListener('pointerdown', e=>{
+    stage.setPointerCapture(e.pointerId);
+    pz.pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
+    const ids = Object.keys(pz.pointers);
+    if(ids.length===1){
+      pz.dragging = true;
+      pz.dragStart = {x:e.clientX, y:e.clientY, ox:pz.x, oy:pz.y};
+      pz.swipeDx = 0;
+      const now=Date.now();
+      if(now - pz.lastTap < 320){ pzDoubleTapZoom(); }
+      pz.lastTap = now;
+    } else if(ids.length===2){
+      pz.dragging = false;
+      pz.pinchStart = pzDist(ids);
+      pz.pinchScaleStart = pz.scale;
+    }
+  });
+  stage.addEventListener('pointermove', e=>{
+    if(!pz.pointers[e.pointerId]) return;
+    pz.pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
+    const ids = Object.keys(pz.pointers);
+    if(ids.length===2){
+      const dist = pzDist(ids);
+      pz.scale = Math.max(1, Math.min(4, pz.pinchScaleStart * (dist / (pz.pinchStart||dist))));
+      pzClampPan(); applyZoomTransform();
+    } else if(ids.length===1 && pz.dragging){
+      if(pz.scale>1.01){
+        pz.x = pz.dragStart.ox + (e.clientX - pz.dragStart.x);
+        pz.y = pz.dragStart.oy + (e.clientY - pz.dragStart.y);
+        pzClampPan(); applyZoomTransform();
+      } else {
+        pz.swipeDx = e.clientX - pz.dragStart.x;
+      }
+    }
+  });
+  const end = e=>{
+    delete pz.pointers[e.pointerId];
+    if(Object.keys(pz.pointers).length===0){
+      if(pz.scale<=1.01 && Math.abs(pz.swipeDx)>60){
+        if(pz.swipeDx<0 && pz.idx<pz.imgs.length-1) pz.idx++;
+        else if(pz.swipeDx>0 && pz.idx>0) pz.idx--;
+        pz.x=0; pz.y=0; renderZoomSlide();
+      }
+      pz.swipeDx=0; pz.dragging=false;
+      if(pz.scale<1.02){ pz.scale=1; pz.x=0; pz.y=0; applyZoomTransform(); }
+    }
+  };
+  stage.addEventListener('pointerup', end);
+  stage.addEventListener('pointercancel', end);
+  stage.addEventListener('pointerleave', e=>{ if(Object.keys(pz.pointers).length<2) end(e); });
+  stage.addEventListener('wheel', e=>{
+    e.preventDefault();
+    pz.scale = Math.max(1, Math.min(4, pz.scale - e.deltaY*0.0016));
+    if(pz.scale<=1.01){ pz.x=0; pz.y=0; }
+    pzClampPan(); applyZoomTransform();
+  }, {passive:false});
+}
+function pzDoubleTapZoom(){
+  if(pz.scale>1.01){ pz.scale=1; pz.x=0; pz.y=0; } else { pz.scale=2.2; }
+  applyZoomTransform();
+}
+document.addEventListener('keydown', e=>{
+  const z=document.getElementById('pdpZoom'); if(!z||!z.classList.contains('open')) return;
+  if(e.key==='Escape') backKind('zoom');
+  else if(e.key==='ArrowRight' && pz.idx<pz.imgs.length-1){ pz.idx++; pz.scale=1;pz.x=0;pz.y=0; renderZoomSlide(); }
+  else if(e.key==='ArrowLeft' && pz.idx>0){ pz.idx--; pz.scale=1;pz.x=0;pz.y=0; renderZoomSlide(); }
+});
 function pdpPickSize(btn){ btn.parentElement.querySelectorAll('.pdp-size').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); }
 function fbtPartners(p){
   const others=PRODUCTS.filter(x=>x.id!==p.id);
@@ -3616,10 +4127,10 @@ function pdpSyncWish(id){
 function buildProduct(id){
   const p=PRODUCTS[id];
   const imgs=pdpImages(p);
-  const slides=imgs.map(im=>`<div class="pdp-slide">${slideMarkup(im)}</div>`).join('');
+  const slides=imgs.map((im,i)=>`<div class="pdp-slide">${slideMarkup(im,i)}</div>`).join('');
   const nSlides=imgs.length;
   const dots=Array.from({length:nSlides},(_,i)=>`<span class="${i===0?'on':''}" onclick="pdpGoto(${i})"></span>`).join('');
-  const thumbs=imgs.map((im,i)=>`<button class="ic-thumb ${i===0?'on':''}" onclick="pdpGoto(${i})">${im.img?`<img src="${im.img}" alt="">`:`<div class="tsvg" style="background:${im.bg}">${im.svg}</div>`}</button>`).join('');
+  const thumbs=imgs.map((im,i)=>`<button class="ic-thumb ${i===0?'on':''} ${im.video?'is-video':''}" onclick="pdpGoto(${i})">${im.video?(im.poster&&im.poster.img?`<img src="${im.poster.img}" alt="">`:(im.poster?`<div class="tsvg" style="background:${im.poster.bg}">${im.poster.svg}</div>`:'')):(im.img?`<img src="${im.img}" alt="">`:`<div class="tsvg" style="background:${im.bg}">${im.svg}</div>`)}</button>`).join('');
   const arrows = nSlides>1 ? `
       <button class="pdp-arrow prev" onclick="pdpStep(-1)" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg></button>
       <button class="pdp-arrow next" onclick="pdpStep(1)" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 6 6 6-6 6"/></svg></button>` : '';
@@ -3628,6 +4139,7 @@ function buildProduct(id){
       <div class="ic-thumbs">${thumbs}</div>
       <div class="pdp-stage">
         <div class="pdp-carousel" id="pdpCarousel">${slides}</div>${arrows}
+        <button class="pdp-zoombtn" onclick="openZoom(pdpVisibleIndex())" aria-label="Zoom"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/></svg></button>
         <div class="pdp-cdots" id="pdpCdots">${dots}</div>
       </div>
     </div>`;
@@ -3787,11 +4299,15 @@ function deliveryBlockHTML(){
         </div>
       </div>`;
   }
-  // State B: logged in but no address yet -> Add address button
+  // State B: logged in but no address yet -> same pincode-check UI as guest,
+  // but saving the pin goes straight to the address form (no login prompt).
   if(ZADDR.user && !a){
-    return `<div class="hd-label">Delivery Address</div>
-      <button class="hd-addbtn" onclick="openAddrForm(null)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add delivery address</button>`;
+    return `<div class="hd-label">Check Delivery</div>
+      <div class="pdp-pincode">
+        <input type="text" id="hdPinInput" maxlength="6" inputmode="numeric" placeholder="Enter pincode" onkeydown="if(event.key==='Enter')hdCheckPincode()">
+        <button onclick="hdCheckPincode()">Check</button>
+      </div>
+      <div class="hd-pin-result" id="hdPinResult"></div>`;
   }
   // State A: guest -> classic pincode check (+ save/login hint)
   return `<div class="hd-label">Check Delivery</div>
@@ -3892,11 +4408,11 @@ function renderAddrList(){
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add new address</button>
     </div>`;
 }
-function selectAddr(id){ ZADDR.selectedId=id; zSave(ZADDR); renderAddrList(); refreshDeliveryBlock(); }
+function selectAddr(id){ ZADDR.selectedId=id; zSave(ZADDR); renderAddrList(); refreshDeliveryBlock(); refreshCheckoutAddress(); }
 function deleteAddr(id){
   ZADDR.list=ZADDR.list.filter(a=>a.id!==id);
   if(ZADDR.selectedId===id) ZADDR.selectedId=ZADDR.list[0]?ZADDR.list[0].id:null;
-  zSave(ZADDR); renderAddrList(); refreshDeliveryBlock(); toast('Address removed');
+  zSave(ZADDR); renderAddrList(); refreshDeliveryBlock(); refreshCheckoutAddress(); toast('Address removed');
 }
 
 /* ---- add / edit form ---- */
@@ -3960,7 +4476,7 @@ function saveAddrForm(id){
     ZADDR.selectedId=data.id;           // naya address default ban jaata hai
     toast('Address saved');
   }
-  zSave(ZADDR); syncProfileUI(); refreshDeliveryBlock();
+  zSave(ZADDR); syncProfileUI(); refreshDeliveryBlock(); refreshCheckoutAddress();
   if(ZADDR.list.length>1) openAddrSheet(); else closeAddrSheet();
 }
 
@@ -4513,7 +5029,7 @@ function buildDrawerCategories(){
     </a>`).join('');
   const all=`
     <a class="cat-link" onclick="drawerShop()">
-      <div class="nav-thumb" style="background:linear-gradient(155deg,#282c3f,#4a2740)">
+      <div class="nav-thumb" style="background:linear-gradient(155deg,#282c3f,#14283f)">
         <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" style="width:42%;height:42%"><path d="M12 2l3 6 6 .9-4.5 4.2 1 6.1L12 16.8 6.5 19.2l1-6.1L3 8.9 9 8z"/></svg>
       </div>
       <div class="cat-meta"><span class="cat-nm">All Jewellery</span><span class="cat-sb">Shop everything</span></div>
@@ -4525,12 +5041,12 @@ function buildDrawerCategories(){
 // ---------- OFFERS & COMBOS ----------
 function buildOffers(){
   const offers=[
-    {tag:'Mega Deal',h:'Min 50% Off',p:'On festive collections',bg:'linear-gradient(120deg,#ffd9e4,#ffb3cd)',ink:'#7a1f3d',cat:''},
+    {tag:'Mega Deal',h:'Min 50% Off',p:'On festive collections',bg:'linear-gradient(120deg,#dfe6f0,#b8c6d9)',ink:'#1f3d61',cat:''},
     {tag:'Combo',h:'Buy 2 Get 1 Free',p:'On earrings & studs',bg:'linear-gradient(120deg,#e7dcff,#c9b3ff)',ink:'#3d2a7a',cat:'Earrings'},
     {tag:'Steal',h:'Under ₹999',p:'Everyday little luxuries',bg:'linear-gradient(120deg,#d6f2e8,#a9e0cd)',ink:'#1f5c4a',cat:''},
     {tag:'Bridal',h:'Wedding Combos',p:'Necklace + earring sets',bg:'linear-gradient(120deg,#ffe6c9,#f4c98a)',ink:'#7a4a1f',cat:'Sets'},
     {tag:'New',h:'Just Dropped',p:'Fresh arrivals weekly',bg:'linear-gradient(120deg,#dfe6f2,#b8c8e6)',ink:'#2a3d6b',cat:''},
-    {tag:'Bestseller',h:'Top Rated Picks',p:'Loved by 10,000+',bg:'linear-gradient(120deg,#f6dce4,#e6b3c6)',ink:'#7a2a45',cat:''},
+    {tag:'Bestseller',h:'Top Rated Picks',p:'Loved by 10,000+',bg:'linear-gradient(120deg,#f0e6d2,#ddd0ac)',ink:'#6b5a2e',cat:''},
   ];
   document.getElementById('offerGrid').innerHTML=offers.map(o=>`
     <div class="offer" style="background:${o.bg};color:${o.ink}" onclick="goShop('${o.cat}')">
