@@ -2247,7 +2247,7 @@ const DISCOUNTS=[{l:"10% and above",v:10},{l:"30% and above",v:30},{l:"50% and a
 const SORTS=[["pop","Popularity"],["low","Price: Low to High"],["high","Price: High to Low"],["disc","Better Discount"],["rate","Customer Rating"]];
 
 // ---------- STATE ----------
-const state={cats:new Set(),mats:new Set(),maxPrice:50000,minDisc:0,sort:"pop",wish:new Set(),bag:{},wishView:false,loggedIn:false,userName:'',userEmail:'',userPhoto:'',userPhotoSource:'',userMobile:'',userAltMobile:'',userHint:'',acctView:'menu',acctStack:[],acctManageOpen:false,acctLegalOpen:false,legalDoc:'faq',orderFilter:'All',orderFilterOpen:false,orderQuery:'',orderTrackOpen:{},orderDetailId:null,ordModal:null,checkoutStep:'bag',checkoutStack:[],checkoutPayMethod:'cod'};
+const state={cats:new Set(),mats:new Set(),maxPrice:50000,minDisc:0,sort:"pop",wish:new Set(),bag:{},wishView:false,loggedIn:false,userUid:'',userName:'',userEmail:'',userPhoto:'',userPhotoSource:'',userMobile:'',userAltMobile:'',userHint:'',acctView:'menu',acctStack:[],acctManageOpen:false,acctLegalOpen:false,legalDoc:'faq',orderFilter:'All',orderFilterOpen:false,orderQuery:'',orderTrackOpen:{},orderDetailId:null,ordModal:null,checkoutStep:'bag',checkoutStack:[],checkoutPayMethod:'cod'};
 
 /* ===== Lightweight analytics (localStorage; read by the admin panel) =====
    NOTE: without a server this only measures activity on THIS browser/deployment.
@@ -2476,6 +2476,7 @@ function toggleWish(id){
   c.textContent=state.wish.size; c.style.display=state.wish.size?'flex':'none';
   toast(state.wish.has(id)?'Added to Wishlist ♥':'Removed from Wishlist');
   render();
+  syncCartWishToCloud();
 }
 function bagQty(){ return Object.values(state.bag).reduce((a,b)=>a+b,0); }
 function updateBagBadge(){
@@ -2527,9 +2528,10 @@ function addBag(id){
   updateBagBadge();
   toast(`${PRODUCTS[id].n} added to bag`);
   if(document.getElementById('cartPage').classList.contains('show')) renderCart();
+  syncCartWishToCloud();
 }
-function setQty(id,val){ state.bag[id]=+val; updateBagBadge(); renderCart(); }
-function removeItem(id){ delete state.bag[id]; selected.delete(id); updateBagBadge(); renderCart(); }
+function setQty(id,val){ state.bag[id]=+val; updateBagBadge(); renderCart(); syncCartWishToCloud(); }
+function removeItem(id){ delete state.bag[id]; selected.delete(id); updateBagBadge(); renderCart(); syncCartWishToCloud(); }
 function toggleSelect(id){ selected.has(id)?selected.delete(id):selected.add(id); renderCart(); }
 function toggleSelectAll(){
   const ids=Object.keys(state.bag).map(Number);
@@ -2540,6 +2542,7 @@ function removeSelected(){
   if(!selected.size){ toast('No items selected'); return; }
   selected.forEach(id=>delete state.bag[id]); selected.clear();
   updateBagBadge(); renderCart();
+  syncCartWishToCloud();
 }
 function moveSelectedToWishlist(){
   if(!selected.size){ toast('No items selected'); return; }
@@ -2548,6 +2551,7 @@ function moveSelectedToWishlist(){
   const c=document.getElementById('wishCount'); c.textContent=state.wish.size; c.style.display='flex';
   updateBagBadge(); render(); renderCart();
   toast('Moved to wishlist ♥');
+  syncCartWishToCloud();
 }
 function applyCoupon(){ couponApplied=!couponApplied; renderCart();
   toast(couponApplied?'Coupon FIRST200 applied — ₹200 off':'Coupon removed'); }
@@ -2719,7 +2723,11 @@ function acctReset(){
   if(n>0){ history.go(-n); }                   // fires n popstates → lands on menu
   else { state.acctView='menu'; state.acctStack=[]; renderAcct(); }
 }
-function acctLogout(){ state.loggedIn=false; state.userName=''; state.userEmail=''; state.userPhoto=''; state.userPhotoSource=''; goAcct('menu'); if(typeof syncProfileUI==='function')syncProfileUI(); if(typeof syncHeaderAvatar==='function')syncHeaderAvatar(); toast('Logged out'); }
+function acctLogout(){
+  if(typeof window.fbSignOutUser==='function') window.fbSignOutUser();
+  state.loggedIn=false; state.userUid=''; state.userName=''; state.userEmail=''; state.userPhoto=''; state.userPhotoSource='';
+  goAcct('menu'); if(typeof syncProfileUI==='function')syncProfileUI(); if(typeof syncHeaderAvatar==='function')syncHeaderAvatar(); toast('Logged out');
+}
 
 // ---------- LOGIN / SIGN UP — separate popup, own flow ----------
 function acctGoLogin(){
@@ -2759,41 +2767,64 @@ function loginToggleMode(){
   state.loginMode = state.loginMode==='login' ? 'signup' : 'login';
   renderLoginModal();
 }
-// ---- GOOGLE SIGN-IN ----
-// This button is ready for Firebase Authentication. To wire it up for real:
-//   1. Add the Firebase SDK <script> tags (firebase-app + firebase-auth) to this
-//      page's <head>, and your firebaseConfig + firebase.initializeApp(...).
-//   2. Replace the body of this function with:
-//        const provider = new firebase.auth.GoogleAuthProvider();
-//        firebase.auth().signInWithPopup(provider).then(result => {
-//          const user = result.user;
-//          state.loggedIn = true;
-//          state.userName  = user.displayName || '';
-//          state.userEmail = user.email || '';
-//          state.userPhoto = user.photoURL || '';      // Google's own profile photo
-//          state.userPhotoSource = user.photoURL ? 'google' : '';
-//          closeLoginModal();
-//          syncProfileUI(); syncHeaderAvatar();
-//          setTimeout(()=>{ openProfileSheet();
-//            if(state._loginRedirect){ const r=state._loginRedirect; state._loginRedirect=null; goAcct(r); }
-//          }, 300);
-//        }).catch(err => toast(err.message));
-// Until Firebase is added, this demo version simulates a successful Google
-// login so the flow (and the Gravatar-style photo lookup) can still be tried.
+// ---- GOOGLE SIGN-IN (wired to Firebase Authentication) ----
 function googleSignIn(){
-  toast('Demo mode — connect Firebase to enable real Google sign-in');
-  const demoEmail = 'demo.user@gmail.com';
-  state.loggedIn = true;
-  state.userName = state.userName || 'Demo User';
-  state.userEmail = demoEmail;
-  if(state.userPhotoSource!=='manual'){ state.userPhoto=''; state.userPhotoSource=''; fetchEmailPhoto(demoEmail); }
-  closeLoginModal();
-  if(typeof syncProfileUI==='function') syncProfileUI();
-  toast('Logged in successfully');
-  setTimeout(()=>{
-    openProfileSheet();
-    if(state._loginRedirect){ const r=state._loginRedirect; state._loginRedirect=null; goAcct(r); }
-  }, 300);
+  if(typeof window.fbGoogleSignIn !== 'function'){ toast('Login is loading, try again in a moment'); return; }
+  window.fbGoogleSignIn().then(user=>{
+    state.loggedIn = true;
+    state.userUid = user.uid;
+    state.userName = user.displayName || '';
+    state.userEmail = user.email || '';
+    state.userPhoto = user.photoURL || '';
+    state.userPhotoSource = user.photoURL ? 'google' : '';
+    closeLoginModal();
+    if(typeof syncProfileUI==='function') syncProfileUI();
+    if(typeof syncHeaderAvatar==='function') syncHeaderAvatar();
+    toast('Logged in successfully');
+    setTimeout(()=>{
+      openProfileSheet();
+      if(state._loginRedirect){ const r=state._loginRedirect; state._loginRedirect=null; goAcct(r); }
+    }, 300);
+  }).catch(err=>{
+    toast(err && err.message ? err.message : 'Google sign-in failed');
+  });
+}
+// Fired whenever Firebase's auth state changes (login, logout, or on page
+// refresh if a session already exists). Keeps state + UI in sync and pulls
+// the user's saved cart/wishlist down from Firestore on login.
+window.onFirebaseAuthChange = function(user){
+  if(user){
+    state.loggedIn = true;
+    state.userUid = user.uid;
+    if(!state.userName) state.userName = user.displayName || '';
+    if(!state.userEmail) state.userEmail = user.email || '';
+    if(!state.userPhoto && user.photoURL){ state.userPhoto = user.photoURL; state.userPhotoSource='google'; }
+    if(typeof syncProfileUI==='function') syncProfileUI();
+    if(typeof syncHeaderAvatar==='function') syncHeaderAvatar();
+    // pull previously-saved cart/wishlist from Firestore and merge locally
+    if(typeof window.fbLoadUserDoc==='function'){
+      window.fbLoadUserDoc(user.uid).then(data=>{
+        if(!data) return;
+        if(data.cart && typeof data.cart==='object'){
+          Object.keys(data.cart).forEach(id=>{ state.bag[id]=data.cart[id]; selected.add(Number(id)); });
+        }
+        if(Array.isArray(data.wishlist)){
+          data.wishlist.forEach(id=>state.wish.add(Number(id)));
+        }
+        updateBagBadge();
+        const wc=document.getElementById('wishCount');
+        if(wc){ wc.textContent=state.wish.size; wc.style.display=state.wish.size?'flex':'none'; }
+        if(typeof render==='function') render();
+      });
+    }
+  }
+};
+// Pushes the current bag + wishlist to Firestore for the logged-in user.
+// Called after every cart/wishlist mutation; a no-op while logged out.
+function syncCartWishToCloud(){
+  if(!state.loggedIn || !state.userUid) return;
+  if(typeof window.fbSyncCartWishlist !== 'function') return;
+  window.fbSyncCartWishlist(state.userUid, state.bag, Array.from(state.wish));
 }
 function loginSubmit(){
   const email=document.getElementById('loginEmail');
@@ -3882,6 +3913,7 @@ function confirmPlaceOrder(){
   const eta=new Date(placedAt.getTime()+6*86400000);
   const etaStr=eta.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
   const newIds=[];
+  const fbItems=[];
   t.ids.forEach(id=>{
     if(!selected.has(id)) return;
     const p=PRODUCTS[id], q=state.bag[id];
@@ -3892,12 +3924,29 @@ function confirmPlaceOrder(){
       size:'', editRequests:[], payMethod:payLabel,
       deliverTo:`${a.name}, ${a.line}, ${a.city} — ${a.pin}`
     });
+    fbItems.push({productId:id, name:p.n, qty:q, price:p.price, sku:('ZV-'+p.cat.slice(0,3).toUpperCase()+'-'+(100+p.id*7))});
     newIds.push(orderId);
     delete state.bag[id];
     selected.delete(id);
   });
   lastPlacedOrderIds=newIds;
   updateBagBadge();
+  syncCartWishToCloud();
+  // ---- Save the complete order to Firestore `orders` collection ----
+  if(typeof window.fbSaveOrder==='function'){
+    window.fbSaveOrder({
+      orderIds: newIds,
+      userUid: state.userUid || null,
+      customerName: a.name || state.userName || 'Guest',
+      customerEmail: state.userEmail || '',
+      customerMobile: a.mobile || state.userMobile || '',
+      address: `${a.name}, ${a.line}, ${a.city} — ${a.pin}`,
+      items: fbItems,
+      totalPrice: t.total,
+      paymentMethod: payLabel
+      // status + timestamp are set inside fbSaveOrder
+    });
+  }
   // unwind any address/payment history steps — going back from the success
   // screen should exit checkout, not re-enter the payment/address forms.
   navGuards = navGuards.filter(g=>g!=='checkoutstep');
@@ -5163,6 +5212,89 @@ setTimeout(()=>{ const sp=document.getElementById('splash');
   if(sp){ sp.classList.add('hide'); setTimeout(()=>{ sp.style.display='none'; },600); } }, 1900);
 // welcome login/sign-up popup ~4s after load (only if not logged in)
 setTimeout(()=>{ if(typeof maybeAutoLogin==='function') maybeAutoLogin(); }, 4000);
+</script>
+
+<!-- ===================== FIREBASE INTEGRATION ===================== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import {
+    getFirestore, doc, setDoc, getDoc, collection, addDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDfB75yY5c-Fn6Aj1VpFmQ3Y1zM4wut__A",
+    authDomain: "omka-jewels.firebaseapp.com",
+    projectId: "omka-jewels",
+    storageBucket: "omka-jewels.firebasestorage.app",
+    messagingSenderId: "215666763571",
+    appId: "1:215666763571:web:6f13e361cec130778a4046",
+    measurementId: "G-F04MPH7N52"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  // ---- 1. Google Sign-In ----
+  window.fbGoogleSignIn = function(){
+    return signInWithPopup(auth, provider)
+      .then(async (result)=>{
+        const user = result.user;
+        // ---- 2. Save/merge basic profile into Firestore `users/{uid}` ----
+        await setDoc(doc(db,'users',user.uid), {
+          name: user.displayName || '',
+          email: user.email || '',
+          photo: user.photoURL || '',
+          lastLogin: serverTimestamp()
+        }, {merge:true});
+        return user;
+      });
+  };
+
+  window.fbSignOutUser = function(){ return signOut(auth); };
+
+  // ---- 3. Cart & Wishlist sync to Firestore ----
+  window.fbSyncCartWishlist = async function(uid, bag, wishArr){
+    if(!uid) return;
+    try{
+      await setDoc(doc(db,'users',uid), {
+        cart: bag,
+        wishlist: wishArr,
+        updatedAt: serverTimestamp()
+      }, {merge:true});
+    }catch(e){ console.error('Firestore cart/wishlist sync failed:', e); }
+  };
+
+  window.fbLoadUserDoc = async function(uid){
+    if(!uid) return null;
+    try{
+      const snap = await getDoc(doc(db,'users',uid));
+      return snap.exists() ? snap.data() : null;
+    }catch(e){ console.error('Firestore user load failed:', e); return null; }
+  };
+
+  // ---- 4. Order placement -> Firestore `orders` collection ----
+  window.fbSaveOrder = async function(orderData){
+    try{
+      const ref = await addDoc(collection(db,'orders'), {
+        ...orderData,
+        status: 'Pending',
+        timestamp: serverTimestamp()
+      });
+      return ref.id;
+    }catch(e){ console.error('Firestore order save failed:', e); return null; }
+  };
+
+  // ---- Auth state watcher: keeps the site's UI in sync (incl. on refresh) ----
+  onAuthStateChanged(auth, (user)=>{
+    if(typeof window.onFirebaseAuthChange === 'function'){
+      window.onFirebaseAuthChange(user);
+    }
+  });
 </script>
 </body>
 </html>
