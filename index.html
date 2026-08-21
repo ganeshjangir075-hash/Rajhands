@@ -3423,17 +3423,19 @@ function ordPickAddr(btn){ Array.from(btn.parentElement.children).forEach(c=>c.c
 // so it's still there after the customer logs out and back in (or refreshes).
 // No-op while logged out, or for orders that don't have a Firestore doc yet.
 async function persistOrderOverride(o){
-  if(!o) return;
+  if(!o){ toast('DEBUG: no order object'); return; }
   // If the order was JUST placed, the Firestore write that assigns
   // o.firestoreId may still be in flight (see placeOrder). Wait for it
   // instead of silently giving up, so a fast cancel right after placing
   // an order still gets saved.
   if(!o.firestoreId && o._fsPromise){
-    try{ await o._fsPromise; }catch(e){}
+    toast('DEBUG: waiting for order save...');
+    try{ await o._fsPromise; }catch(e){ toast('DEBUG: order save promise threw: '+(e&&e.message||e)); }
   }
-  if(!o.firestoreId) return;
-  if(typeof window.fbUpdateOrderItem !== 'function') return;
-  window.fbUpdateOrderItem(o.firestoreId, o.id, {
+  if(!o.firestoreId){ toast('DEBUG: no firestoreId, cannot save cancel'); return; }
+  if(typeof window.fbUpdateOrderItem !== 'function'){ toast('DEBUG: fbUpdateOrderItem missing'); return; }
+  toast('DEBUG: saving cancel to '+o.firestoreId+' / '+o.id);
+  const ok = await window.fbUpdateOrderItem(o.firestoreId, o.id, {
     cancelled: !!o.cancelled,
     status: o.status,
     cancelReason: o.cancelReason || null,
@@ -3445,6 +3447,7 @@ async function persistOrderOverride(o){
       type:r.type, status:r.status, summary:r.summary, changes:r.changes||null, ts:r.ts
     }))
   });
+  toast(ok ? 'DEBUG: cancel saved ✓' : 'DEBUG: cancel save FAILED ✗');
 }
 function ordConfirmCancel(){
   const m=state.ordModal; if(!m) return;
