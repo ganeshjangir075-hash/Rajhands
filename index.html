@@ -3336,19 +3336,14 @@ function ordModalHTML(){
   const X=`<button class="omodal-x" onclick="closeOrdModal()" aria-label="Close">✕</button>`;
 
   if(m.kind==='cancel'){
-    const btnLabel = m.reason===R_FIX_ITEM?'Edit my order instead'
-      : m.reason===R_FIX_ADDR?'Edit address instead'
-      : m.reason===R_REQ_DATE?'Request a delivery date'
-      : 'Confirm cancellation';
-    const isFix = (m.reason===R_FIX_ITEM||m.reason===R_FIX_ADDR||m.reason===R_REQ_DATE);
     return `${X}
       <div class="omodal-title">Cancel order</div>
-      <div class="omodal-sub">Why are you cancelling <strong>${nm}</strong>? Some issues can be fixed without cancelling.</div>
+      <div class="omodal-sub">Why are you cancelling <strong>${nm}</strong>?</div>
       <div class="omodal-tags">${CANCEL_REASONS.map(r=>`<button class="omodal-tag ${m.reason===r?'sel':''}" onclick="ordPickReason('${r.replace(/'/g,"\\'")}')">${r}</button>`).join('')}</div>
       <textarea id="ordCancelNote" class="omodal-text" rows="3" placeholder="Add more details about your reason (optional)"></textarea>
       <div class="omodal-actions">
         <button class="omodal-keep" onclick="closeOrdModal()">Keep order</button>
-        <button class="omodal-do ${isFix?'':'danger'}" onclick="ordConfirmCancel()">${btnLabel}</button>
+        <button class="omodal-do danger" onclick="ordConfirmCancel()">Confirm cancellation</button>
       </div>`;
   }
   if(m.kind==='item'){
@@ -3447,9 +3442,6 @@ function ordConfirmCancel(){
   const m=state.ordModal; if(!m) return;
   const r=m.reason;
   if(!r){ toast('Please select a reason'); return; }
-  if(r===R_FIX_ITEM){ openOrdModal('item',m.orderId); return; }
-  if(r===R_FIX_ADDR){ openOrdModal('address',m.orderId); return; }
-  if(r===R_REQ_DATE){ openOrdModal('deliverydate',m.orderId); return; }
   const note=(document.getElementById('ordCancelNote')||{}).value||'';
   if(r==='Other reason' && !note.trim()){ toast('Please add a few words about your reason'); return; }
   const o=SAMPLE_ORDERS.find(x=>x.id===m.orderId);
