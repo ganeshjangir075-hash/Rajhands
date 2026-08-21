@@ -4223,6 +4223,19 @@ function confirmPlaceOrder(){
       totalPrice: t.total,
       paymentMethod: payLabel
       // status + timestamp are set inside fbSaveOrder
+    }).then(firestoreId=>{
+      // IMPORTANT: fbSaveOrder only resolves with the Firestore doc id AFTER
+      // the write completes, so we couldn't know it up front when the
+      // SAMPLE_ORDERS rows were created above. Without stamping it onto each
+      // line item here, persistOrderOverride() has no firestoreId to write
+      // to and silently no-ops — meaning a cancel done on a just-placed
+      // order never reaches Firestore and reappears as "Confirmed" after
+      // the customer logs back in. Stamping it here fixes that.
+      if(!firestoreId) return;
+      newIds.forEach(id=>{
+        const o=SAMPLE_ORDERS.find(x=>x.id===id);
+        if(o) o.firestoreId=firestoreId;
+      });
     });
   }
   // unwind any address/payment history steps — going back from the success
