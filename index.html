@@ -3422,8 +3422,16 @@ function ordPickAddr(btn){ Array.from(btn.parentElement.children).forEach(c=>c.c
 // Saves the current cancel/edit state of one order line item back to Firestore
 // so it's still there after the customer logs out and back in (or refreshes).
 // No-op while logged out, or for orders that don't have a Firestore doc yet.
-function persistOrderOverride(o){
-  if(!o || !o.firestoreId) return;
+async function persistOrderOverride(o){
+  if(!o) return;
+  // If the order was JUST placed, the Firestore write that assigns
+  // o.firestoreId may still be in flight (see placeOrder). Wait for it
+  // instead of silently giving up, so a fast cancel right after placing
+  // an order still gets saved.
+  if(!o.firestoreId && o._fsPromise){
+    try{ await o._fsPromise; }catch(e){}
+  }
+  if(!o.firestoreId) return;
   if(typeof window.fbUpdateOrderItem !== 'function') return;
   window.fbUpdateOrderItem(o.firestoreId, o.id, {
     cancelled: !!o.cancelled,
@@ -4212,7 +4220,7 @@ function confirmPlaceOrder(){
   syncCartWishToCloud();
   // ---- Save the complete order to Firestore `orders` collection ----
   if(typeof window.fbSaveOrder==='function'){
-    window.fbSaveOrder({
+    const fsPromise = window.fbSaveOrder({
       orderIds: newIds,
       userUid: state.userUid || null,
       customerName: a.name || state.userName || 'Guest',
@@ -4226,16 +4234,23 @@ function confirmPlaceOrder(){
     }).then(firestoreId=>{
       // IMPORTANT: fbSaveOrder only resolves with the Firestore doc id AFTER
       // the write completes, so we couldn't know it up front when the
-      // SAMPLE_ORDERS rows were created above. Without stamping it onto each
-      // line item here, persistOrderOverride() has no firestoreId to write
-      // to and silently no-ops — meaning a cancel done on a just-placed
-      // order never reaches Firestore and reappears as "Confirmed" after
-      // the customer logs back in. Stamping it here fixes that.
-      if(!firestoreId) return;
+      // SAMPLE_ORDERS rows were created above. Stamp it onto each line item
+      // once it arrives so persistOrderOverride() has somewhere to write to.
+      if(!firestoreId) return null;
       newIds.forEach(id=>{
         const o=SAMPLE_ORDERS.find(x=>x.id===id);
         if(o) o.firestoreId=firestoreId;
       });
+      return firestoreId;
+    });
+    // Also stash the in-flight promise itself on each line item. If the
+    // customer cancels an order in the few hundred ms before the Firestore
+    // write above finishes, o.firestoreId will still be empty at that
+    // instant — persistOrderOverride() now awaits this promise first so the
+    // cancel is never silently dropped, instead of just no-op'ing.
+    newIds.forEach(id=>{
+      const o=SAMPLE_ORDERS.find(x=>x.id===id);
+      if(o) o._fsPromise=fsPromise;
     });
   }
   // unwind any address/payment history steps — going back from the success
