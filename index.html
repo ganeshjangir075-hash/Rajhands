@@ -228,6 +228,10 @@
   .pf-fld label{font-size:12px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:6px}
   .pf-fld input{width:100%;border:1.5px solid var(--line);padding:0 12px;height:44px;font-size:14px;outline:none;font-family:inherit}
   .pf-fld input:focus{border-color:var(--accent)}
+  .pf-phone-wrap{display:flex;align-items:stretch;border:1.5px solid var(--line);height:44px;background:#fff}
+  .pf-phone-wrap:focus-within{border-color:var(--accent)}
+  .pf-phone-cc{display:flex;align-items:center;padding:0 10px;font-size:14px;font-weight:600;color:var(--ink);border-right:1px solid var(--line);background:var(--bg-soft);flex-shrink:0}
+  .pf-phone-wrap input{border:none;flex:1;height:100%;padding:0 12px;font-size:14px;outline:none;font-family:inherit;min-width:0}
   .pf-legalbody p{font-size:13px;color:#4b4b57;line-height:1.65;margin-bottom:12px}
   .pf-legalbody h4{font-size:13.5px;font-weight:800;color:var(--ink);margin:14px 0 6px}
   .pf-legalbody .q{font-size:13.5px;font-weight:800;color:var(--ink);margin-bottom:3px}
@@ -763,7 +767,7 @@
     .steps .dots{font-size:0}
     .steps .dots::before{content:"›";font-size:12px;color:#d5d6dd}
     .cart-grid{padding:18px 16px 50px;gap:8px}
-    #bagPriceBox .place-order{display:none}
+    #bagPriceBox .place-order,#addrPriceBox .place-order,#payPriceBox .place-order{display:none}
     .cart-grid{padding-bottom:90px}
   }
   .cart-sticky-bar{display:none}
@@ -1103,6 +1107,8 @@
   .pay-cod-note{font-size:12.5px;color:var(--ink-soft);line-height:1.55}
 
   .order-success{max-width:520px;margin:70px auto;text-align:center;padding:0 20px 60px;position:relative}
+  #cartMain.cm-center{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center}
+  #cartMain.cm-center .order-success{margin:0 auto;padding:20px 20px 40px}
   .os-badge{position:relative;width:112px;height:112px;margin:0 auto 26px}
   .os-badge-halo{position:absolute;inset:-16px;color:#bdf0dd;animation:osHaloPulse 2s ease-in-out infinite}
   .os-badge-seal{position:absolute;inset:0;color:var(--green);
@@ -2112,18 +2118,6 @@
       <a onclick="fLink()">Privacy Policy</a>
     </div>
 
-    <div class="foot-col">
-      <div>
-        <div class="usp-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6.5"/><path d="M9 9l2 2 4-4"/><path d="M8.4 14.6L7 22l5-2.6L17 22l-1.4-7.4"/></svg>
-          <p><b>100% Certified</b> guarantee on all jewellery at omkajewels.com</p>
-        </div>
-        <div class="usp-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.7-6.4"/><path d="M3 3.5V8h4.5"/><path d="M12 8v4l3 2"/></svg>
-          <p><b>Return within 15 days</b> of receiving your order</p>
-        </div>
-      </div>
-    </div>
   </div>
 
   <div class="foot-legal" style="justify-content:center">
@@ -2301,7 +2295,7 @@ const DISCOUNTS=[{l:"10% and above",v:10},{l:"30% and above",v:30},{l:"50% and a
 const SORTS=[["pop","Popularity"],["low","Price: Low to High"],["high","Price: High to Low"],["disc","Better Discount"],["rate","Customer Rating"]];
 
 // ---------- STATE ----------
-const state={cats:new Set(),mats:new Set(),maxPrice:50000,minDisc:0,sort:"pop",wish:new Set(),bag:{},wishView:false,loggedIn:false,userUid:'',userName:'',userEmail:'',userPhoto:'',userPhotoSource:'',userMobile:'',userAltMobile:'',userHint:'',acctView:'menu',acctStack:[],acctManageOpen:false,acctLegalOpen:false,legalDoc:'faq',orderFilter:'All',orderFilterOpen:false,orderQuery:'',orderTrackOpen:{},orderDetailId:null,ordModal:null,checkoutStep:'bag',checkoutStack:[],checkoutPayMethod:'cod'};
+const state={cats:new Set(),mats:new Set(),maxPrice:50000,minDisc:0,sort:"pop",wish:new Set(),bag:{},bagVariant:{},wishView:false,loggedIn:false,cloudSynced:false,userUid:'',userName:'',userEmail:'',userPhoto:'',userPhotoSource:'',userMobile:'',userAltMobile:'',userHint:'',acctView:'menu',acctStack:[],acctManageOpen:false,acctLegalOpen:false,legalDoc:'faq',orderFilter:'All',orderFilterOpen:false,orderQuery:'',orderTrackOpen:{},orderDetailId:null,ordModal:null,checkoutStep:'bag',checkoutStack:[],checkoutPayMethod:'cod'};
 
 /* ===== Lightweight analytics (localStorage; read by the admin panel) =====
    NOTE: without a server this only measures activity on THIS browser/deployment.
@@ -2607,10 +2601,32 @@ function chooseCoupon(code){
 }
 function toggleCouponList(){ couponListOpen=!couponListOpen; renderCart(); }
 
+// Single source of truth for size/colour options — shared by the PDP
+// selectors and the bag/cart pills so what you pick on the product page
+// is exactly what shows (and stays editable) in your bag.
+function SIZES_FOR(cat){
+  return {Rings:['6','7','8','9','10','12'],Bangles:['2.4','2.6','2.8'],Necklaces:['16 in','18 in','20 in'],Earrings:['Free Size'],Sets:['Free Size']}[cat] || ['Free Size'];
+}
+function COLOURS_FOR(mat){
+  return ({'Gold Plated':[['Gold','#d9b24a'],['Rose Gold','#e6b6a6'],['Antique Gold','#b0873c']],'Silver':[['Silver','#c7ccd1'],['Oxidised','#6b6f76'],['Rhodium','#e3e4e6']],'Diamond':[['White Gold','#e7e8ea'],['Yellow Gold','#d9b24a'],['Rose Gold','#e6b6a6']],'Oxidised':[['Silver Oxide','#8a8f96'],['Gunmetal','#3f434b'],['Antique','#9c8256']],'Pearl':[['Ivory','#f2ece0'],['Champagne','#eddcbf'],['Grey Pearl','#b9bcc2']],'Lac':[['Ruby Red','#9b1b30'],['Emerald','#0f6b45'],['Royal Blue','#20408f']]}[mat] || [['Gold','#d9b24a'],['Silver','#c7ccd1'],['Rose Gold','#e6b6a6']]).map(c=>c[0]);
+}
+// Ensures a bag line always has a concrete size + colour recorded, even
+// when the item was quick-added without going through the PDP selectors.
+function ensureBagVariant(id){
+  const p=PRODUCTS[id]; if(!p) return {size:'Free Size',colour:''};
+  let v=state.bagVariant[id];
+  if(!v) v=state.bagVariant[id]={};
+  if(!v.size) v.size=SIZES_FOR(p.cat)[0];
+  if(!v.colour) v.colour=COLOURS_FOR(p.mat)[0];
+  return v;
+}
+function setBagSize(id,val){ ensureBagVariant(id); state.bagVariant[id].size=val; toast(`Size: ${val}`); syncCartWishToCloud(); }
+function setBagColour(id,val){ ensureBagVariant(id); state.bagVariant[id].colour=val; toast(`Colour: ${val}`); syncCartWishToCloud(); }
 function addBag(id){
   const first=!(id in state.bag);
   state.bag[id]=(state.bag[id]||0)+1;
   if(first) selected.add(id);
+  ensureBagVariant(id);
   aTrackCartAdd(id);
   updateBagBadge();
   toast(`${PRODUCTS[id].n} added to bag`);
@@ -2618,7 +2634,7 @@ function addBag(id){
   syncCartWishToCloud();
 }
 function setQty(id,val){ state.bag[id]=+val; updateBagBadge(); renderCart(); syncCartWishToCloud(); }
-function removeItem(id){ delete state.bag[id]; selected.delete(id); updateBagBadge(); renderCart(); syncCartWishToCloud(); }
+function removeItem(id){ delete state.bag[id]; delete state.bagVariant[id]; selected.delete(id); updateBagBadge(); renderCart(); syncCartWishToCloud(); }
 function toggleSelect(id){ selected.has(id)?selected.delete(id):selected.add(id); renderCart(); }
 function toggleSelectAll(){
   const ids=Object.keys(state.bag).map(Number);
@@ -2811,6 +2827,7 @@ function acctReset(){
 function acctLogout(){
   if(typeof window.fbSignOutUser==='function') window.fbSignOutUser();
   state.loggedIn=false; state.userUid=''; state.userName=''; state.userEmail=''; state.userPhoto=''; state.userPhotoSource='';
+  state.cloudSynced=false;
   SAMPLE_ORDERS.length=0; // clear order history so it doesn't leak to the next session/user
   goAcct('menu'); if(typeof syncProfileUI==='function')syncProfileUI(); if(typeof syncHeaderAvatar==='function')syncHeaderAvatar(); toast('Logged out');
 }
@@ -2878,6 +2895,23 @@ function googleSignIn(){
 // Fired whenever Firebase's auth state changes (login, logout, or on page
 // refresh if a session already exists). Keeps state + UI in sync and pulls
 // the user's saved cart/wishlist down from Firestore on login.
+// After the initial Firestore pull finishes (see onFirebaseAuthChange), make
+// sure whatever the customer is actually looking at right now reflects the
+// freshly-merged data — not just the home product grid. Previously only
+// render() (home grid) was called here, so if you were sitting on Account
+// Details / Addresses / Bag / Wishlist-inside-profile the moment the cloud
+// data arrived, that screen stayed stale until you navigated away and back.
+function refreshAllOpenViews(){
+  if(typeof render==='function') render();
+  const drawer=document.getElementById('profileDrawer');
+  if(drawer && drawer.classList.contains('open') && typeof renderAcct==='function') renderAcct();
+  const addrSheet=document.getElementById('addrSheet');
+  if(addrSheet && addrSheet.classList.contains('open') && typeof renderAddrList==='function') renderAddrList();
+  const cartPage=document.getElementById('cartPage');
+  if(cartPage && cartPage.classList.contains('show') && typeof renderCheckout==='function') renderCheckout();
+  if(typeof refreshDeliveryBlock==='function') refreshDeliveryBlock();
+  if(typeof refreshCheckoutAddress==='function') refreshCheckoutAddress();
+}
 window.onFirebaseAuthChange = function(user){
   if(user){
     state.loggedIn = true;
@@ -2890,34 +2924,47 @@ window.onFirebaseAuthChange = function(user){
     // pull previously-saved cart/wishlist from Firestore and merge locally
     if(typeof window.fbLoadUserDoc==='function'){
       window.fbLoadUserDoc(user.uid).then(data=>{
-        if(!data) return;
-        if(data.cart && typeof data.cart==='object'){
-          Object.keys(data.cart).forEach(id=>{ state.bag[id]=data.cart[id]; selected.add(Number(id)); });
+        if(data){
+          if(data.cart && typeof data.cart==='object'){
+            Object.keys(data.cart).forEach(id=>{ state.bag[id]=data.cart[id]; selected.add(Number(id)); });
+          }
+          if(Array.isArray(data.wishlist)){
+            data.wishlist.forEach(id=>state.wish.add(Number(id)));
+          }
+          updateBagBadge();
+          const wc=document.getElementById('wishCount');
+          if(wc){ wc.textContent=state.wish.size; wc.style.display=state.wish.size?'flex':'none'; }
+          // pull saved addresses down from the cloud and merge into the local
+          // address book (cloud is the source of truth once logged in)
+          if(Array.isArray(data.addresses) && data.addresses.length){
+            try{
+              ZADDR.list = data.addresses;
+              ZADDR.selectedId = data.selectedAddressId || (data.addresses[0] && data.addresses[0].id) || null;
+              ZADDR.user = ZADDR.user || {name:data.name||state.userName||'', phone:data.mobile||''};
+              if(typeof zSave==='function') zSave(ZADDR);
+              if(typeof isLoggedIn!=='undefined') isLoggedIn=true;
+            }catch(e){}
+          }
+          // pull saved account-detail fields (mobile, alt mobile, delivery hint)
+          if(data.mobile!==undefined) state.userMobile = data.mobile;
+          if(data.altMobile!==undefined) state.userAltMobile = data.altMobile;
+          if(data.hint!==undefined) state.userHint = data.hint;
         }
-        if(Array.isArray(data.wishlist)){
-          data.wishlist.forEach(id=>state.wish.add(Number(id)));
-        }
-        updateBagBadge();
-        const wc=document.getElementById('wishCount');
-        if(wc){ wc.textContent=state.wish.size; wc.style.display=state.wish.size?'flex':'none'; }
-        // pull saved addresses down from the cloud and merge into the local
-        // address book (cloud is the source of truth once logged in)
-        if(Array.isArray(data.addresses) && data.addresses.length){
-          try{
-            ZADDR.list = data.addresses;
-            ZADDR.selectedId = data.selectedAddressId || (data.addresses[0] && data.addresses[0].id) || null;
-            ZADDR.user = ZADDR.user || {name:data.name||state.userName||'', phone:data.mobile||''};
-            if(typeof zSave==='function') zSave(ZADDR);
-            if(typeof isLoggedIn!=='undefined') isLoggedIn=true;
-          }catch(e){}
-        }
-        // pull saved account-detail fields (mobile, alt mobile, delivery hint)
-        if(data.mobile!==undefined) state.userMobile = data.mobile;
-        if(data.altMobile!==undefined) state.userAltMobile = data.altMobile;
-        if(data.hint!==undefined) state.userHint = data.hint;
+        // Mark the initial cloud pull as complete — this unblocks
+        // syncCartWishToCloud() (see its comment) and only now is it safe to
+        // trust the local bag/wishlist/address state as fully merged.
+        // IMPORTANT: this must happen even when `data` is null (brand-new
+        // user with no saved doc yet), otherwise cloud sync stays blocked forever.
+        state.cloudSynced = true;
         if(typeof syncProfileUI==='function') syncProfileUI();
-        if(typeof render==='function') render();
+        refreshAllOpenViews();
+        syncCartWishToCloud(); // persist the merged (cloud + any local pre-merge) state back
+      }).catch(()=>{
+        // even on failure, unblock syncing rather than silently disabling it forever
+        state.cloudSynced = true;
       });
+    } else {
+      state.cloudSynced = true;
     }
     // pull THIS user's real order history from Firestore (never anyone else's,
     // and never the old hardcoded demo orders)
@@ -2929,11 +2976,24 @@ window.onFirebaseAuthChange = function(user){
           (o.items||[]).forEach((item,i)=>{
             const orderId = (o.orderIds && o.orderIds[i]) || o.firestoreId;
             if(SAMPLE_ORDERS.some(x=>x.id===orderId)) return; // avoid duplicates
+            // re-apply any cancel / approved-edit / pending-edit state that was
+            // previously saved to Firestore for this specific line item
+            const ov = (o.itemOverrides && o.itemOverrides[orderId]) || null;
             SAMPLE_ORDERS.push({
               id: orderId, pi: item.productId, qty: item.qty, step: 0,
-              status: (o.status==='Pending' ? 'Confirmed' : (o.status||'Confirmed')),
-              sub: `Placed on ${dateStr}`, sku: item.sku||'', size:'',
-              editRequests: [], payMethod: o.paymentMethod||'', deliverTo: o.address||''
+              status: (ov && ov.status) || (o.status==='Pending' ? 'Confirmed' : (o.status||'Confirmed')),
+              sub: (ov && ov.sub) || `Placed on ${dateStr}`,
+              sku: item.sku||'', size: (ov && ov.size) || '',
+              mat: (ov && ov.mat) || undefined,
+              cancelled: !!(ov && ov.cancelled),
+              cancelReason: (ov && ov.cancelReason) || undefined,
+              editRequests: (ov && ov.editRequests) || [],
+              payMethod: o.paymentMethod||'',
+              deliverTo: o.address||'',
+              deliveryAddr: (ov && ov.deliveryAddr) || o.address || undefined,
+              deliveryName: o.customerName || undefined,
+              deliveryPhone: o.customerMobile || undefined,
+              firestoreId: o.firestoreId
             });
           });
         });
@@ -2944,8 +3004,13 @@ window.onFirebaseAuthChange = function(user){
 };
 // Pushes the current bag + wishlist to Firestore for the logged-in user.
 // Called after every cart/wishlist mutation; a no-op while logged out.
+// IMPORTANT: also a no-op until the initial cloud pull (fbLoadUserDoc, see
+// onFirebaseAuthChange) has finished — otherwise an action taken in the brief
+// window right after login could push an still-empty local bag/wishlist and
+// permanently wipe out whatever was previously saved in the cloud.
 function syncCartWishToCloud(){
   if(!state.loggedIn || !state.userUid) return;
+  if(!state.cloudSynced) return;
   if(typeof window.fbSyncCartWishlist !== 'function') return;
   window.fbSyncCartWishlist(state.userUid, state.bag, Array.from(state.wish));
 }
@@ -3097,6 +3162,9 @@ function resetPfSubIdle(){
   else if(state.acctLegalOpen) startPfSubIdle('legal');
 }
 // ---- account details ----
+// Strips a leading +91 / 91 country code (with optional space/dash) so the
+// stored number can be shown as plain digits inside the +91-prefixed input.
+function stripCC91(v){ return (v||'').toString().replace(/^\+?91[\s-]?/,'').trim(); }
 function pfSaveDetails(){
   const g=id=>{const el=document.getElementById(id);return el?el.value.trim():null;};
   const n=g('pfName'); if(n!==null&&n) state.userName=n;
@@ -3107,8 +3175,8 @@ function pfSaveDetails(){
     // if the email changed and the user hasn't set their own photo, try the new email's photo
     if(changed && state.userPhotoSource!=='manual'){ state.userPhoto=''; state.userPhotoSource=''; fetchEmailPhoto(em); }
   }
-  const mo=g('pfMobile'); if(mo!==null) state.userMobile=mo;
-  const alt=g('pfAlt'); if(alt!==null) state.userAltMobile=alt;
+  const mo=g('pfMobile'); if(mo!==null) state.userMobile = mo ? ('+91 '+stripCC91(mo)) : '';
+  const alt=g('pfAlt'); if(alt!==null) state.userAltMobile = alt ? ('+91 '+stripCC91(alt)) : '';
   const hn=g('pfHint'); if(hn!==null) state.userHint=hn;
   // push the updated details to Firestore so they persist across logout/login
   // and across devices for this Google account
@@ -3356,6 +3424,25 @@ function ordPickReason(r){
 }
 function ordPickChip(btn){ Array.from(btn.parentElement.children).forEach(c=>c.classList.remove('sel')); btn.classList.add('sel'); }
 function ordPickAddr(btn){ Array.from(btn.parentElement.children).forEach(c=>c.classList.remove('sel')); btn.classList.add('sel'); }
+// Saves the current cancel/edit state of one order line item back to Firestore
+// so it's still there after the customer logs out and back in (or refreshes).
+// No-op while logged out, or for orders that don't have a Firestore doc yet.
+function persistOrderOverride(o){
+  if(!o || !o.firestoreId) return;
+  if(typeof window.fbUpdateOrderItem !== 'function') return;
+  window.fbUpdateOrderItem(o.firestoreId, o.id, {
+    cancelled: !!o.cancelled,
+    status: o.status,
+    cancelReason: o.cancelReason || null,
+    sub: o.sub || null,
+    size: o.size || null,
+    mat: o.mat || null,
+    deliveryAddr: o.deliveryAddr || null,
+    editRequests: (o.editRequests||[]).map(r=>({
+      type:r.type, status:r.status, summary:r.summary, changes:r.changes||null, ts:r.ts
+    }))
+  });
+}
 function ordConfirmCancel(){
   const m=state.ordModal; if(!m) return;
   const r=m.reason;
@@ -3366,7 +3453,7 @@ function ordConfirmCancel(){
   const note=(document.getElementById('ordCancelNote')||{}).value||'';
   if(r==='Other reason' && !note.trim()){ toast('Please add a few words about your reason'); return; }
   const o=SAMPLE_ORDERS.find(x=>x.id===m.orderId);
-  if(o){ o.cancelled=true; o.status='Cancelled'; o.cancelReason=r; o.sub='Order cancelled just now'; }
+  if(o){ o.cancelled=true; o.status='Cancelled'; o.cancelReason=r; o.sub='Order cancelled just now'; persistOrderOverride(o); }
   closeOrdModal(); renderAcct(); toast('Order cancelled');
 }
 
@@ -3375,11 +3462,14 @@ function ordConfirmCancel(){
 // seller as a request. Customers see a Pending banner on the order until the seller
 // responds; we simulate that response after a short delay so the approval flow is visible.
 const ORD_REQ_LABEL={item:'Order edit', address:'Address change', date:'Delivery date change'};
-function ordSubmitRequest(id, type, summary, apply){
+// `changes` is a plain, Firestore-serializable object of fields to assign onto
+// the order once approved (previously this was a live JS function, which can't
+// be saved to Firestore — that's why edit requests didn't survive re-login).
+function ordSubmitRequest(id, type, summary, changes){
   const o=SAMPLE_ORDERS.find(x=>x.id===id); if(!o) return;
   if(!o.editRequests) o.editRequests=[];
-  o.editRequests.push({type, status:'pending', summary, apply, ts:Date.now()});
-  closeOrdModal(); renderAcct();
+  o.editRequests.push({type, status:'pending', summary, changes:changes||{}, ts:Date.now()});
+  closeOrdModal(); renderAcct(); persistOrderOverride(o);
   toast('Request sent — waiting for seller approval');
   setTimeout(()=>ordResolveRequest(id), 4500);
 }
@@ -3388,26 +3478,27 @@ function ordResolveRequest(id){
   const req=(o.editRequests||[]).find(r=>r.status==='pending');
   if(!req) return;
   req.status='approved';
-  if(typeof req.apply==='function') req.apply(o);
-  renderAcct();
+  if(req.changes) Object.assign(o, req.changes);
+  renderAcct(); persistOrderOverride(o);
   toast('Your edit request was approved');
 }
 function ordCancelRequest(id){
   const o=SAMPLE_ORDERS.find(x=>x.id===id); if(!o) return;
   const idx=(o.editRequests||[]).findIndex(r=>r.status==='pending');
-  if(idx>-1){ o.editRequests.splice(idx,1); renderAcct(); toast('Request withdrawn'); }
+  if(idx>-1){ o.editRequests.splice(idx,1); renderAcct(); persistOrderOverride(o); toast('Request withdrawn'); }
 }
 function ordSaveItem(id){
   const mat=(document.querySelector('.edit-mat .omodal-tag.sel')||{}).textContent||'';
   const sz=(document.querySelector('.edit-size .omodal-tag.sel')||{}).textContent||'';
   const summary=['Colour / finish: '+(mat||'—'), 'Size: '+(sz||'—')].join(' · ');
-  ordSubmitRequest(id, 'item', summary, (o)=>{ if(sz) o.size=sz; if(mat) o.mat=mat; });
+  const changes={}; if(sz) changes.size=sz; if(mat) changes.mat=mat;
+  ordSubmitRequest(id, 'item', summary, changes);
 }
 function ordSendDate(id){
   const d=(document.getElementById('ordReqDate')||{}).value;
   if(!d){ toast('Please choose a delivery date'); return; }
   const pretty=new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-  ordSubmitRequest(id, 'date', 'Requested delivery by '+pretty, (o)=>{ o.sub='Arriving by '+pretty; });
+  ordSubmitRequest(id, 'date', 'Requested delivery by '+pretty, {sub:'Arriving by '+pretty});
 }
 function ordUseAddress(id){
   let summary='';
@@ -3421,7 +3512,7 @@ function ordUseAddress(id){
     const sel=document.querySelector('.omodal-apick.sel .omodal-atext');
     summary = sel ? sel.textContent : 'Selected address';
   }
-  ordSubmitRequest(id, 'address', summary, (o)=>{ o.deliveryAddr=summary; });
+  ordSubmitRequest(id, 'address', summary, {deliveryAddr:summary});
 }
 function setOrderFilter(f){ state.orderFilter=f; renderAcct(); }
 function toggleOrderFilter(){ state.orderFilterOpen=!state.orderFilterOpen; renderAcct(); }
@@ -3434,15 +3525,15 @@ function orderDetailHTML(){
   const meta=[o.sku, o.size, (o.mat||p.mat)].filter(Boolean).join(' · ');
   const arriveClass=o.cancelled?'r':(o.status==='Delivered'?'g':'');
   const arriveTxt=o.cancelled?'Order cancelled':(o.status==='Delivered'?'Delivered':o.sub.replace(/^on\s/,'Arriving '));
-  const name=state.userName||'OMKA Jewels Customer';
-  const phone=state.userMobile||'+91 98290 XXXXX';
-  const addr=o.deliveryAddr || 'A-102, Shanti Vihar, Vaishali Nagar, Jaipur – 302021';
+  const name=o.deliveryName||state.userName||'OMKA Jewels Customer';
+  const phone=o.deliveryPhone||state.userMobile||'+91 98290 XXXXX';
+  const addr=o.deliveryAddr || o.deliverTo || 'A-102, Shanti Vihar, Vaishali Nagar, Jaipur – 302021';
   // circular progress
   let ring='';
   if(!o.cancelled){
     const total=ORDER_STEPS.length, doneCount=Math.min(o.step+1,total), frac=doneCount/total;
     const C=2*Math.PI*16, col=(o.status==='Delivered'||o.status==='Confirmed')?'#1f9d55':'#c47d16';
-    ring=`<div class="od-prog"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="#E7EDF4" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="none" stroke="${col}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${(C*frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 20 20)"/></svg><span class="od-prognum">${doneCount}/${total}</span></div>`;
+    ring=`<div class="od-prog"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="#E7EDF4" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="none" stroke="${col}" stroke-width="4" stroke-linecap="butt" stroke-dasharray="${(C*frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 20 20)"/></svg><span class="od-prognum">${doneCount}/${total}</span></div>`;
   }
   // vertical timeline
   const timeline=o.cancelled?'':`<div class="od-timeline">`+ORDER_STEPS.map((s,i)=>{
@@ -3569,7 +3660,7 @@ function renderAcct(){
           <span class="pf-row-lb">Wishlist</span>${CH}
         </button>
         <button class="pf-row" onclick="pfGoCart()">
-          <span class="pf-row-ic"><svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L4 3H2"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg></span>
+          <span class="pf-row-ic"><svg viewBox="0 0 24 24"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7V6a3 3 0 0 1 6 0v1"/></svg></span>
           <span class="pf-row-lb">Bag</span>${CH}
         </button>
 
@@ -3599,7 +3690,7 @@ function renderAcct(){
           <span class="pf-row-lb">Help &amp; Contact</span>${CH}
         </button>
       </div>
-      ${state.loggedIn?`<div style="padding:14px 18px 40px;text-align:center"><span onclick="acctLogout()" style="display:inline-flex;align-items:center;gap:7px;color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.4px;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Log out</span></div>`:''}
+      ${state.loggedIn?`<div style="padding:14px 18px 40px;text-align:center"><span onclick="acctLogout()" style="display:inline-flex;align-items:center;gap:7px;color:#c0392b;font-size:13px;font-weight:700;letter-spacing:.4px;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Log out</span></div>`:''}
     `;
   } else if(v==='details'){
     head.innerHTML=`${backBtn}<div class="nav-head-title">Account Details</div><span style="width:30px"></span>`;
@@ -3621,10 +3712,14 @@ function renderAcct(){
           <input type="file" id="pfPhotoInput" accept="image/*" style="display:none" onchange="pfPhotoChosen(event)">
         </div>
         <div class="pf-fld"><label>Full Name</label><input id="pfName" value="${state.userName||''}" placeholder="Your name"></div>
-        <div class="pf-fld"><label>Mobile Number</label><input id="pfMobile" type="tel" value="${state.userMobile||''}" placeholder="98765 43210"></div>
+        <div class="pf-fld"><label>Mobile Number</label>
+          <div class="pf-phone-wrap"><span class="pf-phone-cc">+91</span><input id="pfMobile" type="tel" inputmode="numeric" maxlength="10" value="${stripCC91(state.userMobile)}" placeholder="98765 43210"></div>
+        </div>
         <div class="pf-fld"><label>Email</label><input id="pfEmail" type="email" value="${state.userEmail||''}" placeholder="you@example.com"></div>
         <div style="font-size:12.5px;font-weight:800;color:var(--ink);margin:18px 0 10px">Alternate mobile details</div>
-        <div class="pf-fld"><label>Alternate Mobile</label><input id="pfAlt" type="tel" value="${state.userAltMobile||''}" placeholder="+91 9XXXXXXXXX"></div>
+        <div class="pf-fld"><label>Alternate Mobile</label>
+          <div class="pf-phone-wrap"><span class="pf-phone-cc">+91</span><input id="pfAlt" type="tel" inputmode="numeric" maxlength="10" value="${stripCC91(state.userAltMobile)}" placeholder="98765 43210"></div>
+        </div>
         <p style="font-size:11.5px;color:var(--ink-soft);margin:-6px 0 12px">This will help recover your account if needed.</p>
         <button onclick="pfSaveDetails()" style="width:100%;background:var(--accent);color:#fff;padding:12px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Save Details</button>
         <div style="text-align:center;margin-top:18px"><span onclick="pfDeleteAccount()" style="font-size:12px;color:#c0392b;cursor:pointer;border-bottom:1px solid transparent">Delete account</span></div>
@@ -3762,8 +3857,10 @@ function cartTotals(){
 function renderCart(){
   const ids=Object.keys(state.bag).map(Number);
   const main=document.getElementById('cartMain');
+  const topbar=document.getElementById('cartTopbar');
 
   if(!ids.length){
+    if(topbar) topbar.style.display='none';
     main.innerHTML=`<div class="cart-empty">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M6 7h12l-1 13H7L6 7z"/><path d="M9 7V6a3 3 0 0 1 6 0v1"/></svg>
       <h3>Hey, your bag is empty!</h3>
@@ -3771,11 +3868,17 @@ function renderCart(){
       <button onclick="closeCart()">Continue Shopping</button></div>`;
     return;
   }
+  if(topbar) topbar.style.display='';
 
   // items
   const itemsHtml=ids.map(id=>{
     const p=PRODUCTS[id], q=state.bag[id], on=selected.has(id);
     const qtyOpts=[1,2,3,4,5].map(n=>`<option value="${n}" ${n===q?'selected':''}>Qty: ${n}</option>`).join('');
+    const v=ensureBagVariant(id);
+    const sizeList=SIZES_FOR(p.cat);
+    const sizeOpts=sizeList.map(s=>`<option value="${s}" ${s===v.size?'selected':''}>Size: ${s}</option>`).join('');
+    const colourList=COLOURS_FOR(p.mat);
+    const colourOpts=colourList.map(c=>`<option value="${c}" ${c===v.colour?'selected':''}>Colour: ${c}</option>`).join('');
     return `<div class="bag-item">
       <div class="bi-chk chk ${on?'on':''}" onclick="toggleSelect(${id})">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg>
@@ -3786,7 +3889,8 @@ function renderCart(){
         <div class="bi-name">${p.n}</div>
         <div class="bi-sold">Sold by: OMKA Jewels Retail</div>
         <div class="bi-selects">
-          <div class="pill-select"><select onchange="toast('Size: Onesize')"><option>Size: Onesize</option></select></div>
+          <div class="pill-select"><select onchange="setBagSize(${id},this.value);renderCart()" ${sizeList.length===1?'disabled':''}>${sizeOpts}</select></div>
+          <div class="pill-select"><select onchange="setBagColour(${id},this.value);renderCart()">${colourOpts}</select></div>
           <div class="pill-select"><select onchange="setQty(${id},this.value)">${qtyOpts}</select></div>
         </div>
         <div class="bi-price">
@@ -3901,7 +4005,7 @@ function renderCart(){
       </div>
     </aside>
   </div>
-  <div class="cart-sticky-bar">
+  <div class="cart-sticky-bar" id="cartStickyBar">
     <button class="place-order csb-btn" onclick="startCheckout(${t.selCount})">Place Order</button>
   </div>`;
 }
@@ -3914,6 +4018,8 @@ function renderCheckout(){
   const isSuccess = state.checkoutStep==='success';
   const tb=document.getElementById('cartTopbar');
   if(tb) tb.style.display = isSuccess ? 'none' : '';
+  const cm=document.getElementById('cartMain');
+  if(cm) cm.classList.toggle('cm-center', isSuccess);
   if(s){
     s.style.display = isSuccess ? 'none' : '';
     document.getElementById('stBag').classList.toggle('active', state.checkoutStep==='bag');
@@ -3966,7 +4072,7 @@ function renderCheckoutAddress(){
       </div>
     </div>
     <aside class="cart-right">
-      <div class="side-box">
+      <div class="side-box" id="addrPriceBox">
         <div class="side-title">Price Details (${t.itemUnits} ${t.itemUnits===1?'Item':'Items'})</div>
         <div class="prow"><span>Total MRP</span><span>₹${t.mrpTotal.toLocaleString('en-IN')}</span></div>
         <div class="prow"><span>Discount on MRP</span><span class="save">− ₹${t.discount.toLocaleString('en-IN')}</span></div>
@@ -3977,6 +4083,9 @@ function renderCheckoutAddress(){
         <button class="place-order" onclick="${a?`goCheckoutStep('payment')`:`toast('Add a delivery address to continue')`}">Continue to Payment</button>
       </div>
     </aside>
+  </div>
+  <div class="cart-sticky-bar" id="cartStickyBar">
+    <button class="place-order csb-btn" onclick="${a?`goCheckoutStep('payment')`:`toast('Add a delivery address to continue')`}">Continue to Payment</button>
   </div>`;
 }
 
@@ -4023,7 +4132,7 @@ function renderCheckoutPayment(){
       </div>
     </div>
     <aside class="cart-right">
-      <div class="side-box">
+      <div class="side-box" id="payPriceBox">
         <div class="side-title">Price Details (${t.itemUnits} ${t.itemUnits===1?'Item':'Items'})</div>
         <div class="prow"><span>Total MRP</span><span>₹${t.mrpTotal.toLocaleString('en-IN')}</span></div>
         <div class="prow"><span>Discount on MRP</span><span class="save">− ₹${t.discount.toLocaleString('en-IN')}</span></div>
@@ -4034,6 +4143,9 @@ function renderCheckoutPayment(){
         <button class="place-order" onclick="confirmPlaceOrder()">${state.checkoutPayMethod==='cod'?'Place Order':'Pay & Place Order'}</button>
       </div>
     </aside>
+  </div>
+  <div class="cart-sticky-bar" id="cartStickyBar">
+    <button class="place-order csb-btn" onclick="confirmPlaceOrder()">${state.checkoutPayMethod==='cod'?'Place Order':'Pay & Place Order'}</button>
   </div>`;
 }
 function payMethodExtra(id){
@@ -4092,7 +4204,10 @@ function confirmPlaceOrder(){
       id:orderId, pi:id, qty:q, step:0, status:'Confirmed',
       sub:`Arriving by ${etaStr}`, sku:('ZV-'+p.cat.slice(0,3).toUpperCase()+'-'+(100+p.id*7)),
       size:'', editRequests:[], payMethod:payLabel,
-      deliverTo:`${a.name}, ${a.line}, ${a.city} — ${a.pin}`
+      deliverTo:`${a.name}, ${a.line}, ${a.city} — ${a.pin}`,
+      deliveryAddr:`${a.line}, ${a.city} – ${a.pin}`,
+      deliveryName: a.name || state.userName || 'OMKA Jewels Customer',
+      deliveryPhone: a.mobile || state.userMobile || ''
     });
     fbItems.push({productId:id, name:p.n, qty:q, price:p.price, sku:('ZV-'+p.cat.slice(0,3).toUpperCase()+'-'+(100+p.id*7))});
     newIds.push(orderId);
@@ -4351,7 +4466,7 @@ function fbtPartners(p){
 }
 function miniThumb(x){ const im=pdpImages(x)[0]; return im.img?`<img src="${im.img}">`:`<div class="mtsvg" style="background:${im.bg}">${im.svg}</div>`; }
 function addBundle(ids){
-  ids.forEach(i=>{ const first=!(i in state.bag); state.bag[i]=(state.bag[i]||0)+1; if(first) selected.add(i); });
+  ids.forEach(i=>{ const first=!(i in state.bag); state.bag[i]=(state.bag[i]||0)+1; if(first) selected.add(i); ensureBagVariant(i); });
   updateBagBadge();
   toast('Bundle added to Bag ✓');
   if(document.getElementById('cartPage').classList.contains('show')) renderCart();
@@ -4403,11 +4518,12 @@ function buildProduct(id){
   const metalLabel = {'Gold Plated':'18K Gold Plated','Diamond':'Diamond','Silver':'925 Sterling Silver','Oxidised':'Oxidised Silver','Pearl':'Pearl & Gold','Lac':'Handcrafted Lac'}[p.mat] || p.mat;
   const desc = `A ${p.cat.toLowerCase().replace(/s$/,'')} anchor piece for both festive and everyday edits — ${p.n.toLowerCase()} by ${p.b}, hand-finished in ${p.mat.toLowerCase()}. Skin-friendly, BIS-standard and made to be treasured.`;
   const hasReviews = p.cnt>0;
-  const COLOURS = {'Gold Plated':[['Gold','#d9b24a'],['Rose Gold','#e6b6a6'],['Antique Gold','#b0873c']],'Silver':[['Silver','#c7ccd1'],['Oxidised','#6b6f76'],['Rhodium','#e3e4e6']],'Diamond':[['White Gold','#e7e8ea'],['Yellow Gold','#d9b24a'],['Rose Gold','#e6b6a6']],'Oxidised':[['Silver Oxide','#8a8f96'],['Gunmetal','#3f434b'],['Antique','#9c8256']],'Pearl':[['Ivory','#f2ece0'],['Champagne','#eddcbf'],['Grey Pearl','#b9bcc2']],'Lac':[['Ruby Red','#9b1b30'],['Emerald','#0f6b45'],['Royal Blue','#20408f']]}[p.mat] || [['Gold','#d9b24a'],['Silver','#c7ccd1'],['Rose Gold','#e6b6a6']];
+  const COLOURS_FULL = {'Gold Plated':[['Gold','#d9b24a'],['Rose Gold','#e6b6a6'],['Antique Gold','#b0873c']],'Silver':[['Silver','#c7ccd1'],['Oxidised','#6b6f76'],['Rhodium','#e3e4e6']],'Diamond':[['White Gold','#e7e8ea'],['Yellow Gold','#d9b24a'],['Rose Gold','#e6b6a6']],'Oxidised':[['Silver Oxide','#8a8f96'],['Gunmetal','#3f434b'],['Antique','#9c8256']],'Pearl':[['Ivory','#f2ece0'],['Champagne','#eddcbf'],['Grey Pearl','#b9bcc2']],'Lac':[['Ruby Red','#9b1b30'],['Emerald','#0f6b45'],['Royal Blue','#20408f']]}[p.mat] || [['Gold','#d9b24a'],['Silver','#c7ccd1'],['Rose Gold','#e6b6a6']];
+  const COLOURS = COLOURS_FULL;
   const colourSw = COLOURS.map((c,i)=>`<button class="hd-color ${i===0?'on':''}" onclick="hdColour(this,'${c[0]}')" title="${c[0]}"><span class="chip" style="background:${c[1]}"></span></button>`).join('');
-  const SIZES = {Rings:['6','7','8','9','10','12'],Bangles:['2.4','2.6','2.8'],Necklaces:['16 in','18 in','20 in'],Earrings:['Free Size'],Sets:['Free Size']}[p.cat] || ['Free Size'];
+  const SIZES = SIZES_FOR(p.cat);
   const hasGuide = (p.cat==='Rings'||p.cat==='Bangles');
-  pdpSel={id:id, base:p.price, mrp:p.mrp, qty:1, gift:false, size:(SIZES.length===1?SIZES[0]:null), needsSize:(SIZES.length>1)};
+  pdpSel={id:id, base:p.price, mrp:p.mrp, qty:1, gift:false, size:(SIZES.length===1?SIZES[0]:null), needsSize:(SIZES.length>1), colour:COLOURS[0][0]};
   // tab contents
   HD_TABS={
     details:[['Material',metalLabel],['Category',p.cat],['Colour',COLOURS[0][0]],['Occasion','Festive / Daily'],['Finish','BIS-standard']],
@@ -4501,6 +4617,7 @@ function hdTab(btn,key){
 function hdColour(btn,name){
   btn.parentElement.querySelectorAll('.hd-color').forEach(s=>s.classList.remove('on')); btn.classList.add('on');
   const el=document.getElementById('hdColourName'); if(el) el.textContent=name;
+  if(typeof pdpSel!=='undefined') pdpSel.colour=name;
 }
 function hdSize(btn,name){
   btn.parentElement.querySelectorAll('.hd-size').forEach(s=>s.classList.remove('on')); btn.classList.add('on');
@@ -4843,6 +4960,7 @@ function pdpAddSmart(){
     return false;
   }
   for(let k=0;k<s.qty;k++){ const first=!(s.id in state.bag); state.bag[s.id]=(state.bag[s.id]||0)+1; if(first) selected.add(s.id); }
+  state.bagVariant[s.id]={size:s.size||SIZES_FOR(PRODUCTS[s.id].cat)[0], colour:s.colour||COLOURS_FOR(PRODUCTS[s.id].mat)[0]};
   updateBagBadge();
   toast(`Added to cart ✓`);
   if(document.getElementById('cartPage').classList.contains('show')) renderCart();
@@ -5449,7 +5567,7 @@ setTimeout(()=>{ if(typeof maybeAutoLogin==='function') maybeAutoLogin(); }, 400
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
   import {
-    getFirestore, doc, setDoc, getDoc, collection, addDoc, serverTimestamp,
+    getFirestore, doc, setDoc, updateDoc, getDoc, collection, addDoc, serverTimestamp,
     query, where, orderBy, getDocs
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
@@ -5547,6 +5665,22 @@ setTimeout(()=>{ if(typeof maybeAutoLogin==='function') maybeAutoLogin(); }, 400
       });
       return orders;
     }catch(e){ console.error('Firestore order history load failed:', e); return []; }
+  };
+
+  // ---- Persist a cancel / edit-request change for ONE line item back onto its
+  // parent order doc, so it survives logout + re-login (previously these changes
+  // only lived in the in-memory SAMPLE_ORDERS array and were lost on reload). We
+  // store per-item state in a map keyed by the item's orderId, since one order
+  // document can contain multiple line items.
+  window.fbUpdateOrderItem = async function(firestoreId, itemOrderId, data){
+    if(!firestoreId || !itemOrderId) return false;
+    try{
+      await updateDoc(doc(db,'orders',firestoreId), {
+        [`itemOverrides.${itemOrderId}`]: data,
+        updatedAt: serverTimestamp()
+      });
+      return true;
+    }catch(e){ console.error('Firestore order item update failed:', e); return false; }
   };
 
   // ---- 4. Order placement -> Firestore `orders` collection ----
