@@ -23,10 +23,6 @@
     --shadow-hover:0 8px 28px rgba(31,61,97,.14);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  .page-loadbar{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--accent,#1f3d61),#d4af6a);z-index:99999;opacity:0;box-shadow:0 0 8px rgba(31,61,97,.5);pointer-events:none}
-  .page-loadbar.on{transition:width .35s ease,opacity .2s ease;opacity:1}
-  .page-loadbar.finish{transition:width .2s ease}
-  .page-loadbar.fade{transition:opacity .3s ease .05s;opacity:0}
   .view-fading{opacity:.4 !important;transition:opacity .15s ease}
   html{scroll-behavior:smooth}
   html,body{max-width:100%;touch-action:manipulation}
@@ -680,8 +676,8 @@
   .cop-box{padding-bottom:6px}
   .cop-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
   .cop-row:first-of-type{border-top:none}
-  .cop-thumb{width:46px;height:58px;border-radius:6px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-  .cop-thumb svg{width:30px;height:30px}
+  .cop-thumb{width:56px;height:68px;border-radius:6px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--line)}
+  .cop-thumb svg,.cop-thumb img{width:100%;height:100%;object-fit:cover}
   .cop-info{flex:1;min-width:0}
   .cop-name{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cop-price{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
@@ -1827,8 +1823,6 @@
 </style>
 </head>
 <body>
-<div id="pageLoadBar" class="page-loadbar"></div>
-
 <div id="pageLoadBar"></div>
 
 <div class="splash" id="splash">
@@ -2765,28 +2759,11 @@ function closeProfileSheet(){
 // Every deeper step pushes a browser-history entry, so the phone/browser Back
 // button (and the in-app back arrow) walks back one step at a time instead of
 // closing the whole sheet or jumping straight to Home.
-// ---------- Page-load feel: top progress bar shown on every major navigation ----------
-let _plFadeT, _plDoneT;
-function plStart(){
-  const bar=document.getElementById('pageLoadBar'); if(!bar) return;
-  clearTimeout(_plFadeT); clearTimeout(_plDoneT);
-  bar.classList.remove('finish','fade','on');
-  bar.style.width='0%';
-  void bar.offsetWidth;
-  bar.classList.add('on');
-  requestAnimationFrame(()=>{ bar.style.width='72%'; });
-}
-function plFinish(){
-  const bar=document.getElementById('pageLoadBar'); if(!bar) return;
-  bar.classList.add('finish');
-  bar.style.width='100%';
-  _plFadeT=setTimeout(()=>{ bar.classList.add('fade'); },150);
-  _plDoneT=setTimeout(()=>{ bar.classList.remove('on','finish','fade'); bar.style.width='0%'; },500);
-}
-// Runs fn after a short delay so the loading bar is actually visible (mimics a real page fetch).
+// ---------- Page-load feel: reuses the site's top progress bar (triggerPageTransition)
+// so every major navigation — not just home/shop/product — visibly "loads".
 function withPageLoad(fn,delay){
-  plStart();
-  setTimeout(()=>{ fn(); plFinish(); }, delay||160);
+  if(typeof triggerPageTransition==='function') triggerPageTransition();
+  setTimeout(fn, delay||160);
 }
 function goAcct(view){
   if((view==='profile' || view==='orders' || view==='details') && !state.loggedIn){
@@ -3569,7 +3546,7 @@ function pfGoAddresses(){
     }
   }catch(e){}
   closeProfileSheet();
-  setTimeout(openAddrSheet, 320);
+  setTimeout(()=>{ withPageLoad(openAddrSheet, 120); }, 320);
 }
 function acctSendContact(){
   toast("Message sent — we'll get back to you soon");
