@@ -23,6 +23,11 @@
     --shadow-hover:0 8px 28px rgba(31,61,97,.14);
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  .page-loadbar{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--accent,#1f3d61),#d4af6a);z-index:99999;opacity:0;box-shadow:0 0 8px rgba(31,61,97,.5);pointer-events:none}
+  .page-loadbar.on{transition:width .35s ease,opacity .2s ease;opacity:1}
+  .page-loadbar.finish{transition:width .2s ease}
+  .page-loadbar.fade{transition:opacity .3s ease .05s;opacity:0}
+  .view-fading{opacity:.4 !important;transition:opacity .15s ease}
   html{scroll-behavior:smooth}
   html,body{max-width:100%;touch-action:manipulation}
   body{
@@ -77,7 +82,7 @@
   .ann-inner svg{width:15px;height:15px;flex-shrink:0;color:var(--gold)}
   .ann-inner b{color:var(--gold);font-weight:800}
   .coupon-code{display:inline-flex;align-items:center;gap:6px;border:1px dashed rgba(255,255,255,.55);
-    border-radius:5px;padding:3px 10px;font-size:12px;font-weight:800;letter-spacing:1.5px;
+    border-radius:0;padding:3px 10px;font-size:12px;font-weight:800;letter-spacing:1.5px;
     color:#fff;background:rgba(255,255,255,.1);white-space:nowrap;cursor:pointer;transition:.15s}
   .coupon-code:hover{background:rgba(255,255,255,.2)}
   .coupon-code svg{width:12px;height:12px;opacity:.85}
@@ -189,6 +194,7 @@
   }
   .icon-btn:hover{color:var(--accent)}
   .icon-btn svg{width:22px;height:22px}
+  .search-icon-btn svg{width:27px;height:27px}
   .badge{
     position:absolute;top:-6px;right:2px;
     background:var(--accent);color:#fff;font-size:10px;font-weight:700;
@@ -637,7 +643,7 @@
   .steps{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;
     letter-spacing:2px;color:var(--ink-soft)}
   .steps .st{position:relative;padding-bottom:4px}
-  .steps .st.active{color:var(--accent);border-bottom:2px solid var(--accent)}
+  .steps .st.active{color:var(--accent);border-bottom:none;box-shadow:inset 0 -2px 0 0 var(--accent)}
   .steps .dots{color:#d5d6dd;letter-spacing:1px}
   .secure{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;
     letter-spacing:1px;color:var(--ink-soft)}
@@ -671,6 +677,14 @@
     padding:14px;margin-bottom:8px;position:relative}
   .bag-item .bi-chk{position:absolute;top:22px;left:22px;z-index:2}
   .bi-thumb{width:112px;height:150px;border-radius:6px;overflow:hidden;flex-shrink:0;background:var(--bg-soft)}
+  .cop-box{padding-bottom:6px}
+  .cop-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+  .cop-row:first-of-type{border-top:none}
+  .cop-thumb{width:46px;height:58px;border-radius:6px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .cop-thumb svg{width:30px;height:30px}
+  .cop-info{flex:1;min-width:0}
+  .cop-name{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cop-price{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
   .bi-thumb svg{width:100%;height:100%}
   .bi-info{flex:1;min-width:0}
   .bi-brand{font-size:15px;font-weight:700}
@@ -764,8 +778,8 @@
     .cart-topbar-inner{padding:12px 16px}
     .cart-topbar-inner{justify-content:space-between}
     .steps{gap:5px;font-size:11px;letter-spacing:1px}
-    .steps .st{padding-bottom:3px;border-bottom:2px solid transparent}
-    .steps .st.active{border-bottom-color:var(--accent)}
+    .steps .st{padding-bottom:3px;border-bottom:none;box-shadow:inset 0 -2px 0 0 transparent}
+    .steps .st.active{box-shadow:inset 0 -2px 0 0 var(--accent)}
     .steps .dots{font-size:0}
     .steps .dots::before{content:"›";font-size:12px;color:#d5d6dd}
     .cart-grid{padding:18px 16px 50px;gap:8px}
@@ -1095,6 +1109,9 @@
   .pay-method .radio{width:19px;height:19px;border-radius:50%;border:2px solid #cfd0d8;flex-shrink:0;position:relative;transition:.15s}
   .pay-method.on .radio{border-color:var(--accent)}
   .pay-method.on .radio:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
+  .pay-method-disabled{cursor:not-allowed;opacity:.6}
+  .pay-method-disabled:hover{border-color:var(--line)}
+  .pm-soon-tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:#9a8a5a;background:#f3ecd8;border:1px solid #e3d6ac;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
   .pm-body{flex:1;min-width:0}
   .pm-label{font-size:14px;font-weight:700;color:var(--ink)}
   .pm-sub{font-size:12px;color:var(--ink-soft);margin-top:2px}
@@ -1687,6 +1704,7 @@
     .mobile-login{display:none}
     header .hdr-wishlist,header .hdr-bag{display:none !important}
     .icon-btn svg{width:26px;height:26px}
+    .search-icon-btn svg{width:31px;height:31px}
     .icon-btn .badge{font-size:10px}
     .filters{position:fixed;top:0;right:0;height:100%;max-height:none;width:84%;max-width:320px;background:#fff;
       z-index:200;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
@@ -1709,6 +1727,7 @@
     .logo small{font-size:7px;letter-spacing:3px}
     .icons{gap:15px}
     .icon-btn svg{width:22px;height:22px}
+    .search-icon-btn svg{width:27px;height:27px}
     .crumb,.page-head{padding-left:14px;padding-right:14px}
     .page-head h1{font-size:15px}
     .page-head h1 span{font-size:13px}
@@ -1808,6 +1827,7 @@
 </style>
 </head>
 <body>
+<div id="pageLoadBar" class="page-loadbar"></div>
 
 <div id="pageLoadBar"></div>
 
@@ -1849,7 +1869,7 @@
       <a href="#" onclick="goShop('Sets');return false">Sets</a>
     </nav>
     <div class="icons">
-      <button class="icon-btn" onclick="toggleSearch()" aria-label="Search">
+      <button class="icon-btn search-icon-btn" onclick="toggleSearch()" aria-label="Search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         Search
       </button>
@@ -2169,12 +2189,6 @@ function jwPal(i){
   return pal[i%pal.length];
 }
 function jwBg(i){ const c=jwPal(i); return `linear-gradient(155deg,${c[0]},${c[1]})`; }
-// Returns the real product photo (if the product has one) instead of the
-// generated placeholder icon. Falls back to jwSvg when no photo exists.
-function pVisual(p, i){
-  if(p && Array.isArray(p.imgs) && p.imgs.length) return `<img src="${p.imgs[0]}" alt="${p.n||''}" style="width:100%;height:100%;object-fit:cover">`;
-  return jwSvg(p?p.cat:'', i);
-}
 function jwSvg(type, i){
   const c=jwPal(i);
   const shapes={
@@ -2751,6 +2765,29 @@ function closeProfileSheet(){
 // Every deeper step pushes a browser-history entry, so the phone/browser Back
 // button (and the in-app back arrow) walks back one step at a time instead of
 // closing the whole sheet or jumping straight to Home.
+// ---------- Page-load feel: top progress bar shown on every major navigation ----------
+let _plFadeT, _plDoneT;
+function plStart(){
+  const bar=document.getElementById('pageLoadBar'); if(!bar) return;
+  clearTimeout(_plFadeT); clearTimeout(_plDoneT);
+  bar.classList.remove('finish','fade','on');
+  bar.style.width='0%';
+  void bar.offsetWidth;
+  bar.classList.add('on');
+  requestAnimationFrame(()=>{ bar.style.width='72%'; });
+}
+function plFinish(){
+  const bar=document.getElementById('pageLoadBar'); if(!bar) return;
+  bar.classList.add('finish');
+  bar.style.width='100%';
+  _plFadeT=setTimeout(()=>{ bar.classList.add('fade'); },150);
+  _plDoneT=setTimeout(()=>{ bar.classList.remove('on','finish','fade'); bar.style.width='0%'; },500);
+}
+// Runs fn after a short delay so the loading bar is actually visible (mimics a real page fetch).
+function withPageLoad(fn,delay){
+  plStart();
+  setTimeout(()=>{ fn(); plFinish(); }, delay||160);
+}
 function goAcct(view){
   if((view==='profile' || view==='orders' || view==='details') && !state.loggedIn){
     state._loginRedirect = view;
@@ -2758,11 +2795,11 @@ function goAcct(view){
     return;
   }
   if(view==='menu'){ acctReset(); return; }   // "return to root" unwinds the stack
-  if(state.acctView===view){ renderAcct(); return; } // same view (e.g. switch legal doc)
+  if(state.acctView===view){ withPageLoad(renderAcct); return; } // same view (e.g. switch legal doc)
   state.acctStack.push(state.acctView);       // remember where we came from
   state.acctView = view;
   armGuard('acct');                           // add one browser-history step
-  renderAcct();
+  withPageLoad(renderAcct);
 }
 // One step back within the sheet — routed through history so it stays in sync
 // with the phone/browser Back button.
@@ -3207,14 +3244,6 @@ function ordCard(o){
   const p=PRODUCTS[o.pi]||PRODUCTS[0];
   const stc=ordStClass(o.status);
   const meta=[o.sku?`SKU · ${o.sku}`:'', o.size?o.size:'', (o.mat||p.mat)?(o.mat||p.mat):''].filter(Boolean).join('&nbsp;&nbsp;·&nbsp;&nbsp;');
-  const trackOpen=state.orderTrackOpen&&state.orderTrackOpen[o.id];
-  let tracker='';
-  if(trackOpen && !o.cancelled){
-    const n=ORDER_STEPS.length, pct=(o.step/(n-1))*100;
-    tracker=`<div class="oc-track"><div class="oc-trackbar"><div class="oc-trackfill" style="width:${pct}%"></div>`+
-      ORDER_STEPS.map((s,i)=>`<div class="oc-tdot ${i<=o.step?'done':''}" style="left:${(i/(n-1))*100}%"><span>${ORD_SHORT[s]||s}</span></div>`).join('')+
-      `</div></div>`;
-  }
   let footer='';
   if(o.cancelled){
     footer=`<div class="oc-note red"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>Refund credited to source</div>
@@ -3222,13 +3251,11 @@ function ordCard(o){
   } else if(o.status==='Delivered'){
     footer=`<div class="oc-note"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>${o.exchange||'Delivered'}</div>
       <div class="oc-actions">
-        <button class="oc-btn" onclick="ordTrack('${o.id}')"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Track Item</button>
         <button class="oc-btn" onclick="closeProfileSheet();setTimeout(()=>openProduct(${o.pi}),320)">Buy Again</button>
       </div>`;
   } else {
     const canCancel=canCancelOrder(o);
     footer=`<div class="oc-actions">
-        <button class="oc-btn" onclick="ordTrack('${o.id}')"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Track Item</button>
         ${canCancel?`<button class="oc-btn danger" onclick="ordCancel('${o.id}')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>Cancel Item</button>`:''}
         <button class="oc-btn" onclick="goAcct('contact')"><svg viewBox="0 0 24 24"><path d="M18 10a6 6 0 0 0-12 0v4M4 14a2 2 0 0 1 2-2h1v6H6a2 2 0 0 1-2-2zM20 14a2 2 0 0 0-2-2h-1v6h1a2 2 0 0 0 2-2z"/></svg>Need Help?</button>
       </div>`;
@@ -3239,28 +3266,13 @@ function ordCard(o){
       <div><div class="oc-status ${stc}">${o.status}</div><div class="oc-sub">${o.sub||''}</div></div>
     </div>
     <div class="oc-prod" onclick="openOrderDetail('${o.id}')">
-      <div class="oc-photo" style="background:${jwBg(o.pi)}">${pVisual(p,o.pi)}</div>
+      <div class="oc-photo" style="background:${jwBg(o.pi)}">${jwSvg(p.cat,o.pi)}</div>
       <div class="oc-pinfo"><div class="oc-name">${p.n}${o.qty>1?` × ${o.qty}`:''}</div>${meta?`<div class="oc-meta">${meta}</div>`:''}</div>
       <svg class="oc-chev" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
     </div>
-    ${tracker}
     ${ordReqPanel(o)}
     ${footer}
   </div>`;
-}
-function ordTrack(id){
-  if(!state.orderTrackOpen) state.orderTrackOpen={};
-  state.orderTrackOpen[id]=!state.orderTrackOpen[id];
-  // re-render only the list (not the whole drawer) and keep scroll position
-  const wrap=document.getElementById('ordListWrap');
-  const scroller=document.getElementById('profileDrawer');
-  if(wrap){
-    const y=scroller?scroller.scrollTop:0;
-    wrap.innerHTML=ordListHTML();
-    if(scroller) scroller.scrollTop=y;
-  } else {
-    renderAcct();
-  }
 }
 function ordCancel(id){ openOrdModal('cancel', id); }
 
@@ -3505,7 +3517,7 @@ function orderDetailHTML(){
   const cancelBtn=cancellable?`<button class="od-cancelbtn" onclick="ordCancel('${o.id}')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>Cancel Item</button>`:'';
   return `
     <div class="od-hero">
-      <div class="od-photo" style="background:${jwBg(o.pi)}">${pVisual(p,o.pi)}</div>
+      <div class="od-photo" style="background:${jwBg(o.pi)}">${jwSvg(p.cat,o.pi)}</div>
       <div class="od-title">${p.n}</div>
       ${meta?`<div class="od-sub">${meta}</div>`:''}
       <div class="od-oid">Order ID · #${o.id}</div>
@@ -3751,9 +3763,9 @@ function renderAcct(){
     head.style.borderBottom='1px solid var(--line)';
     head.querySelector('.nav-head-title').style.color='var(--ink)';
     const faqs=[
-      ['Track my order','Go to My Orders to see live status &amp; delivery updates.'],
+      ['Track my order','Go to My Orders to see your order status.'],
       ['Returns &amp; exchange','Free returns within 7 days of delivery, no questions asked.'],
-      ['Payment options','Cards, UPI, net banking &amp; Cash on Delivery available.'],
+      ['Payment options','Currently only Cash on Delivery (COD) is available.'],
       ['BIS Hallmark','All gold jewellery is BIS hallmarked &amp; certified.'],
     ];
     body.innerHTML=`<div style="padding:8px 4px">`+faqs.map(f=>`
@@ -3776,12 +3788,14 @@ function openCart(){
   if(typeof stopSearchIdle==='function') stopSearchIdle();
   if(typeof state!=='undefined') state.ordModal=null;
   state.checkoutStep='bag'; state.checkoutStack=[];
-  renderCheckout();
-  document.getElementById('cartPage').classList.add('show');
-  lockScroll();
-  document.getElementById('cartPage').scrollTop=0;
-  armGuard('cart');
-  syncBotNav();
+  withPageLoad(()=>{
+    renderCheckout();
+    document.getElementById('cartPage').classList.add('show');
+    lockScroll();
+    document.getElementById('cartPage').scrollTop=0;
+    armGuard('cart');
+    syncBotNav();
+  });
 }
 function closeCart(){
   document.querySelectorAll('.confetti-wrap').forEach(el=>el.remove());
@@ -3814,6 +3828,21 @@ function cartTotals(){
   const total=Math.max(0,subtotal-coupon)+gift;
   return {ids,mrpTotal,subtotal,selCount,itemUnits,discount,coupon,couponCode,availCoupons,gift,total};
 }
+function checkoutItemsPreview(){
+  const ids=Object.keys(state.bag).map(Number).filter(id=>selected.has(id));
+  if(!ids.length) return '';
+  const rows=ids.map(id=>{
+    const p=PRODUCTS[id], q=state.bag[id];
+    return `<div class="cop-row">
+      <div class="cop-thumb" style="background:${jwBg(id)}">${jwSvg(p.cat,id)}</div>
+      <div class="cop-info">
+        <div class="cop-name">${p.n}${q>1?` × ${q}`:''}</div>
+        <div class="cop-price">₹${(p.price*q).toLocaleString('en-IN')}</div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="side-box cop-box"><div class="side-title">Order Items</div>${rows}</div>`;
+}
 function renderCart(){
   const ids=Object.keys(state.bag).map(Number);
   const main=document.getElementById('cartMain');
@@ -3843,7 +3872,7 @@ function renderCart(){
       <div class="bi-chk chk ${on?'on':''}" onclick="toggleSelect(${id})">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg>
       </div>
-      <div class="bi-thumb" style="background:${jwBg(p.id)}">${pVisual(p,p.id)}</div>
+      <div class="bi-thumb" style="background:${jwBg(p.id)}">${jwSvg(p.cat,p.id)}</div>
       <div class="bi-info">
         <div class="bi-brand">${p.b}</div>
         <div class="bi-name">${p.n}</div>
@@ -3995,8 +4024,10 @@ function goCheckoutStep(step){
   state.checkoutStack.push(state.checkoutStep);
   state.checkoutStep=step;
   armGuard('checkoutstep');
-  renderCheckout();
-  document.getElementById('cartPage').scrollTop=0;
+  withPageLoad(()=>{
+    renderCheckout();
+    document.getElementById('cartPage').scrollTop=0;
+  });
 }
 function startCheckout(n){
   if(!n){ toast('Select at least one item to continue'); return; }
@@ -4006,21 +4037,6 @@ function startCheckout(n){
 // checkout address screen once it saves so the newly picked address shows up.
 function refreshCheckoutAddress(){ if(state.checkoutStep==='address') renderCheckoutAddress(); }
 
-// Compact "items in this order" list with product photos — shown on the
-// Address and Payment checkout steps so the product stays visible throughout.
-function checkoutItemsHTML(t){
-  const rows=t.ids.filter(id=>selected.has(id)).map(id=>{
-    const p=PRODUCTS[id], q=state.bag[id];
-    return `<div class="addr-item" style="cursor:default;gap:12px">
-      <div style="width:44px;height:56px;border-radius:6px;overflow:hidden;flex-shrink:0;background:${jwBg(p.id)}">${pVisual(p,p.id)}</div>
-      <div class="a-body">
-        <div class="a-name" style="font-size:13px">${p.n}${q>1?` × ${q}`:''}</div>
-        <div class="a-line" style="font-size:12px">${p.b}</div>
-      </div>
-    </div>`;
-  }).join('');
-  return `<div class="side-box"><div class="side-title">Order Items (${t.itemUnits} ${t.itemUnits===1?'Item':'Items'})</div>${rows}</div>`;
-}
 function renderCheckoutAddress(){
   const main=document.getElementById('cartMain');
   const t=cartTotals();
@@ -4045,9 +4061,9 @@ function renderCheckoutAddress(){
         <div class="side-title">Deliver to</div>
         ${addrCard}
       </div>
-      ${checkoutItemsHTML(t)}
     </div>
     <aside class="cart-right">
+      ${checkoutItemsPreview()}
       <div class="side-box" id="addrPriceBox">
         <div class="side-title">Price Details (${t.itemUnits} ${t.itemUnits===1?'Item':'Items'})</div>
         <div class="prow"><span>Total MRP</span><span>₹${t.mrpTotal.toLocaleString('en-IN')}</span></div>
@@ -4075,17 +4091,15 @@ function renderCheckoutPayment(){
   const a = (typeof ZADDR!=='undefined') ? zSelected() : null;
   if(!a){ goCheckoutStep('address'); return; } // safety: no address, bounce back
   const PM=[
-    {id:'upi',label:'UPI',sub:'Pay via Google Pay, PhonePe, Paytm & more'},
-    {id:'card',label:'Credit / Debit Card',sub:'Visa, Mastercard, RuPay & more'},
-    {id:'netbanking',label:'Net Banking',sub:'All major banks supported'},
+    {id:'online',label:'Pay Online',sub:'Coming soon',disabled:true},
     {id:'cod',label:'Cash on Delivery',sub:'Pay when your order arrives'},
   ];
   const methodRows=PM.map(m=>`
-    <div class="pay-method ${state.checkoutPayMethod===m.id?'on':''}" onclick="pickPayMethod('${m.id}')">
+    <div class="pay-method ${state.checkoutPayMethod===m.id?'on':''} ${m.disabled?'pay-method-disabled':''}" onclick="${m.disabled?`toast('Pay Online is coming soon')`:`pickPayMethod('${m.id}')`}">
       <div class="radio"></div>
-      <div class="pm-body"><div class="pm-label">${m.label}</div><div class="pm-sub">${m.sub}</div></div>
+      <div class="pm-body"><div class="pm-label">${m.label}${m.disabled?' <span class="pm-soon-tag">Coming Soon</span>':''}</div><div class="pm-sub">${m.sub}</div></div>
     </div>
-    ${state.checkoutPayMethod===m.id ? payMethodExtra(m.id) : ''}`).join('');
+    ${(!m.disabled && state.checkoutPayMethod===m.id) ? payMethodExtra(m.id) : ''}`).join('');
   main.innerHTML=`<div class="cart-grid">
     <div class="cart-left">
       <button class="checkout-back" onclick="backKind('checkoutstep')">
@@ -4106,9 +4120,9 @@ function renderCheckoutPayment(){
         <div class="side-title">Select Payment Method</div>
         ${methodRows}
       </div>
-      ${checkoutItemsHTML(t)}
     </div>
     <aside class="cart-right">
+      ${checkoutItemsPreview()}
       <div class="side-box" id="payPriceBox">
         <div class="side-title">Price Details (${t.itemUnits} ${t.itemUnits===1?'Item':'Items'})</div>
         <div class="prow"><span>Total MRP</span><span>₹${t.mrpTotal.toLocaleString('en-IN')}</span></div>
@@ -4117,42 +4131,21 @@ function renderCheckoutPayment(){
         ${t.gift?`<div class="prow"><span>Gift Packaging</span><span>₹${t.gift}</span></div>`:''}
         <div class="prow"><span>Shipping Fee</span><span class="save">FREE</span></div>
         <div class="prow total"><span>Total Amount</span><span>₹${t.total.toLocaleString('en-IN')}</span></div>
-        <button class="place-order" onclick="confirmPlaceOrder()">${state.checkoutPayMethod==='cod'?'Place Order':'Pay & Place Order'}</button>
+        <button class="place-order" onclick="confirmPlaceOrder()">Place Order</button>
       </div>
     </aside>
   </div>
   <div class="cart-sticky-bar" id="cartStickyBar">
-    <button class="place-order csb-btn" onclick="confirmPlaceOrder()">${state.checkoutPayMethod==='cod'?'Place Order':'Pay & Place Order'}</button>
+    <button class="place-order csb-btn" onclick="confirmPlaceOrder()">Place Order</button>
   </div>`;
 }
 function payMethodExtra(id){
-  if(id==='upi') return `<div class="pay-extra"><input id="pmUpiId" type="text" placeholder="yourname@upi" autocomplete="off"></div>`;
-  if(id==='card') return `<div class="pay-extra pay-extra-card">
-      <input id="pmCardNum" type="text" inputmode="numeric" maxlength="19" placeholder="Card number">
-      <div class="pay-extra-row"><input id="pmCardExp" type="text" maxlength="5" placeholder="MM/YY"><input id="pmCardCvv" type="password" inputmode="numeric" maxlength="3" placeholder="CVV"></div>
-    </div>`;
-  if(id==='netbanking') return `<div class="pay-extra"><select id="pmBank"><option value="">Select your bank</option><option>State Bank of India</option><option>HDFC Bank</option><option>ICICI Bank</option><option>Axis Bank</option><option>Kotak Mahindra Bank</option></select></div>`;
   return `<div class="pay-extra pay-cod-note">You'll pay in cash when the order is delivered. A small COD handling fee may apply at delivery.</div>`;
 }
 
 // Validates the currently-selected payment method's fields (demo-level checks
 // only — this does not process any real payment).
 function validatePayment(){
-  const m=state.checkoutPayMethod;
-  if(m==='upi'){
-    const v=(document.getElementById('pmUpiId')?.value||'').trim();
-    if(!/^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(v)){ toast('Enter a valid UPI ID'); return false; }
-  } else if(m==='card'){
-    const num=(document.getElementById('pmCardNum')?.value||'').replace(/\s/g,'');
-    const exp=(document.getElementById('pmCardExp')?.value||'').trim();
-    const cvv=(document.getElementById('pmCardCvv')?.value||'').trim();
-    if(!/^\d{12,19}$/.test(num)){ toast('Enter a valid card number'); return false; }
-    if(!/^(0[1-9]|1[0-2])\/\d{2}$/.test(exp)){ toast('Enter card expiry as MM/YY'); return false; }
-    if(!/^\d{3}$/.test(cvv)){ toast('Enter a valid 3-digit CVV'); return false; }
-  } else if(m==='netbanking'){
-    const bank=(document.getElementById('pmBank')?.value||'');
-    if(!bank){ toast('Please select your bank'); return false; }
-  }
   return true; // cod needs no extra fields
 }
 
@@ -4167,7 +4160,7 @@ function confirmPlaceOrder(){
   if(!validatePayment()) return;
   const t=cartTotals();
   if(!t.selCount){ toast('Select at least one item to continue'); return; }
-  const payLabel={upi:'UPI',card:'Card',netbanking:'Net Banking',cod:'Cash on Delivery'}[state.checkoutPayMethod];
+  const payLabel='Cash on Delivery';
   const placedAt=new Date();
   const eta=new Date(placedAt.getTime()+6*86400000);
   const etaStr=eta.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
@@ -4190,11 +4183,13 @@ function confirmPlaceOrder(){
     newIds.push(orderId);
     delete state.bag[id];
     selected.delete(id);
+    state.wish.delete(id); // purchased item shouldn't linger in the wishlist
   });
   lastPlacedOrderIds=newIds;
   lastPlacedOrderAddr=a?{name:a.name,line:a.line,city:a.city,pin:a.pin}:null;
   updateBagBadge();
   syncCartWishToCloud();
+  { const wc=document.getElementById('wishCount'); if(wc){ wc.textContent=state.wish.size; wc.style.display=state.wish.size?'flex':'none'; } }
   // ---- Save the complete order to Firestore `orders` collection ----
   if(typeof window.fbSaveOrder==='function'){
     const fsPromise = window.fbSaveOrder({
@@ -5095,17 +5090,19 @@ function pdpTab(el,id,which){
 }
 function openProduct(id){
   if(typeof ACTIVE_AUTO!=='undefined' && ACTIVE_AUTO) ACTIVE_AUTO.stop();
-  aTrackProduct(id);
-  pushRecent(id);
-  buildProduct(id);
-  if(currentView!=='product'){ productReturnView=currentView; armGuard('product'); }
-  document.getElementById('homeView').style.display='none';
-  document.getElementById('shopView').style.display='none';
-  document.getElementById('productView').style.display='block';
-  currentView='product';
-  syncFooter();
-  window.scrollTo({top:0,behavior:'instant'});
-  syncBotNav();
+  withPageLoad(()=>{
+    aTrackProduct(id);
+    pushRecent(id);
+    buildProduct(id);
+    if(currentView!=='product'){ productReturnView=currentView; armGuard('product'); }
+    document.getElementById('homeView').style.display='none';
+    document.getElementById('shopView').style.display='none';
+    document.getElementById('productView').style.display='block';
+    currentView='product';
+    syncFooter();
+    window.scrollTo({top:0,behavior:'instant'});
+    syncBotNav();
+  });
 }
 function _showProductReturn(){
   aEndProductView();
@@ -5266,8 +5263,10 @@ function applyShopView(cat){
 }
 function goShop(cat){
   const wasShop = currentView==='shop';
-  applyShopView(cat);
-  if(!wasShop) armGuard('shop');
+  withPageLoad(()=>{
+    applyShopView(cat);
+    if(!wasShop) armGuard('shop');
+  });
 }
 // close any open overlay/drawer so bottom-nav navigation always works
 function closeAllSheets(){
@@ -5284,22 +5283,24 @@ function goHome(){
   closeAllSheets();
   if(currentView==='home' && !state.wishView) return;
   navGuards = navGuards.filter(g=> g!=='product' && g!=='shop');
-  _showHome();
+  withPageLoad(_showHome);
 }
 function goWishlist(){
   closeAllSheets();
-  state.wishView=true;
-  state.cats=new Set(); state.mats=new Set(); state.minDisc=0; state.maxPrice=50000;
-  const si=document.getElementById('searchInput'); if(si) si.value='';
-  buildFilters(); render();
-  document.getElementById('homeView').style.display='none';
-  document.getElementById('productView').style.display='none';
-  document.getElementById('shopView').style.display='block';
-  if(currentView!=='shop') armGuard('shop');
-  currentView='shop';
-  syncFooter();
-  window.scrollTo({top:0,behavior:'instant'});
-  syncBotNav();
+  withPageLoad(()=>{
+    state.wishView=true;
+    state.cats=new Set(); state.mats=new Set(); state.minDisc=0; state.maxPrice=50000;
+    const si=document.getElementById('searchInput'); if(si) si.value='';
+    buildFilters(); render();
+    document.getElementById('homeView').style.display='none';
+    document.getElementById('productView').style.display='none';
+    document.getElementById('shopView').style.display='block';
+    if(currentView!=='shop') armGuard('shop');
+    currentView='shop';
+    syncFooter();
+    window.scrollTo({top:0,behavior:'instant'});
+    syncBotNav();
+  });
 }
 function syncBotBadges(){
   const w=document.getElementById('botWishCount');
@@ -5457,7 +5458,7 @@ function buildTrending(){
     return `
     <div class="card" onclick="goShop('${p.cat}')">
       <div class="card-img" style="background:${jwBg(p.id)}">
-        ${pVisual(p,p.id)}
+        ${jwSvg(p.cat,p.id)}
         ${tag?`<span class="tag ${tag.c}">${tag.t}</span>`:''}
         ${p.cnt>0?`<div class="rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6 6 .9-4.5 4.2 1 6.1L12 16.8 6.5 19.2l1-6.1L3 8.9 9 8z"/></svg>${p.rating}<span class="div"></span><span class="cnt">${p.cnt>999?(p.cnt/1000).toFixed(1)+'k':p.cnt}</span></div>`:''}
       </div>
