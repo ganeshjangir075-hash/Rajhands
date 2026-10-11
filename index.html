@@ -53,7 +53,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 
 /* shell */
 .app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
-.side{position:sticky;top:env(safe-area-inset-top,0px);height:calc(var(--vh,1vh) * 100);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;border-right:1px solid var(--line);background:var(--surface);padding:22px 14px;display:flex;flex-direction:column;gap:6px}
+.side{position:sticky;top:env(safe-area-inset-top,0px);height:calc(var(--vh,1vh) * 100);overflow:hidden;border-right:1px solid var(--line);background:var(--surface);padding:22px 14px;display:flex;flex-direction:column;gap:6px}
 .brand{display:flex;gap:10px;align-items:center;padding:0 8px 18px}
 .brand-mark{width:38px;height:38px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:800 20px var(--f-display);flex:none;
   background-image:repeating-conic-gradient(from 0deg,transparent 0 12deg,rgba(255,255,255,.14) 12deg 24deg)}
@@ -64,6 +64,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 .nav-btn:hover{background:var(--surface-2);color:var(--fg)}
 .nav-btn.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
 .nav-btn .badge{margin-left:auto}
+.side-nav{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;display:flex;flex-direction:column;gap:inherit;margin:0 -6px;padding:0 6px}
+.side-nav .nav-btn{flex:none}
+.brand,.side-foot{flex:none}
 @media (max-height:820px){.side{padding:14px 12px;gap:2px}.brand{padding-bottom:10px}.nav-btn{padding:7px 12px}}
 .side-foot{margin-top:auto;font-size:12px;color:var(--muted);padding:8px 12px;display:flex;gap:8px;align-items:center}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
@@ -263,6 +266,7 @@ tfoot td{font-weight:600;border-bottom:0;border-top:2px solid var(--line-2)}
 
 /* chart */
 .chart svg{width:100%;height:auto;display:block}
+.c6p{display:flex;flex-direction:column}.c6p #c6{flex:1 1 auto;min-height:230px;position:relative}.c6p #c6 svg{position:absolute;top:14px;left:16px;width:calc(100% - 32px);height:calc(100% - 28px)}
 .chart text{fill:var(--muted);font-size:11px;font-family:var(--f-body)}
 
 /* toast */
@@ -966,9 +970,11 @@ function render(){
   const st=ST();
   try{const n=loaded()?urgentAll():0;document.title=(n?"("+n+") ":"")+"Dress Rental Ledger";if(loaded()&&!openShown)setTimeout(openPopup,600)}catch(e){}
   const urgent=tasks().filter(x=>x.date<=today()&&x.type!=="dep").length;
-  $("#side").innerHTML='<div class="brand"><div class="brand-mark">'+esc((st.shop||"D").trim().charAt(0).toUpperCase())+'</div><div><div class="brand-name">'+esc(st.shop)+'</div><div class="brand-sub">'+esc(st.city)+' · Rental ledger</div></div></div>'+
-    NAV.map(([k,l,i])=>'<button type="button" class="nav-btn'+(V.view===k||(k==="dash"&&V.view==="calendar")?" on":"")+'" data-go="'+k+'">'+ic(i)+'<span>'+l+'</span>'+(k==="dash"&&urgent?'<span class="badge">'+urgent+'</span>':"")+'</button>').join("")+
+  const navTop=(document.querySelector("#side .side-nav")||{}).scrollTop||0;
+  $("#side").innerHTML='<div class="brand"><div class="brand-mark">'+esc((st.shop||"D").trim().charAt(0).toUpperCase())+'</div><div><div class="brand-name">'+esc(st.shop)+'</div><div class="brand-sub">'+esc(st.city)+' · Rental ledger</div></div></div><div class="side-nav">'+
+    NAV.map(([k,l,i])=>'<button type="button" class="nav-btn'+(V.view===k||(k==="dash"&&V.view==="calendar")?" on":"")+'" data-go="'+k+'">'+ic(i)+'<span>'+l+'</span>'+(k==="dash"&&urgent?'<span class="badge">'+urgent+'</span>':"")+'</button>').join("")+'</div>'+
     '<div class="side-foot"><span class="dot '+(S.mode==="cloud"?"ok":S.mode==="local"?"warn":"")+'"></span>'+(S.mode==="cloud"?"Saving to the cloud":S.mode==="local"?"Saved on this device only":"Connecting…")+'</div>';
+  {const sn=document.querySelector("#side .side-nav");if(sn&&navTop)sn.scrollTop=navTop}
   $("#tabbar").innerHTML=TABS.map(k=>{const n=NAV.find(x=>x[0]===k);return '<button type="button" class="'+(V.view===k?"on":"")+'" data-go="'+k+'">'+ic(n[2])+'<span>'+(k==="dash"?"Home":n[1])+'</span>'+(k==="dash"&&urgent?'<span class="badge">'+urgent+'</span>':"")+'</button>'}).join("")+'<button type="button" class="'+(TABS.includes(V.view)?"":"on")+'" data-act="more">'+ic("menu")+'<span>More</span></button>';
   const fab=$("#fab");
   fab.innerHTML=ic("plus")+'<span>New booking</span>';
@@ -983,7 +989,7 @@ function render(){
   if(!loaded()){m.innerHTML='<div class="empty"><b>Opening your ledger…</b>Loading your data.</div>';return}
   const fn={dash:viewDash,bookings:viewBookings,dresses:viewDresses,customers:viewCustomers,returns:viewReturns,sellers:viewSellers,orders:viewOrders,cleaning:viewCleaning,repair:viewCleaning,daybook:viewDaybook,activity:viewActivity,partners:viewPartners,calendar:viewCalendar,accounts:viewAccounts,expenses:viewExpenses,settings:viewSettings}[V.view]||viewDash;
   const keep=document.activeElement&&document.activeElement.id&&m.contains(document.activeElement)?{id:document.activeElement.id,s:document.activeElement.selectionStart}:null;
-  m.innerHTML=sampleBanner()+fn();
+  m.innerHTML=sampleBanner()+fn();fitC6();
   if(!recRan&&loaded())setTimeout(runRecurring,500);
   if(!badKeysFixed&&loaded())setTimeout(fixBadKeys,300);
   if(keep){const el=document.getElementById(keep.id);if(el){el.focus();try{el.setSelectionRange(keep.s,keep.s)}catch(e){}}}
@@ -1862,6 +1868,13 @@ function openDay(s){
 }
 
 /* ---------- Accounts ---------- */
+let CH6=null,C6RO=null;
+/* the 6-month chart fills its box (no empty space under it when the P&L next to it is taller) */
+function fitC6(){const c=document.getElementById("c6");if(!c||!CH6)return;
+  if(!C6RO&&window.ResizeObserver)C6RO=new ResizeObserver(()=>fitC6());
+  if(C6RO&&!c.dataset.ro){c.dataset.ro="1";C6RO.disconnect();C6RO.observe(c)}
+  const cs=getComputedStyle(c),w=c.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),h=c.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+  if(w<50||h<50)return;const H=Math.round(Math.max(150,560*h/w));if(c.dataset.h==String(H))return;c.dataset.h=H;c.innerHTML=CH6(H)}
 function viewAccounts(){
   const t=today(); if(!V.accM)V.accM=t.slice(0,7);
   const ym=V.accM, ms=monthStats(ym);
@@ -1870,7 +1883,7 @@ function viewAccounts(){
   const months=[];for(let i=5;i>=0;i--){const d=new Date(y,m-1-i,1);months.push(ymd(d).slice(0,7))}
   const series=months.map(k=>({k,s:monthStats(k)}));
   const maxV=Math.max(1000,...series.map(x=>Math.max(x.s.revenue,Math.abs(x.s.net))));
-  const W=560,H=200,pl=48,pb=26,pt=12,cw=(W-pl-8)/6;
+  CH6=H=>{const W=560,pl=48,pb=26,pt=12,cw=(W-pl-8)/6;
   const yS=v=>pt+(H-pt-pb)*(1-(v/maxV));
   const minNet=Math.min(0,...series.map(x=>x.s.net));
   const yMin=minNet<0?minNet:0;
@@ -1885,7 +1898,8 @@ function viewAccounts(){
     svg+='<rect x="'+(cx+2)+'" y="'+Math.min(nv,r0)+'" width="'+bw+'" height="'+Math.max(1,Math.abs(r0-nv))+'" rx="3" fill="'+(x.s.net>=0?"var(--ok)":"var(--bad)")+'" opacity="'+(x.k===ym?1:.55)+'"><title>Profit '+inr(x.s.net)+'</title></rect>';
     svg+='<text x="'+cx+'" y="'+(H-8)+'" text-anchor="middle"'+(x.k===ym?' style="fill:var(--fg);font-weight:700"':"")+'>'+MON[+x.k.slice(5)-1]+'</text>';
   });
-  svg+='</svg>';
+  svg+='</svg>';return svg};
+  const svg=CH6(200);
   const dressRows=list(D()).map(d=>Object.assign({d},dressLife(d.id))).sort((a,b)=>b.profit-a.profit);
   const ex=list(E()).filter(e=>(e.date||"").slice(0,7)===ym).sort((a,b)=>a.date<b.date?1:-1);
   const advHeld=list(B()).filter(b=>b.status==="booked"||b.status==="ready"||b.status==="draft").reduce((a,b)=>a+N(b.paid),0);
@@ -1920,7 +1934,7 @@ function viewAccounts(){
      (Object.keys(tot).filter(k=>k!=="Cash"&&k!=="Not noted").length>1?'<div class="small muted" style="margin-top:8px">Online split: '+Object.keys(tot).filter(k=>k!=="Cash"&&k!=="Not noted").map(k=>esc(k)+" "+inr(tot[k])).join(" · ")+'</div>':"")+
      '<p class="small muted" style="margin:10px 0 0">Match <b>in drawer now</b> with the cash in your galla and <b>in bank now</b> with your UPI / bank app. These are the same as the Day book.'+(MB.petty?' Petty cash box: <b>'+inr(MB.petty)+'</b>.':"")+'</p>'+(outs.length?'<div class="label" style="margin:12px 0 6px">Paid out this month</div><div class="paidout">'+outs.map(f=>'<div class="ln"><span class="small">'+fd(f.date)+' · '+esc(f.txt)+' <span class="pill '+(f.kind==="cash"?"p-gold":f.kind==="online"?"p-info":"p-mute")+'">'+esc(f.mode||"mode not noted")+'</span></span><span class="num neg">−'+inr(-f.amt)+'</span></div>').join("")+'</div>':"")+'</div></div>'})()+
   '<div class="grid cols-2" style="margin-bottom:16px">'+
-   '<div class="panel"><div class="panel-h"><h3>Last 6 months</h3><span class="small"><span class="pill p-gold">Revenue</span> <span class="pill p-ok">Profit</span></span></div><div class="panel-b chart">'+svg+'</div></div>'+
+   '<div class="panel c6p"><div class="panel-h"><h3>Last 6 months</h3><span class="small"><span class="pill p-gold">Revenue</span> <span class="pill p-ok">Profit</span></span></div><div class="panel-b chart" id="c6">'+svg+'</div></div>'+
    '<div class="panel"><div class="panel-h"><h3>This month\'s P&amp;L</h3></div><div class="panel-b"><div class="calc" style="border:0;padding:0">'+
     '<div class="ln"><span>Rent + late fees + damage charges</span><b class="num">'+inr(ms.revenue-ms.cancelKept)+'</b></div>'+(ms.cancelKept?'<div class="ln"><span>Cancellation charges kept</span><b class="num">'+inr(ms.cancelKept)+'</b></div>':"")+
     '<div class="ln"><span class="muted">(−) Dry-clean, repair, packing, commission</span><span class="num">'+inr(-ms.direct)+'</span></div>'+
@@ -2850,7 +2864,7 @@ function dressForm(id,pre){
    '<div class="f"><label for="f_rent">Rent (₹ per booking)</label><input id="f_rent" type="number" inputmode="numeric" min="0" value="'+esc(d.rent)+'"></div>'+
    '<div class="f"><label for="f_seller">Bought from (seller)</label><select id="f_seller">'+sellerOptions(d.sellerId&&SL()[d.sellerId]?d.sellerId:"",(!d.sellerId||!SL()[d.sellerId])&&d.from?d.from:"")+'</select><span class="hint" id="f_seller_h"></span></div>'+
    '<div class="f"><label for="f_status">Condition</label><select id="f_status">'+["available","cleaning","repair","retired"].map(k=>'<option value="'+k+'"'+(d.status===k?" selected":"")+'>'+DST[k][0]+'</option>').join("")+'</select></div></div>'+
-   '<div class="calc" id="f_calc"></div>'+(id?"":'<div id="f_paybox"><div class="fsec">Payment to seller</div><div class="fgrid"><div class="f"><label>Paid to the seller?</label><div class="seg" role="radiogroup"><button type="button" class="on" data-fpay="now">Paid now</button><button type="button" data-fpay="adv" hidden>From advance</button><button type="button" data-fpay="later">Pay later (on credit)</button></div><input type="hidden" id="f_paid" value="now"><span class="hint" id="f_advh"></span></div><div class="f" id="f_pmode_w"><label for="f_pmode">Paid by</label>'+modeSel("f_pmode")+'</div></div></div>')+
+   '<div class="calc" id="f_calc"></div>'+(id?"":'<div id="f_paybox"><div class="fsec">Payment to seller</div><div class="fgrid"><div class="f"><label>Paid to the seller?</label><div class="seg" role="radiogroup"><button type="button" class="on" data-fpay="now">Paid now</button><button type="button" data-fpay="adv" hidden>From advance</button><button type="button" data-fpay="later">Pay later (on credit)</button></div><input type="hidden" id="f_paid" value="now"><span class="hint" id="f_advh"></span></div><div class="f" id="f_pmode_w"><label for="f_pmode">Paid by</label>'+modeSel("f_pmode")+'<div class="small" id="f_balh" style="margin-top:6px"></div></div></div></div>')+
    '<div class="f"><label for="f_notes">Note</label><textarea id="f_notes">'+esc(d.notes||"")+'</textarea></div>',
    foot:(id?'<button type="button" class="btn danger" data-del style="margin-right:auto">'+ic("trash")+'Delete</button>':"")+'<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" data-save>Save</button>'});
   const calc=()=>{
@@ -2860,6 +2874,12 @@ function dressForm(id,pre){
     el.querySelector("#f_calc").innerHTML='<div class="ln"><span class="muted">Total landed cost</span><b class="num">'+inr(c)+'</b></div><div class="ln"><span class="muted">Depreciation per booking</span><span class="num">'+inr(dep)+'</span></div><div class="ln"><span class="muted">Direct cost per booking</span><span class="num">'+inr(direct)+'</span></div><div class="ln tot"><span>Contribution per booking</span><span class="num '+(contrib>=0?"pos":"neg")+'">'+inr(contrib)+'</span></div><div class="ln"><span class="muted">Pays for itself in</span><b>'+(be?be+" bookings":"—")+'</b></div><div class="ln"><span class="muted">Lifetime contribution</span><b class="num">'+inr(contrib*life)+'</b></div>';
   };
   calc();el.querySelectorAll("input").forEach(i=>i.addEventListener("input",calc));
+  {const bh=el.querySelector("#f_balh");if(bh){const upd=()=>{const b=moneyBal(),m=val(el,"f_pmode"),k=modeKind(m),amt=N(val(el,"f_cost"));
+      const have=k==="cash"?b.cash:k==="online"?b.online:null;
+      bh.innerHTML='<span class="muted">Cash in hand now: </span><b class="num'+(b.cash<0?" neg":"")+'"'+(k==="cash"?' style="text-decoration:underline"':"")+'>'+inr(b.cash)+'</b><span class="muted"> · Bank / UPI now: </span><b class="num'+(b.online<0?" neg":"")+'"'+(k==="online"?' style="text-decoration:underline"':"")+'>'+inr(b.online)+'</b>'+
+        (have!=null&&amt>0&&amt>have+0.5?'<div class="neg" style="margin-top:3px">Not enough '+(k==="cash"?"cash":"in bank / UPI")+' for '+inr(amt)+' (short by '+inr(amt-have)+')</div>':"")+
+        (b.set?"":'<div class="muted" style="margin-top:3px">Opening balance not set in Settings, so these may not match your galla / bank.</div>')};
+    upd();el.addEventListener("input",upd);el.addEventListener("click",e=>{if(e.target.closest("[data-mode]"))setTimeout(upd,0)})}}
   {const sel=el.querySelector("#f_seller"),hint=el.querySelector("#f_seller_h");let prev=sel.value;
    const sh=()=>{const x=SL()[sel.value];if(x){const st=sellerStats(sel.value);hint.textContent=[x.city,x.phone,st.ds.length+" dresses bought",st.due>0.5?"due "+inr(st.due):""].filter(Boolean).join(" · ")}else hint.textContent=sel.value==="__legacy"?"Typed earlier. Pick a saved seller or add one to track purchases.":"";const pb=el.querySelector("#f_paybox");if(pb){pb.hidden=!SL()[sel.value];const ab=pb.querySelector('[data-fpay="adv"]'),ah=pb.querySelector("#f_advh");const adv=SL()[sel.value]?Math.max(0,-sellerStats(sel.value).due):0;ab.hidden=adv<0.5;ab.textContent=adv>0.5?"From advance ("+inr(adv)+")":"From advance";ah.textContent=adv>0.5?"You have already paid "+inr(adv)+" in advance to this seller. Choose “From advance” so it is not counted twice.":"";if(adv>0.5&&!pb.dataset.touched)ab.click();if(adv<0.5&&el.querySelector("#f_paid").value==="adv")pb.querySelector('[data-fpay="now"]').click()}};
    sel.addEventListener("change",()=>{if(sel.value==="__add"){sel.value=prev;sellerForm(null,nid=>{sel.innerHTML=sellerOptions(nid,"");prev=nid;sh()},d.from&&!d.sellerId?{name:d.from}:null);return}prev=sel.value;sh()});
