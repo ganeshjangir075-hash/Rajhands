@@ -777,7 +777,7 @@ async function initStore(){
   gate(gateHead("Opening your ledger…")+'<p class="small muted" style="margin:0">Please wait</p>');
   firebase.initializeApp(FB_CFG);
   const db=firebase.firestore();
-  try{db.settings({ignoreUndefinedProperties:true,merge:true})}catch(e){}
+  try{db.settings({ignoreUndefinedProperties:true,experimentalAutoDetectLongPolling:true,merge:true})}catch(e){}
   try{await db.enablePersistence({synchronizeTabs:true})}catch(e){}
   firebase.auth().onAuthStateChanged(u=>{
     SUBS.forEach(f=>{try{f()}catch(e){}});SUBS=[];
@@ -794,11 +794,45 @@ async function initStore(){
   window.addEventListener("offline",()=>toast("No internet. Entries are kept on this phone and go to the cloud when the internet is back."));
   window.addEventListener("online",()=>toast("Back online. Saving everything to the cloud."));
 }
+/* ---------- is everything really in the cloud? ---------- */
+const SYNC={n:0,state:"",since:0,warned:false};
+function syncTrack(pr){SYNC.n++;if(!SYNC.since)SYNC.since=Date.now();paintSync();const done=()=>{SYNC.n=Math.max(0,SYNC.n-1);if(!SYNC.n)SYNC.since=0;syncCheck()};pr.then(done,done)}
+function syncCheck(){if(S.mode!=="cloud"||!S.db||!S.db.waitForPendingWrites)return;let ok=false;
+  S.db.waitForPendingWrites().then(()=>{ok=true;SYNC.state="ok";SYNC.since=0;SYNC.warned=false;paintSync()}).catch(()=>{});
+  setTimeout(()=>{if(ok)return;SYNC.state="wait";if(!SYNC.since)SYNC.since=Date.now();paintSync();
+    if(!SYNC.warned&&Date.now()-SYNC.since>60000){SYNC.warned=true;toast("Some entries have not reached the cloud yet. Keep the internet on. Settings → Cloud check shows what is waiting.","bad")}},6000)}
+function syncTxt(){if(S.mode!=="cloud")return ["","Connecting…"];if(SYNC.state==="wait")return ["warn",'Entries waiting to upload · <u>check</u>'];if(SYNC.state==="ok")return ["ok","All saved to the cloud ✓"];return ["ok","Saving to the cloud"]}
+function paintSync(){const f=document.querySelector("#side .side-foot");if(!f)return;const [c,t]=syncTxt();f.innerHTML='<span class="dot '+c+'"></span><span>'+t+'</span>';f.style.cursor=SYNC.state==="wait"?"pointer":"";f.dataset.act=SYNC.state==="wait"?"cloud-check":""}
+setInterval(()=>{try{syncCheck()}catch(e){}},30000);
+/* on every app open: make sure everything on this device is also in the cloud; send what is missing */
+async function cloudDiff(){const miss={};let total=0,fail=false;const cnt={};
+  for(const c of COLS){const loc=Object.keys(S.data[c]||{});let srv=null;
+    try{const snap=await Promise.race([S.db.collection(c).get({source:"server"}),new Promise((_,r)=>setTimeout(()=>r(new Error("timeout")),15000))]);srv=new Set(snap.docs.map(d=>d.id))}catch(e){fail=true}
+    miss[c]=srv?loc.filter(id=>!srv.has(id)):[];total+=miss[c].length;cnt[c]=[loc.length,srv?srv.size:null]}
+  return {miss,total,fail,cnt}}
+async function sendMissing(miss){let n=0,bad=0;for(const c of COLS)for(const id of (miss[c]||[])){const o=Object.assign({},S.data[c][id]);delete o.id;try{await Promise.race([S.db.collection(c).doc(id).set(c==="customers"?safeCust(o):o),new Promise((_,r)=>setTimeout(()=>r(new Error("timeout")),20000))]);n++}catch(e){bad++}}return {n,bad}}
+let autoSynced=false;
+async function autoSync(){if(autoSynced||S.mode!=="cloud"||!S.db)return;autoSynced=true;
+  try{const d=await cloudDiff();
+    if(d.fail){SYNC.state="wait";SYNC.since=SYNC.since||Date.now();paintSync();toast("This device cannot reach the cloud right now. Entries are kept here and will be sent when the connection works. Settings → Cloud check","bad");autoSynced=false;setTimeout(autoSync,120000);return}
+    if(d.total){const r=await sendMissing(d.miss);toast(r.n+" entr"+(r.n===1?"y":"ies")+" from this device sent to the cloud"+(r.bad?" · "+r.bad+" could not be sent":""),r.bad?"bad":"");if(r.bad){autoSynced=false;setTimeout(autoSync,120000)}}
+    syncCheck()}catch(e){autoSynced=false}}
+async function cloudCheck(){
+  const el=modal({title:"Cloud check",autofocus:false,body:'<div id="cc_b"><div class="small muted">Asking the cloud (Firebase)…</div></div>',foot:'<button type="button" class="btn" data-close>Close</button>'});
+  const b=el.querySelector("#cc_b"),miss={};let rows="",total=0,fail=false;
+  for(const c of COLS){const loc=Object.keys(S.data[c]||{});let srv=null;
+    try{const snap=await Promise.race([S.db.collection(c).get({source:"server"}),new Promise((_,r)=>setTimeout(()=>r(new Error("timeout")),15000))]);srv=new Set(snap.docs.map(d=>d.id))}catch(e){fail=true}
+    const m=srv?loc.filter(id=>!srv.has(id)):[];miss[c]=m;total+=m.length;
+    if(loc.length||(srv&&srv.size))rows+='<div class="ln"><span>'+esc(c)+'</span><span class="num">'+(srv?(m.length?'<b class="neg">'+m.length+' not in cloud</b> · ':'')+'this device '+loc.length+' · cloud '+srv.size+(m.length?"":' <span class="pos">✓</span>'):'<span class="neg">could not reach the cloud</span>')+'</span></div>'}
+  b.innerHTML=(fail?'<div class="badbox">This device <b>cannot reach Firebase</b> right now. Check the internet. If the internet works, an antivirus, ad-blocker or office Wi-Fi may be blocking it; try another browser or mobile data. Do not sign out and take a Full backup first.</div>':total?'<div class="badbox"><b>'+total+' entries are only on this device</b> and not in the cloud yet. Tap the button below to send them now. Do not sign out before this is done.</div>':'<div class="okbox">Everything on this device is safely in the cloud ✓</div>')+'<div class="calc" style="margin-top:10px">'+rows+'</div>'+(total&&!fail?'<button type="button" class="btn pri" id="cc_up" style="margin-top:10px">Send '+total+' entries to the cloud</button>':"");
+  const up=el.querySelector("#cc_up");if(up)up.addEventListener("click",async()=>{up.disabled=true;up.textContent="Sending…";let n=0,bad=0;
+    for(const c of COLS)for(const id of miss[c]){const o=Object.assign({},S.data[c][id]);delete o.id;try{await Promise.race([S.db.collection(c).doc(id).set(c==="customers"?safeCust(o):o),new Promise((_,r)=>setTimeout(()=>r(new Error("timeout")),20000))]);n++}catch(e){bad++}}
+    closeTop();toast(n+" entries sent to the cloud"+(bad?" · "+bad+" failed":""),bad?"bad":"");setTimeout(cloudCheck,400)})}
 function afterLoad(){if(LOCK.started||!loaded())return;LOCK.started=true;migrateIds();pinGate()}
 /* Aadhaar: only the last 4 digits are kept */
 function safeCust(o){if(o&&(o.idType||"Aadhaar")==="Aadhaar"&&o.idNo){const d=String(o.idNo).replace(/\D/g,"");if(d.length>4)o=Object.assign({},o,{idNo:d.slice(-4)})}return o}
 function migrateIds(){list(C()).forEach(c=>{if((c.idType||"Aadhaar")==="Aadhaar"&&String(c.idNo||"").replace(/\D/g,"").length>4){const o=clone(c);delete o.id;put("customers",c.id,o).catch(()=>{})}})}
-function unlockNow(){LOCK.open=true;LOCK.fail=0;gate(null);rerender()}
+function unlockNow(){LOCK.open=true;LOCK.fail=0;gate(null);rerender();setTimeout(autoSync,3000)}
 function pinGate(){
   if(!ST().editPin){unlockNow();setTimeout(async()=>{if(!ST().editPin&&await askConfirm("Set a 4-digit PIN. The app will ask for it every time it opens, so anyone who picks up your phone can't see your ledger.","Set PIN",false,"Protect the app with a PIN"))newPinFlow("Set a 4-digit PIN")},700);return}
   const g=gate(gateHead("Enter your PIN")+'<p class="small muted" style="margin:0">'+esc((S.user&&S.user.email)||"")+'</p><input id="lk_in" class="pin-in" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="4-digit PIN" placeholder="••••"><div class="pin-err small neg" id="lk_err" aria-live="polite"></div>'+
@@ -813,7 +847,10 @@ function pinGate(){
   g.querySelector("#lk_out").addEventListener("click",()=>signOutNow());
   setTimeout(()=>inp.focus(),80);
 }
-async function signOutNow(){G.leaving=true;try{await firebase.auth().signOut()}catch(e){}
+async function signOutNow(force){
+  if(!force&&S.mode==="cloud"&&S.db&&S.db.waitForPendingWrites){let ok=false;await Promise.race([S.db.waitForPendingWrites().then(()=>ok=true).catch(()=>{}),new Promise(r=>setTimeout(r,4000))]);
+    if(!ok){if(!await askConfirm("Some entries on this device have <b>not reached the cloud yet</b>. Signing out now will erase them. Take a Full backup first, or open Settings → Cloud check.","Sign out anyway",true,"Entries not uploaded"))return}}
+  G.leaving=true;try{await firebase.auth().signOut()}catch(e){}
   try{const db=firebase.firestore();await db.terminate();await db.clearPersistence()}catch(e){}
   location.reload()}
 async function reauthUser(){
@@ -837,14 +874,15 @@ async function put(col,id,obj){
   if(col==="bookings"&&!LOGCTX.skip)obj=withLog(id,obj);
   if(col==="customers")obj=safeCust(obj);
   if(S.mode==="cloud"){
-    const pr=S.db.collection(col).doc(id).set(obj);
+    let pr;try{pr=S.db.collection(col).doc(id).set(obj)}catch(e){toast("Could not save this entry ("+((e&&e.message)||"error").slice(0,80)+")","bad");throw e}
+    syncTrack(pr);
     pr.catch(e=>toast(e&&e.code==="permission-denied"?"This account is not allowed to change the ledger.":"Could not save to the cloud ("+((e&&e.code)||"error")+"). Please try again.","bad"));
     await Promise.race([pr,new Promise(r=>setTimeout(r,1200))]);
   }else{S.data[col][id]=obj;saveLocal();rerender()}
 }
 async function del(col,id){
   if(col==="bookings"){const old=S.data.bookings[id];if(old&&!old.sample){const x=clone(old);delete x.id;x.deletedAt=Date.now();x.log=(x.log||[]).concat([{at:Date.now(),ch:[{k:"delete",t:"Booking deleted"+(x.status?" (it was "+((BST[x.status]||[x.status])[0])+")":"")}],reason:LOGCTX.reason||""}]);LOGCTX.reason="";try{await put("deleted",id,x)}catch(e){}}}
-  if(S.mode==="cloud"){const pr=S.db.collection(col).doc(id).delete();pr.catch(e=>toast("Could not delete ("+((e&&e.code)||"error")+").","bad"));await Promise.race([pr,new Promise(r=>setTimeout(r,1200))])}
+  if(S.mode==="cloud"){const pr=S.db.collection(col).doc(id).delete();syncTrack(pr);pr.catch(e=>toast("Could not delete ("+((e&&e.code)||"error")+").","bad"));await Promise.race([pr,new Promise(r=>setTimeout(r,1200))])}
   else{delete S.data[col][id];saveLocal();rerender()}
 }
 const ST=()=>{const o=Object.assign({},DEF,S.data.settings.main||{});
@@ -990,7 +1028,7 @@ function render(){
   const navTop=(document.querySelector("#side .side-nav")||{}).scrollTop||0;
   $("#side").innerHTML='<div class="brand"><div class="brand-mark">'+esc((st.shop||"D").trim().charAt(0).toUpperCase())+'</div><div><div class="brand-name">'+esc(st.shop)+'</div><div class="brand-sub">'+esc(st.city)+' · Rental ledger</div></div></div><div class="side-nav">'+
     NAV.map(([k,l,i])=>'<button type="button" class="nav-btn'+(V.view===k||(k==="dash"&&V.view==="calendar")?" on":"")+'" data-go="'+k+'">'+ic(i)+'<span>'+l+'</span>'+(k==="dash"&&urgent?'<span class="badge">'+urgent+'</span>':(k==="repair"||k==="cleaning")&&loaded()&&collectList(k==="repair"?"repair":"clean").length?'<span class="badge" title="Dresses to bring back">'+collectList(k==="repair"?"repair":"clean").length+'</span>':"")+'</button>').join("")+'</div>'+
-    '<div class="side-foot"><span class="dot '+(S.mode==="cloud"?"ok":S.mode==="local"?"warn":"")+'"></span>'+(S.mode==="cloud"?"Saving to the cloud":S.mode==="local"?"Saved on this device only":"Connecting…")+'</div>';
+    '<div class="side-foot"'+(SYNC.state==="wait"?' data-act="cloud-check" style="cursor:pointer"':"")+'>'+(S.mode==="local"?'<span class="dot warn"></span><span>Saved on this device only</span>':(()=>{const [c,t]=syncTxt();return '<span class="dot '+c+'"></span><span>'+t+'</span>'})())+'</div>';
   {const sn=document.querySelector("#side .side-nav");if(sn&&navTop)sn.scrollTop=navTop}
   $("#tabbar").innerHTML=TABS.map(k=>{const n=NAV.find(x=>x[0]===k);return '<button type="button" class="'+(V.view===k?"on":"")+'" data-go="'+k+'">'+ic(n[2])+'<span>'+(k==="dash"?"Home":n[1])+'</span>'+(k==="dash"&&urgent?'<span class="badge">'+urgent+'</span>':"")+'</button>'}).join("")+'<button type="button" class="'+(TABS.includes(V.view)?"":"on")+'" data-act="more">'+ic("menu")+'<span>More</span></button>';
   const fab=$("#fab");
@@ -2067,7 +2105,7 @@ function viewSettings(){
   '<div class="panel" style="margin-top:16px"><div class="panel-h"><h3>Data and backup</h3></div><div class="panel-b" style="display:flex;flex-direction:column;gap:12px">'+
    (S.mode==="cloud"&&S.user?'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill p-ok">Signed in</span><b class="small">'+esc(S.user.email)+'</b><button type="button" class="btn sm ghost" data-act="sign-out" style="margin-left:auto">Sign out</button></div>':"")+
    '<p class="small muted" style="margin:0">'+(S.mode==="cloud"?"Every entry is saved to the cloud (Firebase) as soon as you make it. Without internet it is kept on this phone and goes up when the internet is back. Only the allowed accounts can open it.":"Data is saved only in this device's browser. Clearing browser data can erase it, so take regular backups.")+'</p>'+
-   '<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" data-act="backup">'+ic("down")+'Full backup (JSON)</button><button type="button" class="btn" data-act="csv">'+ic("down")+'Bookings Excel (CSV)</button>'+
+   '<div style="display:flex;gap:8px;flex-wrap:wrap">'+(S.mode==="cloud"?'<button type="button" class="btn" data-act="cloud-check">'+ic("check")+'Cloud check</button>':"")+'<button type="button" class="btn" data-act="backup">'+ic("down")+'Full backup (JSON)</button><button type="button" class="btn" data-act="csv">'+ic("down")+'Bookings Excel (CSV)</button>'+
    (S.mode==="local"||S.mode==="cloud"?'<label class="btn" for="restore_f">'+ic("back")+'Restore from backup</label><input id="restore_f" type="file" accept=".json,application/json" hidden>':"")+'</div>'+
    '<p class="small muted" style="margin:0">Download a backup once a week and keep it on WhatsApp or Google Drive. On a new phone, open this file and use "Restore from backup" to bring back all your data.</p>'+
   '</div></div>';
@@ -4643,6 +4681,7 @@ document.addEventListener("click",async e=>{
   if(act==="save-settings"){const o=Object.assign({},S.data.settings.main||{});["shop","city","phone","addr"].forEach(k=>o[k]=($("#s_"+k).value||"").trim());["expBudget","clean","repair","pack","lateFee","prepDays","buffer","noShowDays","slipWidth","openCash","openBank"].forEach(k=>o[k]=N($("#s_"+k).value));o.openDate=$("#s_openDate").value||"";o.terms=$("#s_terms").value;o.guard=$("#s_guard").checked;o.waLang=$("#s_waLang").value||"both";if(!o.shop)o.shop=DEF.shop;try{await put("settings","main",o);G.pageDirty=false;toast("Settings saved")}catch(x){}return}
   if(act==="backup"){saveFile("dress-rental-backup-"+today()+".json",JSON.stringify(S.data,null,1));return}
   if(act==="csv"){saveFile("bookings-"+today()+".csv",csv());return}
+  if(act==="cloud-check"){cloudCheck();return}
   if(act==="sign-out"){if(await askConfirm("Sign out from this device? The ledger data saved on this phone is removed too; it stays safe in the cloud. You will need to sign in again.","Sign out"))signOutNow();return}
   if(act==="load-sample"){try{await loadSample();recRan=false;setTimeout(runRecurring,300);toast("Sample data loaded; have a look around")}catch(x){}return}
   if(act==="clear-sample"){
@@ -4697,7 +4736,8 @@ document.addEventListener("change",async e=>{
         const ops=[];
         for(const c of COLS){const nw=j[c]||{};for(const k of Object.keys(S.data[c]||{}))if(!(k in nw))ops.push([c,k,null]);
           for(const [k,v] of Object.entries(nw)){if(!k||k==="undefined"||k.includes("/")||!v||typeof v!=="object")continue;let o=Object.assign({},v);delete o.id;if(c==="customers")o=safeCust(o);ops.push([c,k,o])}}
-        for(let i=0;i<ops.length;i+=400){const bt=S.db.batch(),part=ops.slice(i,i+400);part.forEach(([c,k,o])=>{const r=S.db.collection(c).doc(k);if(o)bt.set(r,o);else bt.delete(r)});
+        const parts=[];{let cur=[],sz=0;for(const op of ops){const z=op[2]?JSON.stringify(op[2]).length:50;if(cur.length&&(cur.length>=300||sz+z>3000000)){parts.push(cur);cur=[];sz=0}cur.push(op);sz+=z}if(cur.length)parts.push(cur)}
+        for(const part of parts){const bt=S.db.batch();part.forEach(([c,k,o])=>{const r=S.db.collection(c).doc(k);if(o)bt.set(r,o);else bt.delete(r)});
           try{await bt.commit();n+=part.filter(x=>x[2]).length}catch(z){bad+=part.length}}
         toast(n+" records restored"+(bad?" · "+bad+" could not be saved":""),bad?"bad":"");e.target.value="";return}
       COLS.forEach(c=>S.data[c]=j[c]||{});Object.keys(S.data.customers).forEach(k=>S.data.customers[k]=safeCust(S.data.customers[k]));saveLocal();rerender();toast("Data restored from backup");
