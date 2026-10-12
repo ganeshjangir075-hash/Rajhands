@@ -3084,7 +3084,7 @@ function wirePickers(root){
     lst.addEventListener("mousedown",e=>e.preventDefault());
     lst.addEventListener("click",e=>{const bt=e.target.closest("[data-pid]");if(!bt)return;const c=C()[bt.dataset.pid];if(!c)return;h.value=bt.dataset.pid;q.value=c.name+(c.phone?" · "+c.phone:"");clr.hidden=false;lst.hidden=true;h.dispatchEvent(new Event("change",{bubbles:true}))});
     q.addEventListener("blur",()=>setTimeout(()=>{lst.hidden=true;if(!h.value){q.value="";clr.hidden=true}},150));
-    q.addEventListener("keydown",e=>{if(e.key==="Escape"&&!lst.hidden){e.stopPropagation();lst.hidden=true}});
+    q.addEventListener("keydown",e=>{if(e.key==="Escape"&&!lst.hidden){lst.hidden=true;if(q.value.trim())e.stopPropagation()}});
     clr.addEventListener("click",()=>{h.value="";q.value="";clr.hidden=true;q.focus()});
   });
 }
@@ -3343,7 +3343,7 @@ function bookingForm(id,pre){
      if(v==="__new"){const t=q.value.trim();pick("__new");if(t){if(/^[\d\s+]{6,}$/.test(t)){el.querySelector("#nc_phone").value=t.replace(/\s/g,"")}else{el.querySelector("#nc_name").value=t}}q.value="";clr.hidden=true;setTimeout(()=>el.querySelector(el.querySelector("#nc_name").value?"#nc_phone":"#nc_name").focus(),30);return}
      pick(v)});
    q.addEventListener("blur",()=>setTimeout(()=>{lst.hidden=true;const c=C()[sel.value];if(c)q.value=label(c)},150));
-   q.addEventListener("keydown",e=>{if(e.key==="Escape"&&!lst.hidden){e.stopPropagation();lst.hidden=true}if(e.key==="Enter"){e.preventDefault();const f=lst.querySelector('[data-bcpick]:not([data-bcpick="__new"])');if(f&&!lst.hidden)f.click()}});
+   q.addEventListener("keydown",e=>{if(e.key==="Escape"&&!lst.hidden){lst.hidden=true;if(q.value.trim())e.stopPropagation()}if(e.key==="Enter"){e.preventDefault();const f=lst.querySelector('[data-bcpick]:not([data-bcpick="__new"])');if(f&&!lst.hidden)f.click()}});
    clr.addEventListener("click",()=>{q.value="";clr.hidden=true;pick("__new");q.focus()});
   }
   const famBox=()=>{const box=el.querySelector("#b_famadv");if(!box)return;if(id&&b.status!=="draft"){box.innerHTML="";return}const cid=val(el,"b_cust"),rc=val(el,"b_refc"),hs=famHolderIds(cid==="__new"?"":cid,rc);
