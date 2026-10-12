@@ -64,6 +64,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .nav-btn:hover{background:var(--surface-2);color:var(--fg)}
 .nav-btn.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
 .nav-btn .badge{margin-left:auto}
+.msg-cell{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.msg-td{min-width:150px}
 .side-nav{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;display:flex;flex-direction:column;gap:inherit;margin:0 -6px;padding:0 6px}
 .side-nav .nav-btn{flex:none}
 .brand,.side-foot{flex:none}
@@ -107,6 +108,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 .panel-h h2,.panel-h h3{margin:0;font:800 17px/1.2 var(--f-display);letter-spacing:-.015em}
 .panel-b{padding:14px 16px}
 .label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+/* section headings inside detail pop-ups: deep pink, a little bolder (value labels stay grey) */
+.sheet .label{color:var(--accent);font-weight:800}
+.sheet .bal-c .label,.sheet .bd-rent .label,.sheet .hero-fin .label,.sheet .calc.mr .label,.sheet .petty .label{color:var(--muted);font-weight:700}
 .muted{color:var(--muted)} .small{font-size:13px}
 .grid{display:grid;gap:16px}
 .cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -463,7 +467,7 @@ a.btn{text-decoration:none}
 .wa-prev b{display:inline;font-weight:700;margin:0}
 .inv-wrap{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#fff;margin-bottom:10px}.inv-wrap iframe{border:0;display:block;transform-origin:0 0;background:#fff}
 .wa-slip{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 2px}
-.pin-in{display:block;width:100%;max-width:220px;margin:8px auto 4px;text-align:center;font-size:30px;letter-spacing:.6em;padding:10px 0 10px .6em;border:1.5px solid var(--line-2);border-radius:12px;background:var(--surface);color:inherit;font-family:inherit}.pin-in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}.pin-err{text-align:center;min-height:18px}.linkbtn{background:none;border:0;padding:4px 0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;display:block;margin:0 auto}
+.pin-in{caret-color:transparent;display:block;width:100%;max-width:220px;margin:8px auto 4px;text-align:center;font-size:30px;letter-spacing:.6em;padding:10px 0 10px .6em;border:1.5px solid var(--line-2);border-radius:12px;background:var(--surface);color:inherit;font-family:inherit}.pin-in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}.pin-err{text-align:center;min-height:18px}.linkbtn{background:none;border:0;padding:4px 0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;display:block;margin:0 auto}
 .cl-sec{margin:0 0 14px}.cl-sec button{display:inline-flex;align-items:center;gap:6px}.cl-sec svg{width:16px;height:16px}.cl-need{margin-top:6px;font:inherit;font-size:12.5px;padding:4px 8px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:inherit;max-width:100%}.cr-c{width:90px;font:inherit;padding:6px 8px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:inherit;text-align:right}.cr-c:disabled{opacity:.4}
 .dash-cards{align-items:start}
 .rf-bar{display:flex;flex-direction:column;gap:8px;margin:2px 0 4px}.rf-n{display:inline-block;min-width:18px;padding:0 5px;border-radius:999px;background:var(--surface-2);color:var(--muted);font-size:11px;line-height:17px;text-align:center}.chip.on .rf-n{background:rgba(255,255,255,.25);color:#fff}.rf-date{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rf-date input{font:inherit;padding:6px 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:inherit}
@@ -709,8 +713,8 @@ const SAAVE_DEF=["2026-11-21","2026-11-24","2026-11-25","2026-11-26","2026-12-02
 const SVSUG=["Vivah muhurat","Sagai muhurat","Dev Uthani Ekadashi","Akshaya Tritiya (Aakha Teej)","Basant Panchami","Phulera Dooj","Gangaur","Teej","Karwa Chauth","Navratri","Diwali","Lagan / Haldi"];
 function saaveNote(d){const m=(S.data.settings.main||{}).saaveNote||{};return m[d]||"Vivah muhurat"}
 function saave(){const v=(S.data.settings.main||{}).saave;return Array.isArray(v)?v.slice().sort():SAAVE_DEF}
-const DEF={shop:"My Dress Rental",city:"Sardarshahar",clean:250,repair:50,pack:20,lateFee:200,prepDays:2,buffer:1,fixedMonthly:21000,phone:"",slipWidth:58,guard:true,waLang:"both",
-  terms:"A late fee of {late} per day applies after the return date.\nStains, tears or lost tassels/dupatta will be charged separately at repair or replacement cost.\nDo not wash the dress yourself; the shop handles dry-cleaning."};
+const DEF={shop:"My Dress Rental",city:"Sardarshahar",clean:250,repair:50,pack:20,lateFee:200,prepDays:2,buffer:1,fixedMonthly:21000,phone:"",slipWidth:58,guard:true,waLang:"both",noShowDays:2,
+  terms:"Advance is not refundable if the booking is cancelled or the dress is not collected.\nA late fee of {late} per day applies after the return date.\nStains, tears or lost tassels/dupatta will be charged separately at repair or replacement cost.\nDo not wash the dress yourself; the shop handles dry-cleaning."};
 const BST={draft:["Draft","p-mute"],booked:["Booked","p-info"],ready:["Ready","p-warn"],delivered:["Rented","p-acc"],returned:["Returned · payment due","p-gold"],closed:["Closed","p-ok"],cancelled:["Cancelled","p-mute"]};
 const DST={available:["Available","p-ok"],booked:["Booked","p-info"],out:["Rented","p-acc"],cleaning:["Dry-cleaning","p-warn"],repair:["In repair","p-bad"],sold:["Sold","p-mute"],retired:["Retired","p-mute"]};
 
@@ -991,6 +995,7 @@ function render(){
   const keep=document.activeElement&&document.activeElement.id&&m.contains(document.activeElement)?{id:document.activeElement.id,s:document.activeElement.selectionStart}:null;
   m.innerHTML=sampleBanner()+fn();fitC6();
   if(!recRan&&loaded())setTimeout(runRecurring,500);
+  if(loaded()&&AUTO.day!==today())setTimeout(autoJobs,700);
   if(!badKeysFixed&&loaded())setTimeout(fixBadKeys,300);
   if(keep){const el=document.getElementById(keep.id);if(el){el.focus();try{el.setSelectionRange(keep.s,keep.s)}catch(e){}}}
 }
@@ -1233,7 +1238,7 @@ function viewReturns(){
   const row=(b,kind)=>{const c=C()[b.customerId]||{},ri=b.ret||{},ch=retCharges(ri),dl=Math.max(0,diff(b.returnDate,t));
     const right=kind==="out"?'<span class="pill '+(dl?"p-bad":b.returnDate===t?"p-warn":"p-info")+'">'+(dl?dl+" days late":b.returnDate===t?"Due today":rel(b.returnDate))+'</span>':'<span class="pill '+(ch.length||N(ri.lateFee)?"p-bad":"p-ok")+'">'+(ch.length?ch.length+" issue"+(ch.length>1?"s":""):N(ri.lateFee)?"Late":"All OK")+'</span>';
     return '<div class="due-row"><button type="button" class="due-main" data-open-b="'+b.id+'"><span><b>'+esc(c.name||"Customer")+'</b> <span class="mono muted">'+esc(BN(b.no))+'</span><span class="small muted" style="display:block">'+esc([c.phone,bookingDresses(b)].filter(Boolean).join(" · "))+'</span><span class="small" style="display:block">'+(kind==="out"?"Due back "+fdw(b.returnDate):"Returned "+fdw(ri.on||b.returnDate)+(ch.length?" · "+esc(ch.map(x=>x.reason).join(", ")):"")+(N(ri.lateFee)+N(ri.damage)?" · charged "+inr(N(ri.lateFee)+N(ri.damage)):""))+'</span></span><span class="due-amt">'+right+'</span></button>'+
-      '<div class="due-act">'+(kind==="out"?waBtn(c,waRemind(b,dl?"late":"ret"),true,"Remind")+'<button type="button" class="btn sm pri" data-return-b="'+b.id+'">'+ic("back")+'Check & accept</button>':'<button type="button" class="btn sm" data-slip-b="'+b.id+'" data-slip-k="wapsi">'+ic("print")+'Return slip</button>')+'</div></div>'};
+      '<div class="due-act">'+(kind==="out"?(()=>{const wk=dl?"late":"ret",sw=(b.wa||{})[wk];return waBtn(c,waRemind(b,wk),true,(dl?"Late msg":"Return reminder")+(sw?" sent":""),b.id+"|"+wk,!!sw)})()+'<button type="button" class="btn sm pri" data-return-b="'+b.id+'">'+ic("back")+'Check & accept</button>':'<button type="button" class="btn sm" data-slip-b="'+b.id+'" data-slip-k="wapsi">'+ic("print")+'Return slip</button>')+'</div></div>'};
   const grp=(title,arr,cls,kind)=>arr.length?'<div class="label" style="margin:14px 0 6px">'+(cls?'<span class="pill '+cls+'">'+title+'</span>':title)+' <span class="muted">· '+arr.length+'</span></div><div class="panel">'+arr.map(b=>row(b,kind)).join("")+'</div>':"";
   const chargedM=list(B()).filter(b=>b.ret&&((b.ret.on||"").slice(0,7)===t.slice(0,7))).reduce((a,b)=>a+N(b.ret.lateFee)+N(b.ret.damage),0);
   /* filters */
@@ -1774,18 +1779,19 @@ function actCSV(){
 }
 
 /* ---------- Bookings ---------- */
-const BF={draft:["Drafts",b=>b.status==="draft"],upcoming:["Upcoming",b=>b.status==="booked"||b.status==="ready"],out:["Rented",b=>b.status==="delivered"],returned:["Payment due",b=>b.status==="returned"],closed:["Closed",b=>b.status==="closed"],cancelled:["Cancelled",b=>b.status==="cancelled"],all:["All",()=>true]};
+const BF={draft:["Drafts",b=>b.status==="draft"],upcoming:["Upcoming",b=>b.status==="booked"],ready:["Ready",b=>b.status==="ready"],out:["Rented",b=>b.status==="delivered"],returned:["Payment due",b=>b.status==="returned"],closed:["Closed",b=>b.status==="closed"],cancelled:["Cancelled",b=>b.status==="cancelled"],all:["All",()=>true]};
 function viewBookings(){
   const all=list(B());
   const q=V.bq.toLowerCase();
   let rows=all.filter(BF[V.bfilter][1]).filter(b=>!q||[b.no,custName(b.customerId),(C()[b.customerId]||{}).phone,b.place,b.func,bookingDresses(b)].join(" ").toLowerCase().includes(q));
-  const asc=V.bfilter==="upcoming"||V.bfilter==="out";
+  const asc=V.bfilter==="upcoming"||V.bfilter==="ready"||V.bfilter==="out";
+  const MK={upcoming:1,ready:1,out:1,cancelled:1}[V.bfilter];
   rows.sort((a,b)=>{const x=asc?(V.bfilter==="out"?a.returnDate:a.deliveryDate):b.deliveryDate,y=asc?(V.bfilter==="out"?b.returnDate:b.deliveryDate):a.deliveryDate;return x<y?-1:x>y?1:0});
   return top("Bookings",all.length+" bookings in total",'<button type="button" class="btn" data-act="blist">'+ic("print")+'Print / download list</button>')+
   '<div class="toolbar"><div class="seg">'+Object.keys(BF).map(k=>'<button type="button" class="'+(V.bfilter===k?"on":"")+'" data-bf="'+k+'">'+BF[k][0]+' <span class="muted">'+all.filter(BF[k][1]).length+'</span></button>').join("")+'</div>'+
   '<label class="search">'+ic("search")+'<input id="bq" type="search" placeholder="Name, phone, booking no…" value="'+esc(V.bq)+'" aria-label="Search bookings"></label></div>'+
-  '<div class="panel tbl-wrap">'+(rows.length?'<table><thead><tr><th>Booking No.</th><th>Customer</th><th>Function</th><th>Handover</th><th>Return</th><th>Dress</th><th class="r">Rent</th><th class="r">Due</th><th>Status</th></tr></thead><tbody>'+
-   rows.map(b=>{const f=fin(b);const late=b.status==="delivered"&&b.returnDate<today();return '<tr class="row" data-open-b="'+b.id+'"><td class="mono">'+esc(BN(b.no))+(editCount(b)?'<div><span class="pill p-info" title="Edited '+editCount(b)+' time(s); open the booking to see the change history">Edited'+(editCount(b)>1?' ×'+editCount(b):"")+'</span></div>':"")+'</td><td><b>'+esc(custName(b.customerId))+'</b><div class="small muted">'+esc((C()[b.customerId]||{}).phone||"")+'</div></td><td>'+esc(b.func||"—")+'<div class="small muted">'+esc(b.place||"")+'</div></td><td class="num">'+fd(b.deliveryDate)+'</td><td class="num">'+fd(b.returnDate)+(late?' <span class="pill p-bad">late</span>':"")+'</td><td class="small">'+((b.items||[]).map(i=>{const d=D()[i.dressId];return '<div class="bk-dr">'+(d?'<span class="mono bk-code">'+esc(d.code||"")+'</span> '+esc(d.name):"—")+'</div>'}).join("")||"—")+'</td><td class="r num">'+inr(f.gross)+'</td><td class="r num'+(f.due>0?" neg":"")+'">'+(f.due>0?inr(f.due):"—")+'</td><td><span class="pill '+BST[b.status][1]+'">'+BST[b.status][0]+'</span></td></tr>'}).join("")+'</tbody></table>'
+  '<div class="panel tbl-wrap">'+(rows.length?'<table><thead><tr><th>Booking No.</th><th>Customer</th><th>Function</th><th>Handover</th><th>Return</th><th>Dress</th><th class="r">Rent</th><th class="r">Due</th><th>Status</th>'+(MK?'<th>Message</th>':"")+'</tr></thead><tbody>'+
+   rows.map(b=>{const f=fin(b);const late=b.status==="delivered"&&b.returnDate<today();return '<tr class="row" data-open-b="'+b.id+'"><td class="mono">'+esc(BN(b.no))+(editCount(b)?'<div><span class="pill p-info" title="Edited '+editCount(b)+' time(s); open the booking to see the change history">Edited'+(editCount(b)>1?' ×'+editCount(b):"")+'</span></div>':"")+'</td><td><b>'+esc(custName(b.customerId))+'</b><div class="small muted">'+esc((C()[b.customerId]||{}).phone||"")+'</div></td><td>'+esc(b.func||"—")+'<div class="small muted">'+esc(b.place||"")+'</div></td><td class="num">'+fd(b.deliveryDate)+'</td><td class="num">'+fd(b.returnDate)+(late?' <span class="pill p-bad">late</span>':"")+'</td><td class="small">'+((b.items||[]).map(i=>{const d=D()[i.dressId];return '<div class="bk-dr">'+(d?'<span class="mono bk-code">'+esc(d.code||"")+'</span> '+esc(d.name):"—")+'</div>'}).join("")||"—")+'</td><td class="r num">'+inr(f.gross)+'</td><td class="r num'+(f.due>0?" neg":"")+'">'+(f.due>0?inr(f.due):"—")+'</td><td><span class="pill '+BST[b.status][1]+'">'+BST[b.status][0]+'</span>'+(b.noShow?'<div><span class="pill p-bad">Not picked up</span></div>':"")+'</td>'+(MK?'<td class="msg-td">'+rowMsg(b)+'</td>':"")+'</tr>'}).join("")+'</tbody></table>'
    :'<div class="empty"><b>No bookings in this list</b>Tap "New booking" to add your first one.</div>')+'</div>';
 }
 
@@ -1971,7 +1977,7 @@ function viewSettings(){
   '</div></div></div>'+
   '<div class="panel"><div class="panel-h"><h3>Per dress, per booking</h3></div><div class="panel-b"><div class="fgrid">'+
    f("clean","Dry-clean (₹ per dress)",s.clean)+f("repair","Minor repair (₹ per dress)",s.repair)+f("pack","Packing cover (₹)",s.pack)+f("lateFee","Late fee (₹ per day)",s.lateFee)+
-   f("prepDays","Prepare how many days ahead",s.prepDays,"The 'Get it ready' reminder appears this many days before pick-up (1 = the day before)")+f("buffer","Ready / cleaning days (gap)",s.buffer,"Days kept free before pick-up (to get it ready) and after return (to clean it). 1 = function 15 → busy 13 to 17, next pick-up from 18")+
+   f("prepDays","Prepare how many days ahead",s.prepDays,"The 'Get it ready' reminder appears this many days before pick-up (1 = the day before)")+f("noShowDays","Auto-cancel if not picked up (days)",s.noShowDays,"Days after the pick-up date. The booking is cancelled and the advance is kept as cancellation charge. 0 = never")+f("buffer","Ready / cleaning days (gap)",s.buffer,"Days kept free before pick-up (to get it ready) and after return (to clean it). 1 = function 15 → busy 13 to 17, next pick-up from 18")+
   '</div></div></div></div>'+
   '<div class="panel" style="margin-top:16px"><div class="panel-h"><h3>App PIN</h3></div><div class="panel-b"><p class="small muted" style="margin:0 0 10px">The 4-digit PIN is asked every time the app opens, and before anyone edits a booking that is already confirmed.</p>'+
    (s.editPin?'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill p-ok">PIN is on</span><button type="button" class="btn sm" data-act="pin-change">Change PIN</button><button type="button" class="btn sm ghost" data-act="pin-off">Turn off</button></div>':'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill p-mute">No PIN yet</span><button type="button" class="btn sm pri" data-act="pin-set">Set PIN</button></div>')+'</div></div>'+
@@ -3398,11 +3404,24 @@ function waBtn(c,text,sm,label,log,sent){
   return '<span class="wa-wrap"><button type="button" class="'+cls+'" data-wa-menu aria-haspopup="true" aria-expanded="false">'+icn+esc(lb)+' ▾</button><span class="wa-menu" hidden>'+
     nums.map(n=>'<a href="https://wa.me/'+waNum(n[1])+q+'" target="_blank" rel="noopener"'+lg+'><b>'+n[0]+'</b><span class="num">'+esc(n[1])+'</span></a>').join("")+'</span></span>';
 }
+/* one-tap WhatsApp button for a booking row (Upcoming / Ready / Rented / Cancelled lists) */
+function rowMsg(b){const c=C()[b.customerId]||{},w=b.wa||{};
+  const k=b.status==="booked"?"confirm":b.status==="ready"?"pickup":b.status==="delivered"?(b.returnDate<today()?"late":"ret"):b.status==="cancelled"?"cancel":"";
+  if(!k)return "";const L={confirm:"Confirm msg",pickup:"Ready msg",ret:"Return reminder",late:"Late msg",cancel:"Cancel msg"}[k];
+  const bt=waBtn(c,waMsg(b,k),true,w[k]?L+" sent":L,b.id+"|"+k,!!w[k]);
+  return '<div class="msg-cell">'+(bt||'<span class="small muted">No phone</span>')+(k==="confirm"?'<button type="button" class="btn sm ghost" data-share-slip="'+b.id+'|pdf">'+ic("share")+'Slip PDF</button>':"")+'</div>'}
 /* WhatsApp messages sent from a booking */
-const WAK={confirm:"Booking confirmed",pickup:"Ready for pick-up",ret:"Return reminder",late:"Late return reminder",pay:"Payment reminder",thanks:"Thank you"};
+const WAK={cancel:"Booking cancelled",confirm:"Booking confirmed",pickup:"Ready for pick-up",ret:"Return reminder",late:"Late return reminder",pay:"Payment reminder",thanks:"Thank you"};
 const WAMAP={thanks:"thanks",prep:"pickup",del:"pickup","late-del":"pickup",ret:"ret",late:"late",pay:"pay",dep:"pay"};
 function waSentTxt(x){if(!x||!x.at)return "";const d=new Date(x.at);return fdy(ymd(d))+", "+pad(d.getHours())+":"+pad(d.getMinutes())}
 function waMsg(b,k){
+  if(k==="cancel"){const c=C()[b.customerId]||{},dn=dressNames(b),nm=c.name||"",kept=Math.round(N(b.cancelKept));
+    const ps=payList(b),mv=Math.round(Math.abs(ps.filter(x=>x.kind==="Moved to khaata").reduce((a,x)=>a+N(x.amount),0))),rf=Math.round(Math.abs(ps.filter(x=>x.kind==="Refund on cancel").reduce((a,x)=>a+N(x.amount),0)));
+    const R_=v=>"₹"+v.toLocaleString("en-IN");
+    return waL("Hello "+nm+",\nYour booking "+bo(BN(b.no))+" ("+bo(dn)+") for pick-up on "+bo(fdw(b.deliveryDate))+" has been "+bo("cancelled")+(b.noShow?" because the dress was not collected.":".")+
+        (kept>0?"\nAs per our booking terms, the advance of "+bo(R_(kept))+" is not refundable.":"")+(mv>0?"\n"+bo(R_(mv))+" is kept in your account with us for a future booking.":"")+(rf>0?"\n"+bo(R_(rf))+" has been returned to you.":""),
+      "Namaste "+nm+",\nAapki booking "+bo(BN(b.no))+" ("+bo(dn)+"), pick-up "+bo(fdw(b.deliveryDate))+", "+bo("cancel")+" kar di gayi hai"+(b.noShow?" kyunki dress lene koi nahi aaya.":".")+
+        (kept>0?"\nBooking ki sharton ke anusaar "+bo(R_(kept))+" advance wapas nahi hoga.":"")+(mv>0?"\n"+bo(R_(mv))+" aapke khaate me agli booking ke liye jama hai.":"")+(rf>0?"\n"+bo(R_(rf))+" aapko wapas kar diye gaye hain.":""))}
   if(k==="confirm"){const c=C()[b.customerId]||{},st=ST(),f=fin(b),dn=dressNames(b),nm=c.name||"",bal=Math.round(f.gross-N(b.paid)),bs=bal.toLocaleString("en-IN");
     return waL("Hello "+nm+",\nYour booking "+bo(BN(b.no))+" with "+st.shop+" is confirmed.\nDress: "+bo(dn)+"\nFunction: "+(b.func||"")+" ("+bo(fdw(b.eventDate))+")\nPick-up: "+bo(fdw(b.deliveryDate))+"\nReturn: "+bo(fdw(b.returnDate))+(bal>0?"\nBalance to pay before pick-up: "+bo("₹"+bs):"\nPayment: received in full")+"\n"+bo("Please bring your booking slip when you come to collect the dress."),
       "Namaste "+nm+",\nAapki booking "+bo(BN(b.no))+" "+st.shop+" par confirm ho gayi hai.\nDress: "+bo(dn)+"\nFunction: "+(b.func||"")+" ("+bo(fdw(b.eventDate))+")\nDress lene ki date: "+bo(fdw(b.deliveryDate))+"\nWapas karne ki date: "+bo(fdw(b.returnDate))+(bal>0?"\nDress lene se pehle baaki payment: "+bo("₹"+bs):"\nPayment: poora mil gaya hai")+"\n"+bo("Dress lene aate samay apni booking slip saath laayein."))}
@@ -3414,7 +3433,7 @@ function waMsg(b,k){
     "Namaste "+nm+",\n"+st.shop+" se dress rent karne ke liye Thank you. Umeed hai aapko dress pasand aayi. Agle function ke liye hamein zaroor yaad karein, nayi collection aati rehti hai.");
 }
 function waKeys(b){
-  const s=b.status,w=b.wa||{},k=[];if(s==="draft"||s==="cancelled")return k;
+  const s=b.status,w=b.wa||{},k=[];if(s==="cancelled")return ["cancel"];if(s==="draft")return k;
   k.push("confirm");
   if(["ready","delivered","returned","closed"].includes(s)||w.pickup)k.push("pickup");
   if(s==="delivered"||w.ret)k.push("ret");
@@ -3592,18 +3611,18 @@ function cancelForm(id){
   const el=modal({title:"Cancel booking "+BN(b.no),body:
    '<div class="small muted">The dress becomes free for these dates.</div>'+
    '<div class="calc"><div class="ln"><span>'+esc(c.name||"Customer")+' has paid</span><b class="num">'+inr(paid)+'</b></div></div>'+
-   '<div class="f"><label>What to do with this money?</label><div class="seg wrap" id="cx_k"><button type="button" data-cx="khaata" class="on">Keep in her khaata</button><button type="button" data-cx="refund">Return the money</button><button type="button" data-cx="keep">Keep as cancellation charge</button></div></div>'+
+   '<div class="f"><label>What to do with this money?</label><div class="seg wrap" id="cx_k"><button type="button" data-cx="keep" class="on">Keep as cancellation charge</button><button type="button" data-cx="khaata">Keep in her khaata</button><button type="button" data-cx="refund">Return the money</button></div></div>'+
    '<div class="fgrid"><div class="f"><label for="cx_amt" id="cx_lab">Amount to keep in khaata (₹)</label><input id="cx_amt" type="number" inputmode="numeric" min="0" max="'+paid+'" value="'+paid+'"><span class="hint" id="cx_rest"></span></div>'+
    '<div class="f full" id="cx_mw" hidden><label>Returned by</label>'+modeSel("cx_mode")+'<input type="hidden" id="cx_amtb" value="0"><div id="cx_bal" style="margin-top:8px"></div></div>'+
    '<div class="f full"><label for="cx_why">Reason</label><input id="cx_why" placeholder="e.g. wedding postponed"></div></div>'+
    '<div class="small muted" id="cx_help"></div>',
    foot:'<button type="button" class="btn" data-close>Back</button><button type="button" class="btn danger" data-ok>Cancel booking</button>'});
-  let k="khaata";const ai=el.querySelector("#cx_amt"),hb=el.querySelector("#cx_amtb"),rb=wireBal(el,"cx_bal","cx_amtb","cx_mode",false);
+  let k="keep";const ai=el.querySelector("#cx_amt"),hb=el.querySelector("#cx_amtb"),rb=wireBal(el,"cx_bal","cx_amtb","cx_mode",false);
   const paint=()=>{const a=Math.min(paid,Math.max(0,Math.round(N(ai.value)))),rest=paid-a;hb.value=k==="refund"?a:0;rb();
     el.querySelector("#cx_mw").hidden=k!=="refund";el.querySelector("#cx_amt").closest(".f").hidden=k==="keep";
     el.querySelector("#cx_lab").textContent=k==="refund"?"Amount to return (₹)":"Amount to keep in khaata (₹)";
     el.querySelector("#cx_rest").textContent=k!=="keep"&&rest>0?inr(rest)+" will be kept as cancellation charge":"";
-    el.querySelector("#cx_help").innerHTML=k==="khaata"?"The money stays with you and shows in <b>"+esc(c.name||"her")+"'s khaata</b>. It is used later for her or her family's booking. No cash moves today.":k==="refund"?"The refund is written in the Day book and taken out of the galla / bank.":"You keep the whole "+inr(paid)+". It is counted as income this month."};
+    el.querySelector("#cx_help").innerHTML=k==="khaata"?"The money stays with you and shows in <b>"+esc(c.name||"her")+"'s khaata</b>. It is used later for her or her family's booking. No cash moves today.":k==="refund"?"The refund is written in the Day book and taken out of the galla / bank.":"Advance is not refundable: you keep the whole "+inr(paid)+". It is counted as income this month."};
   el.querySelector("#cx_k").addEventListener("click",e=>{const x=e.target.closest("[data-cx]");if(!x)return;k=x.dataset.cx;el.querySelectorAll("#cx_k [data-cx]").forEach(y=>y.classList.toggle("on",y===x));paint()});
   ai.addEventListener("input",paint);paint();
   el.querySelector("[data-ok]").addEventListener("click",async()=>{
@@ -3614,7 +3633,7 @@ function cancelForm(id){
     o.status="cancelled";o.cancelledOn=on;o.cancelKept=Math.max(0,paid-a);o.updatedAt=Date.now();
     try{LOGCTX.reason=why;await put("bookings",id,o);
       if(k==="khaata"&&a>0){const cc=clone(C()[b.customerId]);delete cc.id;cc.adv=(cc.adv||[]).concat([{id:uid(),date:on,amount:a,kind:"From cancelled booking "+BN(b.no),mode:"Transfer",bookingId:id,at:Date.now()}]);await put("customers",b.customerId,cc)}
-      closeAll();toast("Booking cancelled"+(k==="khaata"&&a?" · "+inr(a)+" kept in khaata":k==="refund"&&a?" · "+inr(a)+" returned":""))}catch(x){}finally{LOGCTX.reason=""}
+      closeAll();if(N(c.phone)||N(c.alt))setTimeout(()=>askCancelMsg(id),350);toast("Booking cancelled"+(k==="khaata"&&a?" · "+inr(a)+" kept in khaata":k==="refund"&&a?" · "+inr(a)+" returned":""))}catch(x){}finally{LOGCTX.reason=""}
   });
 }
 function xferForm(id){
@@ -4216,6 +4235,19 @@ function recurringDue(){
   return out.sort((a,b)=>a.date<b.date?-1:1);
 }
 let recRan=false;
+/* daily jobs: add the no-refund line to the slip terms once; auto-cancel bookings nobody picked up */
+const AUTO={day:"",busy:false};
+async function autoJobs(){if(AUTO.busy||AUTO.day===today()||!loaded())return;AUTO.busy=true;
+  try{const t=today(),st=ST(),sm=S.data.settings.main;
+    if(sm&&!sm.nrTerm){const o=Object.assign({},sm,{nrTerm:true});if(o.terms!=null&&!/not refundable/i.test(o.terms))o.terms="Advance is not refundable if the booking is cancelled or the dress is not collected.\n"+o.terms;await put("settings","main",o)}
+    const nd=N(st.noShowDays);
+    if(nd>0){const late=list(B()).filter(b=>(b.status==="booked"||b.status==="ready")&&!b.sample&&b.deliveryDate&&diff(b.deliveryDate,t)>nd);
+      for(const b of late){const o=clone(b);delete o.id;o.status="cancelled";o.cancelledOn=t;o.noShow=true;o.cancelKept=Math.max(0,Math.round(N(b.paid)));o.updatedAt=Date.now();
+        try{LOGCTX.reason="Not picked up "+nd+" day"+(nd>1?"s":"")+" after the pick-up date ("+fd(b.deliveryDate)+") · cancelled automatically, advance kept";await put("bookings",b.id,o)}catch(e){}finally{LOGCTX.reason=""}}
+      if(late.length)toast(late.length+" booking"+(late.length>1?"s":"")+" not picked up, cancelled automatically. See Bookings → Cancelled.")}
+    AUTO.day=t}finally{AUTO.busy=false}}
+function askCancelMsg(id){const b=B()[id];if(!b)return;const c=C()[b.customerId]||{},bt=waBtn(c,waMsg(b,"cancel"),false,"Send on WhatsApp",id+"|cancel");if(!bt)return;
+  modal({title:"Tell "+esc(c.name||"the customer")+"?",body:'<p style="margin:0 0 8px">Send the cancellation message on WhatsApp.</p><pre class="wa-pre" style="white-space:pre-wrap;font:inherit;font-size:13px;background:var(--surface-2);padding:10px;border-radius:10px;margin:0">'+esc(waMsg(b,"cancel").replace(/\*/g,""))+'</pre>',foot:'<button type="button" class="btn" data-close>Later</button>'+bt})}
 async function runRecurring(){
   if(recRan)return;recRan=true;
   const t=today(),cur=t.slice(0,7);let added=0;
@@ -4528,7 +4560,7 @@ document.addEventListener("click",async e=>{
   if(act==="pin-change"){if(await needPin("Enter the current PIN to change it."))await newPinFlow("Choose a new PIN");return}
   if(act==="pin-off"){if(await needPin("Enter the current PIN to turn it off.")&&await askConfirm("Bookings can then be edited without a PIN.","Turn off",true,"Turn off the PIN?")){try{await savePin("");toast("PIN turned off")}catch(e){}}return}
   if(act==="saave-edit"){saaveForm();return}
-  if(act==="save-settings"){const o=Object.assign({},S.data.settings.main||{});["shop","city","phone","addr"].forEach(k=>o[k]=($("#s_"+k).value||"").trim());["expBudget","clean","repair","pack","lateFee","prepDays","buffer","slipWidth","openCash","openBank"].forEach(k=>o[k]=N($("#s_"+k).value));o.openDate=$("#s_openDate").value||"";o.terms=$("#s_terms").value;o.guard=$("#s_guard").checked;o.waLang=$("#s_waLang").value||"both";if(!o.shop)o.shop=DEF.shop;try{await put("settings","main",o);G.pageDirty=false;toast("Settings saved")}catch(x){}return}
+  if(act==="save-settings"){const o=Object.assign({},S.data.settings.main||{});["shop","city","phone","addr"].forEach(k=>o[k]=($("#s_"+k).value||"").trim());["expBudget","clean","repair","pack","lateFee","prepDays","buffer","noShowDays","slipWidth","openCash","openBank"].forEach(k=>o[k]=N($("#s_"+k).value));o.openDate=$("#s_openDate").value||"";o.terms=$("#s_terms").value;o.guard=$("#s_guard").checked;o.waLang=$("#s_waLang").value||"both";if(!o.shop)o.shop=DEF.shop;try{await put("settings","main",o);G.pageDirty=false;toast("Settings saved")}catch(x){}return}
   if(act==="backup"){saveFile("dress-rental-backup-"+today()+".json",JSON.stringify(S.data,null,1));return}
   if(act==="csv"){saveFile("bookings-"+today()+".csv",csv());return}
   if(act==="sign-out"){if(await askConfirm("Sign out from this device? The ledger data saved on this phone is removed too; it stays safe in the cloud. You will need to sign in again.","Sign out"))signOutNow();return}
