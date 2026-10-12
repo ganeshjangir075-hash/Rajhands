@@ -64,6 +64,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .nav-btn:hover{background:var(--surface-2);color:var(--fg)}
 .nav-btn.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
 .nav-btn .badge{margin-left:auto}
+.hist-r{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:96px;text-align:center}.hist-r b{font-size:14px}
 .msg-cell{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.msg-td{min-width:150px}
 .side-nav{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;display:flex;flex-direction:column;gap:inherit;margin:0 -6px;padding:0 6px}
 .side-nav .nav-btn{flex:none}
@@ -228,6 +229,7 @@ tfoot td{font-weight:600;border-bottom:0;border-top:2px solid var(--line-2)}
 .okbox{background:var(--ok-soft);color:var(--ok);border-radius:9px;padding:8px 12px;font-size:13px;font-weight:500}
 .item-row{display:grid;grid-template-columns:minmax(0,1fr) 110px 36px;gap:8px;align-items:start}
 .item-row .clash{grid-column:1/-1;margin-top:-2px}
+.item-row.one{grid-template-columns:minmax(0,1fr) 154px}
 .photo-pick{display:flex;gap:12px;align-items:center}
 .photo-pick .prev{width:84px;height:84px;border-radius:10px;background:var(--surface-2);overflow:hidden;display:grid;place-items:center;flex:none;border:1px solid var(--line)}
 .photo-pick .prev img{width:100%;height:100%;object-fit:cover}
@@ -306,6 +308,7 @@ tfoot td{font-weight:600;border-bottom:0;border-top:2px solid var(--line-2)}
   .dl{grid-template-columns:minmax(0,1fr)}
   .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .item-row{grid-template-columns:minmax(0,1fr) 88px 36px}
+  .item-row.one{grid-template-columns:minmax(0,1fr) 132px}
   .hist-i{grid-template-columns:70px minmax(0,1fr) auto}
   .cal .ev{display:none}
   .cal .dc .cnt{display:flex}
@@ -470,7 +473,7 @@ a.btn{text-decoration:none}
 .pin-in{caret-color:transparent;display:block;width:100%;max-width:220px;margin:8px auto 4px;text-align:center;font-size:30px;letter-spacing:.6em;padding:10px 0 10px .6em;border:1.5px solid var(--line-2);border-radius:12px;background:var(--surface);color:inherit;font-family:inherit}.pin-in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}.pin-err{text-align:center;min-height:18px}.linkbtn{background:none;border:0;padding:4px 0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;display:block;margin:0 auto}
 .cl-sec{margin:0 0 14px}.cl-sec button{display:inline-flex;align-items:center;gap:6px}.cl-sec svg{width:16px;height:16px}.cl-need{margin-top:6px;font:inherit;font-size:12.5px;padding:4px 8px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:inherit;max-width:100%}.cr-c{width:90px;font:inherit;padding:6px 8px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:inherit;text-align:right}.cr-c:disabled{opacity:.4}
 .dash-cards{align-items:start}
-.rf-bar{display:flex;flex-direction:column;gap:8px;margin:2px 0 4px}.rf-n{display:inline-block;min-width:18px;padding:0 5px;border-radius:999px;background:var(--surface-2);color:var(--muted);font-size:11px;line-height:17px;text-align:center}.chip.on .rf-n{background:rgba(255,255,255,.25);color:#fff}.rf-date{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rf-date input{font:inherit;padding:6px 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:inherit}
+.rf-bar{display:flex;flex-direction:column;gap:8px;margin:2px 0 14px}.rf-bar+.label{margin-top:0!important}.rf-n{display:inline-block;min-width:18px;padding:0 5px;border-radius:999px;background:var(--surface-2);color:var(--muted);font-size:11px;line-height:17px;text-align:center}.chip.on .rf-n{background:rgba(255,255,255,.25);color:#fff}.rf-date{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rf-date input{font:inherit;padding:6px 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:inherit}
 .block-msg{line-height:1.5}
 select option.opt-alt{color:#a86b00;background:#fff7e6}
 select option.opt-busy,select option:disabled.opt-busy{color:#d98c8c;background:#fdf1f1}
@@ -492,11 +495,13 @@ select option.opt-busy,select option:disabled.opt-busy{color:#d98c8c;background:
 .h-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .h-seg{align-self:flex-start;flex-wrap:wrap}
 .h-tl{position:relative;display:flex;flex-direction:column;gap:2px;margin-top:4px}
-.h-tl::before{content:"";position:absolute;left:13px;top:8px;bottom:8px;width:2px;background:var(--line)}
+/* timeline: a connector runs from each dot to the next one and stops at the last (oldest) entry */
+.h-tl>.h-ent:not(:last-child)::before{content:"";position:absolute;left:13px;top:39px;bottom:-9px;width:2px;border-radius:2px;background:var(--line-2)}
 .h-ent{position:relative;display:flex;gap:12px;padding:8px 0}
 .h-act .h-ent{padding:12px 14px;border-bottom:1px solid var(--line)}
 .h-act .h-ent:last-child{border-bottom:0}
-.h-dot{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;position:relative;z-index:1;padding:0}
+.h-dot{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;position:relative;z-index:1;padding:0;box-shadow:0 0 0 1.5px currentColor inset}
+.h-tl>.h-ent:first-child .h-dot{box-shadow:0 0 0 1.5px currentColor inset,0 0 0 4px var(--accent-soft)}
 .h-dot svg{width:14px;height:14px}
 .h-body{flex:1;min-width:0}
 .h-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -1779,7 +1784,7 @@ function actCSV(){
 }
 
 /* ---------- Bookings ---------- */
-const BF={draft:["Drafts",b=>b.status==="draft"],upcoming:["Upcoming",b=>b.status==="booked"],ready:["Ready",b=>b.status==="ready"],out:["Rented",b=>b.status==="delivered"],returned:["Payment due",b=>b.status==="returned"],closed:["Closed",b=>b.status==="closed"],cancelled:["Cancelled",b=>b.status==="cancelled"],all:["All",()=>true]};
+const BF={all:["All",()=>true],draft:["Drafts",b=>b.status==="draft"],upcoming:["Upcoming",b=>b.status==="booked"],ready:["Ready",b=>b.status==="ready"],out:["Rented",b=>b.status==="delivered"],returned:["Payment due",b=>b.status==="returned"],closed:["Closed",b=>b.status==="closed"],cancelled:["Cancelled",b=>b.status==="cancelled"]};
 function viewBookings(){
   const all=list(B());
   const q=V.bq.toLowerCase();
@@ -3137,7 +3142,7 @@ function custDetail(id){
     (c.notes?'<div class="calc"><span class="label">Note</span>'+esc(c.notes)+'</div>':"")+
     (()=>{const rf=list(C()).filter(x=>x.refCust===id);return rf.length?'<div><div class="label" style="margin-bottom:6px">She referred '+rf.length+' customer'+(rf.length>1?"s":"")+'</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+rf.map(x=>'<button type="button" class="pill p-acc" style="border:0;cursor:pointer" data-open-c="'+x.id+'">'+esc(x.name)+'</button>').join("")+'</div></div>':""})()+
     '<div><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><span class="label">Transaction history</span>'+(custLedger(id).length?'<button type="button" class="btn sm" data-txn-c="'+id+'">'+ic("print")+'Print / download</button>':"")+'</div>'+ledgerTable(custLedger(id))+'</div>'+
-    '<div><div class="label" style="margin-bottom:6px">Booking history</div>'+(s.bs.length?'<div class="hist">'+s.bs.map(b=>'<div class="hist-i" data-open-b="'+b.id+'"><div class="hist-d">'+fd(b.deliveryDate)+'<div>'+parseD(b.deliveryDate).getFullYear()+'</div></div><div style="min-width:0"><b>'+esc(b.func||"Function")+'</b> <span class="mono muted">'+esc(BN(b.no))+'</span><div class="small muted">'+esc(bookingDresses(b))+(b.place?" · "+esc(b.place):"")+'</div></div><div style="text-align:right"><span class="pill '+BST[b.status][1]+'">'+BST[b.status][0]+'</span><div class="small num muted">'+inr(fin(b).gross)+'</div></div></div>').join("")+'</div>':'<div class="muted small">No bookings yet.</div>')+'</div>';
+    '<div><div class="label" style="margin-bottom:6px">Booking history</div>'+(s.bs.length?'<div class="hist">'+s.bs.map(b=>'<div class="hist-i" data-open-b="'+b.id+'"><div class="hist-d">'+fd(b.deliveryDate)+'<div>'+parseD(b.deliveryDate).getFullYear()+'</div></div><div style="min-width:0"><b>'+esc(b.func||"Function")+'</b> <span class="mono muted">'+esc(BN(b.no))+'</span><div class="small muted">'+esc(bookingDresses(b))+(b.place?" · "+esc(b.place):"")+'</div></div><div class="hist-r"><span class="pill '+BST[b.status][1]+'">'+BST[b.status][0]+'</span><b class="num">'+inr(fin(b).gross)+'</b></div></div>').join("")+'</div>':'<div class="muted small">No bookings yet.</div>')+'</div>';
   },foot:()=>{const c=C()[id]||{};return '<button type="button" class="btn" data-edit-c="'+id+'">'+ic("edit")+'Edit</button><button type="button" class="btn" data-stmt-c="'+id+'">'+ic("print")+'Final statement</button><button type="button" class="btn" data-adv-c="'+id+'">'+ic("wallet")+'Receive advance</button>'+waBtn(c,"")+'<button type="button" class="btn pri" data-new-b-cust="'+id+'">'+ic("plus")+'New booking</button>'}});
 }
 
@@ -3203,7 +3208,7 @@ function bookingForm(id,pre){
     const from=val(el,"b_del"),to=val(el,"b_ret");
     el.querySelector("#b_items").innerHTML=items.map((it,i)=>{
       const cl=clashes(it.dressId,from,to,id);const dstate=it.dressId?dressState(it.dressId):"";
-      return '<div class="item-row"><div class="f"><select data-item="'+i+'" aria-label="Dress '+(i+1)+'">'+dOpt(it.dressId,from,to)+'</select></div><div class="f"><input data-rent="'+i+'" type="number" inputmode="numeric" min="0" value="'+esc(it.rent)+'" aria-label="Rent"></div><button type="button" class="x" data-rm="'+i+'" aria-label="Remove"'+(items.length===1?" disabled":"")+'>'+ic("x")+'</button>'+
+      return '<div class="item-row'+(items.length===1?" one":"")+'"><div class="f"><select data-item="'+i+'" aria-label="Dress '+(i+1)+'">'+dOpt(it.dressId,from,to)+'</select></div><div class="f"><input data-rent="'+i+'" type="number" inputmode="numeric" min="0" value="'+esc(it.rent)+'" aria-label="Rent"></div>'+(items.length>1?'<button type="button" class="x" data-rm="'+i+'" aria-label="Remove this dress">'+ic("x")+'</button>':"")+
        (cl.length?'<div class="clash badbox">This dress is already booked on these dates: '+cl.map(c=>esc(BN(c.no))+" ("+esc(custName(c.customerId))+", pick-up "+fd(c.deliveryDate)+" → return "+fd(c.returnDate)+")"+(N(ST().buffer)?" · busy "+fd(addDays(c.deliveryDate,-N(ST().buffer)))+" (getting ready) to "+fd(addDays(c.returnDate,N(ST().buffer)))+" (cleaning)":"")).join(", ")+'</div>':(dstate==="repair"?'<div class="clash warnbox">This dress is currently in repair.</div>':""))+'</div>';
     }).join("");
     const bad=items.map((it,i)=>({it,i})).filter(x=>x.it.dressId&&clashes(x.it.dressId,from,to,id).length);
