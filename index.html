@@ -1945,13 +1945,80 @@ function custStats(id){
   bs.sort((a,b)=>a.deliveryDate<b.deliveryDate?1:-1);
   return {bs,spent,due,held,last:bs[0]};
 }
+
+/* ---------- Spin & Win (grand opening) ---------- */
+const SPIN_REWARD=150;   /* ₹ off for the inviter, per invited friend who books */
+const p10=x=>{const d=String(x||"").replace(/\D/g,"");return d.length>=10?d.slice(-10):d};
+function spinValid(sp){if(!sp||!sp.valid)return true;const d=new Date(sp.valid);return isNaN(d)||d>=new Date(today()+"T00:00:00")}
+const bMade=b=>(b.log&&b.log[0]&&b.log[0].at)||b.createdAt||0;
+/* a friend counts as "booked" only for bookings made after she joined through the invite link */
+function spinFriends(id){return list(C()).filter(x=>x.refCust===id&&x.spin&&x.spin.invitedBy).map(x=>{const t=N(x.spin.atMs)||0;return {c:x,booked:custStats(x.id).bs.some(b=>!t||!bMade(b)||bMade(b)>=t)}})}
+function spinPill(c){if(!c.spin||!c.spin.code)return "";return ' <span class="pill '+(spinValid(c.spin)?"p-gold":"p-mute")+'" title="Opening coupon '+esc(c.spin.code)+'">'+esc(c.spin.pct)+'% coupon</span>'}
+function spinCard(c,id){
+  if(!c.spin||!c.spin.code)return (()=>{const fr=spinFriends(id);return fr.length?spinReward(fr):""})();
+  const sp=c.spin,ok=spinValid(sp),fr=spinFriends(id);
+  return '<div class="calc"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span class="label">Opening coupon (Spin &amp; Win)</span><span class="pill '+(ok?"p-ok":"p-bad")+'">'+(ok?"Valid":"Expired")+'</span></div>'+
+   '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:4px"><b class="num" style="font-size:22px">'+esc(sp.pct)+'% off</b><span class="mono">'+esc(sp.code)+'</span></div>'+
+   '<div class="small muted">Valid until '+esc(sp.validTxt||sp.valid||"—")+(sp.invite?' · Invite code <span class="mono">'+esc(sp.invite)+'</span>':"")+(sp.place?' · '+esc(sp.place):"")+'</div></div>'+(fr.length?spinReward(fr):"");
+}
+function spinReward(fr){const bk=fr.filter(f=>f.booked);
+  return '<div class="calc"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="label">Invite reward</span><b class="num pos" style="font-size:20px">'+inr(bk.length*SPIN_REWARD)+'</b></div>'+
+   '<div class="small muted">'+fr.length+' friend'+(fr.length>1?"s":"")+' joined with her link · '+bk.length+' booked · '+inr(SPIN_REWARD)+' off per booked friend</div>'+
+   '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">'+fr.map(f=>'<button type="button" class="pill '+(f.booked?"p-ok":"p-mute")+'" style="border:0;cursor:pointer" data-open-c="'+f.c.id+'">'+esc(f.c.name)+(f.booked?" ✓":"")+'</button>').join("")+'</div></div>'}
+function spinBanner(cid){const c=C()[cid];if(!c)return "";const parts=[];
+  if(c.spin&&c.spin.code){const ok=spinValid(c.spin);parts.push('<b>'+esc(c.spin.pct)+'% opening coupon</b> <span class="mono">'+esc(c.spin.code)+'</span> · '+(ok?'valid until '+esc(c.spin.validTxt||c.spin.valid):'<span class="neg">expired</span>'))}
+  const bk=spinFriends(cid).filter(f=>f.booked).length;if(bk)parts.push('<b>Invite reward '+inr(bk*SPIN_REWARD)+'</b> ('+bk+' friend'+(bk>1?"s":"")+' booked)');
+  return parts.length?'<div class="okbox" style="margin-top:6px">'+parts.join('<br>')+'<div class="small muted">Enter it in the booking discount.</div></div>':""}
+function parseCSV(t){const rows=[];let r=[],f="",q=false;t=String(t).replace(/^﻿/,"");
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){if(ch==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=ch;continue}
+    if(ch==='"')q=true;else if(ch===","){r.push(f);f=""}else if(ch==="\n"){r.push(f);rows.push(r);r=[];f=""}else if(ch!=="\r")f+=ch}
+  if(f||r.length){r.push(f);rows.push(r)}return rows.filter(x=>x.some(v=>String(v).trim()))}
+function spinRows(text){
+  const rows=parseCSV(text);if(rows.length<2)return {err:"The file has no rows."};
+  const h=rows[0].map(x=>String(x).trim().toLowerCase()),col=(...n)=>h.findIndex(x=>n.some(k=>x===k||x.startsWith(k)));
+  const ix={at:col("created at"),name:col("name"),ph:col("whatsapp number","mobile"),pct:col("discount"),code:col("coupon code"),valid:col("valid until"),st:col("status"),inv:col("invite code"),by:col("invited by (code)","invited by"),place:col("place","village")};
+  if(ix.name<0||ix.ph<0||ix.code<0)return {err:'This is not the Spin & Win "Coupons" sheet. Download that tab as CSV and try again.'};
+  const g=(r,k)=>ix[k]>=0?String(r[ix[k]]||"").trim():"";
+  return {list:rows.slice(1).map(r=>({name:g(r,"name"),phone:p10(g(r,"ph")),pct:g(r,"pct"),code:g(r,"code"),valid:g(r,"valid"),status:g(r,"st"),invite:g(r,"inv").toUpperCase(),invitedBy:g(r,"by").toUpperCase(),place:g(r,"place"),at:g(r,"at")})).filter(x=>x.name&&x.phone.length===10&&x.code)};
+}
+function spinPlan(L){
+  const byPh={};list(C()).forEach(c=>{const k=p10(c.phone);if(k.length===10&&!byPh[k])byPh[k]=c});
+  return L.map(x=>{const c=byPh[x.phone];return {x,c,kind:!c?"new":(c.spin&&c.spin.code===x.code&&(!x.place||c.spin.place===x.place)&&(c.spin.status||"")===x.status?"same":"update")}});
+}
+async function spinImport(text){
+  const r=spinRows(text);if(r.err){toast(r.err,"bad");return}
+  const plan=spinPlan(r.list),n={new:0,update:0,same:0};plan.forEach(p=>n[p.kind]++);
+  if(!n.new&&!n.update){toast("Everything in this file is already in the ledger");return}
+  const el=modal({title:"Import Spin & Win customers",body:'<div class="okbox"><b>'+r.list.length+' customers in the file</b><br>'+n.new+' new account'+(n.new!==1?"s":"")+' will be created · '+n.update+' existing account'+(n.update!==1?"s":"")+' will get the coupon · '+n.same+' already up to date</div>'+
+    '<p class="small muted" style="margin:0">Matched by WhatsApp number, so nobody is added twice. Name, number, village, coupon and who invited her are saved in each account. Existing names, notes and measurements are not changed.</p>'+
+    '<div class="panel tbl-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Coupon</th><th>Invited by</th><th></th></tr></thead><tbody>'+plan.filter(p=>p.kind!=="same").slice(0,60).map(p=>'<tr><td>'+esc(p.x.name)+'</td><td class="num">'+esc(p.x.phone)+'</td><td class="mono">'+esc(p.x.code)+'</td><td>'+esc((r.list.find(y=>y.invite&&y.invite===p.x.invitedBy)||{}).name||"—")+'</td><td><span class="pill '+(p.kind==="new"?"p-info":"p-gold")+'">'+(p.kind==="new"?"New":"Update")+'</span></td></tr>').join("")+'</tbody></table></div>',
+    foot:'<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" data-ok>Import</button>'});
+  el.querySelector("[data-ok]").addEventListener("click",async()=>{
+    const btn=el.querySelector("[data-ok]");btn.disabled=true;btn.textContent="Importing…";
+    const ids={};
+    for(const p of plan){
+      const x=p.x,sp={atMs:(()=>{const d=new Date(String(x.at).replace(',',''));return isNaN(d)?0:d.getTime()})(),code:x.code,pct:x.pct,valid:(()=>{const d=new Date(x.valid);return isNaN(d)?x.valid:ymd(d)})(),validTxt:x.valid,status:x.status,invite:x.invite,invitedBy:x.invitedBy,place:x.place,at:x.at,src:"Spin & Win"};
+      if(p.kind==="same"){ids[x.invite]=p.c.id;continue}
+      if(p.kind==="new"){const id=uid();ids[x.invite]=id;const t=new Date(x.at);
+        const o={name:x.name,phone:x.phone,alt:"",address:x.place||"",idType:"None",idNo:"",notes:"",refCust:"",meas:{},spin:sp,createdAt:isNaN(t)?Date.now():t.getTime(),updatedAt:Date.now()};
+        try{await put("customers",id,o)}catch(e){}}
+      else{const o=clone(p.c);delete o.id;o.spin=Object.assign({},o.spin||{},sp);if(!o.address&&x.place)o.address=x.place;o.updatedAt=Date.now();ids[x.invite]=p.c.id;try{await put("customers",p.c.id,o)}catch(e){}}
+    }
+    /* second pass: link each invited friend to the customer who invited her */
+    let linked=0;
+    for(const x of r.list){if(!x.invitedBy)continue;const me=ids[x.invite],inv=ids[x.invitedBy]||(list(C()).find(c=>c.spin&&c.spin.invite===x.invitedBy)||{}).id;
+      const c=me&&C()[me];if(c&&inv&&inv!==me&&!c.refCust){const o=clone(c);delete o.id;o.refCust=inv;try{await put("customers",me,o);linked++}catch(e){}}}
+    closeTop();render();toast(n.new+" added, "+n.update+" updated"+(linked?", "+linked+" invite links saved":""));
+  });
+}
 function viewCustomers(){
   const all=list(C()); const q=V.cq.toLowerCase();
   const rows=all.filter(c=>!q||[c.name,c.phone,c.address].join(" ").toLowerCase().includes(q)).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
-  return top("Customers",all.length+" customer accounts")+
+  return top("Customers",all.length+" customer accounts",'<label class="btn" for="spin_f">'+ic("down")+'Import Spin &amp; Win (CSV)</label><input id="spin_f" type="file" accept=".csv,text/csv" hidden>')+
   '<div class="toolbar"><label class="search">'+ic("search")+'<input id="cq" type="search" placeholder="Name, phone, village…" value="'+esc(V.cq)+'" aria-label="Search customers"></label></div>'+
   '<div class="panel tbl-wrap">'+(rows.length?'<table><thead><tr><th>Name</th><th>Phone</th><th>Village / area</th><th class="r">Bookings</th><th class="r">Booking value</th><th class="r">Due</th><th>Last booking</th></tr></thead><tbody>'+
-   rows.map(c=>{const s=custStats(c.id),ab=advBal(c);return '<tr class="row" data-open-c="'+c.id+'"><td><b>'+esc(c.name)+'</b>'+(ab>0?' <span class="pill p-ok">'+inr(ab)+' advance</span>':"")+'</td><td class="num">'+esc(c.phone||"—")+'</td><td>'+esc(c.address||"—")+'</td><td class="r num">'+s.bs.length+'</td><td class="r num">'+inr(s.spent)+'</td><td class="r num'+(s.due>0?" neg":"")+'">'+(s.due>0?inr(s.due):"—")+'</td><td class="num">'+(s.last?fd(s.last.deliveryDate):"—")+'</td></tr>'}).join("")+'</tbody></table>'
+   rows.map(c=>{const s=custStats(c.id),ab=advBal(c);return '<tr class="row" data-open-c="'+c.id+'"><td><b>'+esc(c.name)+'</b>'+(ab>0?' <span class="pill p-ok">'+inr(ab)+' advance</span>':"")+spinPill(c)+'</td><td class="num">'+esc(c.phone||"—")+'</td><td>'+esc(c.address||"—")+'</td><td class="r num">'+s.bs.length+'</td><td class="r num">'+inr(s.spent)+'</td><td class="r num'+(s.due>0?" neg":"")+'">'+(s.due>0?inr(s.due):"—")+'</td><td class="num">'+(s.last?fd(s.last.deliveryDate):"—")+'</td></tr>'}).join("")+'</tbody></table>'
    :'<div class="empty"><b>No customers yet</b>A customer account is created automatically when you add a booking, or tap "New customer".</div>')+'</div>';
 }
 
@@ -3246,7 +3313,7 @@ function custDetail(id){
     const s=custStats(id), m=c.meas||{};
     const ms=[["Chest",m.bust],["Waist",m.waist],["Hip",m.hip],["Length",m.length],["Blouse",m.blouse],["Height",m.height]].filter(x=>x[1]);
     return '<div class="hero-fin"><div><div class="label">Bookings</div><div class="v">'+s.bs.length+'</div></div><div><div class="label">Booking value</div><div class="v">'+inr(s.spent)+'</div></div><div><div class="label">Total paid</div><div class="v">'+inr(s.held)+'</div></div><div><div class="label">Due</div><div class="v '+(s.due>0?"neg":"")+'">'+inr(s.due)+'</div></div></div>'+
-    '<dl class="dl"><div><dt>Phone</dt><dd class="num">'+esc(c.phone||"—")+(c.alt?" · "+esc(c.alt):"")+'</dd></div><div><dt>Address</dt><dd>'+esc(c.address||"—")+'</dd></div><div><dt>ID proof</dt><dd class="num">'+esc(c.idType||"—")+(c.idNo?" · "+esc(fmtId(c.idType,c.idNo)):"")+'</dd></div><div><dt>Customer since</dt><dd>'+(c.createdAt?fdy(ymd(new Date(c.createdAt))):"—")+'</dd></div>'+(c.partnerId&&P()[c.partnerId]?'<div><dt>Referred by</dt><dd><button type="button" class="pill p-acc" style="border:0;cursor:pointer" data-open-p="'+c.partnerId+'">'+esc(P()[c.partnerId].name)+'</button></dd></div>':"")+'</dl>'+(c.refCust&&C()[c.refCust]?refCard(c.refCust,"Referred by"):"")+
+    '<dl class="dl"><div><dt>Phone</dt><dd class="num">'+esc(c.phone||"—")+(c.alt?" · "+esc(c.alt):"")+'</dd></div><div><dt>Address</dt><dd>'+esc(c.address||"—")+'</dd></div><div><dt>ID proof</dt><dd class="num">'+esc(c.idType||"—")+(c.idNo?" · "+esc(fmtId(c.idType,c.idNo)):"")+'</dd></div><div><dt>Customer since</dt><dd>'+(c.createdAt?fdy(ymd(new Date(c.createdAt))):"—")+'</dd></div>'+(c.partnerId&&P()[c.partnerId]?'<div><dt>Referred by</dt><dd><button type="button" class="pill p-acc" style="border:0;cursor:pointer" data-open-p="'+c.partnerId+'">'+esc(P()[c.partnerId].name)+'</button></dd></div>':"")+'</dl>'+(c.refCust&&C()[c.refCust]?refCard(c.refCust,"Referred by"):"")+spinCard(c,id)+
     (ms.length?'<div><div class="label" style="margin-bottom:6px">Measurements</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+ms.map(x=>'<span class="pill p-mute">'+x[0]+' '+esc(x[1])+'</span>').join("")+'</div></div>':"")+
     ((c.measHist||[]).length?'<div><div class="label" style="margin-bottom:6px">Measurement history</div><div class="panel mh">'+c.measHist.slice().reverse().map(h=>'<div class="mh-row"><div class="mh-h"><b>'+fdy(ymd(new Date(h.at)))+'</b> <span class="small muted">'+pad(new Date(h.at).getHours())+':'+pad(new Date(h.at).getMinutes())+(h.via?' · '+esc(h.via):"")+'</span>'+(h.first?' <span class="pill p-info">First measurements</span>':"")+'</div><div class="small">'+(h.ch||[]).map(x=>esc(x.l)+': '+(h.first||!x.a?'<b>'+esc(x.b||"—")+'</b>':'<s class="muted">'+esc(x.a)+'</s> → <b>'+esc(x.b||"removed")+'</b>')).join(" · ")+'</div></div>').join("")+'</div></div>':"")+
     (()=>{const ab=advBal(c),L=(c.adv||[]);return L.length?'<div class="calc"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="label">Advance in khaata (no booking)</span><b class="num '+(ab>0?"pos":"")+'" style="font-size:20px">'+inr(ab)+'</b></div>'+L.slice().reverse().map(x=>'<div class="ln"><span class="small">'+fd(x.date)+' · '+esc(x.kind||"")+(x.mode&&x.mode!=="Transfer"?' <span class="pill '+(x.mode==="Cash"?"p-gold":"p-info")+'">'+esc(x.mode)+'</span>':"")+(x.note?' <span class="muted">· '+esc(x.note)+'</span>':"")+'</span><span class="num '+(N(x.amount)<0?"neg":"pos")+'">'+(N(x.amount)<0?"− ":"+ ")+inr(Math.abs(N(x.amount)))+(x.mode&&x.mode!=="Transfer"&&x.id?' <button type="button" class="btn sm" style="padding:2px 8px" data-advrc="'+id+'|'+esc(x.id)+'" title="Receipt" aria-label="Receipt">'+ic("print",14)+'</button>':"")+'</span></div>').join("")+(ab>0?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button type="button" class="btn sm" data-advrf-c="'+id+'">'+ic("back")+'Return money</button><button type="button" class="btn sm" data-advmv-c="'+id+'">'+ic("share")+'Move to family member</button><span class="small muted" style="align-self:center">It shows up by itself when you make a booking for her or her family.</span></div>':"")+'</div>':""})()+
@@ -3288,6 +3355,7 @@ function bookingForm(id,pre){
    '<div class="fsec">Customer</div>'+
    '<div class="f picker" id="bc_pick"><label for="bc_q">Customer</label><div class="picker-box">'+ic("search")+'<input id="bc_q" type="search" autocomplete="off" placeholder="Search old customer by name, phone, village or Aadhaar…" value="'+esc(b.customerId&&C()[b.customerId]?C()[b.customerId].name+(C()[b.customerId].phone?" · "+C()[b.customerId].phone:""):"")+'"><button type="button" class="pclear" data-bcclear aria-label="Clear customer"'+(b.customerId&&C()[b.customerId]?"":" hidden")+'>'+ic("x")+'</button></div><div class="picker-list" role="listbox" hidden></div>'+
    '<span class="hint" id="bc_hint">'+(b.customerId&&C()[b.customerId]?"Existing customer selected":"Not found? Just fill in the new customer details below.")+'</span>'+
+   '<div id="bc_spin">'+spinBanner(b.customerId)+'</div>'+
    '<select id="b_cust" hidden aria-hidden="true"><option value="__new"'+(!b.customerId?" selected":"")+'>+ New customer</option>'+custs.map(c=>'<option value="'+c.id+'"'+(b.customerId===c.id?" selected":"")+'>'+esc(c.name)+'</option>').join("")+'</select></div>'+
    '<div id="b_newc"'+(b.customerId?" hidden":"")+'><div class="fgrid"><div class="f"><label for="nc_name">Name</label><input id="nc_name"></div><div class="f"><label for="nc_phone">Phone / WhatsApp</label><input id="nc_phone" type="tel" inputmode="tel"></div><div class="f"><label for="nc_addr">Village / area</label><input id="nc_addr"></div><div class="f"><label for="nc_idn">Aadhaar number (12 digits)</label><input id="nc_idn" inputmode="numeric" maxlength="14" placeholder="1234 5678 9012"></div></div><span class="hint small muted">You can add measurements and other details to the customer account later.</span></div>'+
    refPickerHTML("b_refc",b.refCustId||((C()[b.customerId]||{}).refCust)||"","Reference (old customer who knows her)",b.customerId||"")+
@@ -3360,7 +3428,7 @@ function bookingForm(id,pre){
      MEAS.forEach(([k])=>{const n=el.querySelector("#bm_"+k);if(n){n.readOnly=locked;n.classList.toggle("ro",locked)}});
      el.querySelector("#b_measlock").innerHTML=c&&hasMeas(c.meas)?(measUnlocked?'<div class="small" style="color:#a86b00;margin:2px 0 6px">🔓 Unlocked. Changes are saved to the customer and kept in her measurement history.</div>':'<div class="meas-lock"><span class="small">🔒 Saved measurements of <b>'+esc(c.name)+'</b>'+((c.measHist||[]).length?' · last updated '+fd(ymd(new Date(c.measHist[c.measHist.length-1].at))):"")+'</span><button type="button" class="btn sm" data-measunlock>'+ic("edit")+'Change (PIN)</button></div>'):(c?'<div class="small muted" style="margin:2px 0 6px">No measurements saved for this customer yet. Fill them now (optional).</div>':"")};
    el.querySelector("#b_measlock").addEventListener("click",async e=>{if(!e.target.closest("[data-measunlock]"))return;if(!await needPin("Changing saved measurements needs the 4-digit PIN."))return;measUnlocked=true;lockMeas();const f=el.querySelector("#bm_bust");if(f)f.focus()});
-   el.querySelector("#b_cust").addEventListener("change",()=>{const c=C()[val(el,"b_cust")];{const r=el.querySelector("#b_ref");if(r&&!r.value&&c&&P()[c.partnerId]){r.value=c.partnerId;r.dispatchEvent(new Event("change",{bubbles:true}))}}measUnlocked=false;MEAS.forEach(([k])=>{const n=el.querySelector("#bm_"+k);if(n)n.value=c&&c.meas&&c.meas[k]?c.meas[k]:""});lockMeas();sizeHint()});
+   el.querySelector("#b_cust").addEventListener("change",()=>{{const sb=el.querySelector("#bc_spin");if(sb)sb.innerHTML=spinBanner(val(el,"b_cust"))}const c=C()[val(el,"b_cust")];{const r=el.querySelector("#b_ref");if(r&&!r.value&&c&&P()[c.partnerId]){r.value=c.partnerId;r.dispatchEvent(new Event("change",{bubbles:true}))}}measUnlocked=false;MEAS.forEach(([k])=>{const n=el.querySelector("#bm_"+k);if(n)n.value=c&&c.meas&&c.meas[k]?c.meas[k]:""});lockMeas();sizeHint()});
    lockMeas()}
   wirePickers(el);
   {const w=el.querySelector("#bc_pick"),q=w.querySelector("#bc_q"),lst=w.querySelector(".picker-list"),sel=w.querySelector("#b_cust"),clr=w.querySelector("[data-bcclear]"),hint=w.querySelector("#bc_hint");
@@ -4726,6 +4794,7 @@ document.addEventListener("change",async e=>{
   if(id==="cl_add"&&e.target.value.startsWith("fit:")){const bid=e.target.value.slice(4),bk=B()[bid];if(bk){const q=clone(bk);delete q.id;q.fit=Object.assign({},q.fit||{},{want:true,noTailor:false});try{LOGCTX.skip=true;await put("bookings",bid,q)}catch(x){}finally{LOGCTX.skip=false}render();toast(BN(bk.no)+" added for fitting")}return}
   if(id==="cl_add"&&e.target.value){const did=e.target.value,d=D()[did],sec=e.target.dataset.sec||"clean";if(d){const nb=clNextBooking(d.id);if(nb&&diff(today(),nb.deliveryDate)<=1&&!await askConfirm(d.code+" has booking "+BN(nb.no)+" on "+fd(nb.deliveryDate)+". Still send it for "+(sec==="repair"?"repair":"cleaning")+"?","Yes, send"))return;const o=clone(d);o.status=sec==="repair"?"repair":"cleaning";o.cleanSince=today();o.work={need:sec==="repair"?"repair":"clean",note:"",since:today(),manual:true};delete o.id;try{await put("dresses",did,o);toast(d.code+" added to the To give list")}catch(x){}}return}
   if(e.target.dataset&&e.target.dataset.clneed){const did=e.target.dataset.clneed,d=D()[did],v=e.target.value;if(d){const o=clone(d);delete o.id;o.status=v==="clean"?"cleaning":"repair";o.work=Object.assign({},o.work||{},{need:v});try{await put("dresses",did,o);toast(d.code+": "+NEEDT[v]+(v==="clean"?"":" · moved to the Repair list"))}catch(x){}}return}
+  if(id==="spin_f"){const f=e.target.files[0];e.target.value="";if(f){try{await spinImport(await f.text())}catch(x){toast("Could not read this file","bad")}}return}
   if(id==="restore_f"){
     const f=e.target.files[0];if(!f)return;
     try{
