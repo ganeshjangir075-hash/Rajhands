@@ -4686,10 +4686,10 @@ document.addEventListener("click",async e=>{
   if(ds.advmvC){advMoveForm(ds.advmvC);return}
   if(ds.famC){famForm(ds.famC);return}
   if(ds.famrm){const [a,b2]=ds.famrm.split("|");if(await askConfirm("Remove the family link between <b>"+esc(custName(a))+"</b> and <b>"+esc(custName(b2))+"</b>? Their accounts and money stay as they are.","Yes, remove",true)){try{await unlinkFamily(a,b2);toast("Link removed")}catch(x){}}return}
-  if(ds.fitrm){const bk=B()[ds.fitrm];if(!bk)return;
+  if(ds.fitrm){const bk=B()[ds.fitrm];if(!bk)return;if(!await pinOK("Removing needs the 4-digit PIN."))return;
     if(!await askConfirm("Remove fitting for <b>"+esc(BN(bk.no)+" · "+custName(bk.customerId))+"</b> from the tailor list?<br><br>Use this if you will do the fitting yourself. You can add it back from <b>+ Add another dress</b>.","Yes, remove",true,"Remove from list?"))return;
     const q=clone(bk);delete q.id;q.fit=Object.assign({},q.fit||{},{want:false,noTailor:true});try{LOGCTX.skip=true;await put("bookings",ds.fitrm,q)}catch(x){}finally{LOGCTX.skip=false}render();toast("Removed from the tailor list");return}
-  if(ds.clrm){const did=ds.clrm,d=D()[did];if(!d)return;const fromRet=!(d.work&&d.work.manual);const sec=d.status==="repair"?"repair":"dry-cleaning";
+  if(ds.clrm){const did=ds.clrm,d=D()[did];if(!d)return;if(!await pinOK("Removing needs the 4-digit PIN."))return;const fromRet=!(d.work&&d.work.manual);const sec=d.status==="repair"?"repair":"dry-cleaning";
     if(!await askConfirm("Remove <b>"+esc(d.code+" · "+d.name)+"</b> from the "+sec+" list?"+(fromRet?"<br><br>This dress came back from a booking. Remove it only if it does not need "+sec+".":"")+"<br><br>It will show as <b>Available</b> again.","Yes, remove",true,"Remove from list?"))return;
     const o=clone(d);delete o.id;o.status="available";delete o.work;delete o.cleanSince;try{await put("dresses",did,o);toast(d.code+" removed from the "+sec+" list")}catch(x){}return}
   if(ds.readyDress){readyDress(ds.readyDress);return}
