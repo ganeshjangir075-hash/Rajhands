@@ -881,6 +881,7 @@ async function put(col,id,obj){
   }else{S.data[col][id]=obj;saveLocal();rerender()}
 }
 async function del(col,id){
+  if(col!=="deleted"&&!await pinOK("Deleting needs the 4-digit PIN."))throw new Error("PIN not entered");
   if(col==="bookings"){const old=S.data.bookings[id];if(old&&!old.sample){const x=clone(old);delete x.id;x.deletedAt=Date.now();x.log=(x.log||[]).concat([{at:Date.now(),ch:[{k:"delete",t:"Booking deleted"+(x.status?" (it was "+((BST[x.status]||[x.status])[0])+")":"")}],reason:LOGCTX.reason||""}]);LOGCTX.reason="";try{await put("deleted",id,x)}catch(e){}}}
   if(S.mode==="cloud"){const pr=S.db.collection(col).doc(id).delete();syncTrack(pr);pr.catch(e=>toast("Could not delete ("+((e&&e.code)||"error")+").","bad"));await Promise.race([pr,new Promise(r=>setTimeout(r,1200))])}
   else{delete S.data[col][id];saveLocal();rerender()}
@@ -2267,6 +2268,8 @@ async function forgotPin(){
     el.querySelector("[data-close]").addEventListener("click",()=>{if(!done)res(false)},{once:true});
   });
 }
+/* one PIN entry unlocks edits and deletes for 3 minutes */
+async function pinOK(what){if(Date.now()<(PINS.okUntil||0))return true;const ok=await needPin(what);if(ok)PINS.okUntil=Date.now()+3*60000;return !!ok}
 async function needPin(what){
   if(!pinOn()){toast("Set a PIN first to protect booking edits");return await newPinFlow("Set a PIN for booking edits")}
   for(;;){
@@ -2274,7 +2277,7 @@ async function needPin(what){
     const v=await askPin("Enter PIN",(what||"Editing a confirmed booking needs the 4-digit PIN.")+(PINS.fail?' <span class="neg">Wrong PIN, '+(5-PINS.fail)+' tries left.</span>':""),{forgot:true});
     if(v===null)return false;
     if(v==="forgot")return await forgotPin();
-    if(pinHash(v)===ST().editPin){PINS.fail=0;return true}
+    if(pinHash(v)===ST().editPin){PINS.fail=0;PINS.okUntil=Date.now()+3*60000;return true}
     PINS.fail++;if(PINS.fail>=5){PINS.fail=0;PINS.until=Date.now()+60000;toast("5 wrong tries. PIN locked for 1 minute.","bad");return false}
   }
 }
@@ -4624,8 +4627,8 @@ document.addEventListener("click",async e=>{
   if(ds.openB){bookingDetail(ds.openB);return}
   if(ds.openD){if(D()[ds.openD])dressDetail(ds.openD);return}
   if(ds.openC){if(C()[ds.openC])custDetail(ds.openC);return}
-  if(ds.openE){expForm(ds.openE);return}
-  if(ds.editR){recForm(ds.editR);return}
+  if(ds.openE){if(!await pinOK("Editing an expense needs the 4-digit PIN."))return;expForm(ds.openE);return}
+  if(ds.editR){if(!await pinOK("Editing needs the 4-digit PIN."))return;recForm(ds.editR);return}
   if(ds.addrec){addRecNow(ds.addrec);return}
   if(ds.petty){expForm(null,{cat:ds.petty,title:ds.petty,date:today(),mode:moneyBal().petty>0?PETTYM:"Cash"});return}
   if(ds.ecat!==undefined&&t.classList.contains("catbar")){V.ecat=V.ecat===ds.ecat?"":ds.ecat;render();return}
@@ -4642,7 +4645,7 @@ document.addEventListener("click",async e=>{
   if(ds.dbd){V.dbD=ds.dbd==="0"?today():addDays(V.dbD||today(),+ds.dbd);if(V.dbD>today())V.dbD=today();render();return}
   if(ds.expm){const [y,m]=(V.expM||today().slice(0,7)).split("-").map(Number);V.expM=ds.expm==="0"?today().slice(0,7):ymd(new Date(y,m-1+(+ds.expm),1)).slice(0,7);render();return}
   if(ds.openO){if(OR()[ds.openO])orderDetail(ds.openO);return}
-  if(ds.editO){orderForm(ds.editO);return}
+  if(ds.editO){if(!await pinOK("Editing needs the 4-digit PIN."))return;orderForm(ds.editO);return}
   if(ds.newOS){orderForm(null,{sellerId:ds.newOS});return}
   if(ds.poRecv){orderReceiveForm(ds.poRecv);return}
   if(ds.delCb){if(await askConfirm("Delete this cash / bank entry?","Yes, delete",true)){try{await del("cashbook",ds.delCb)}catch(x){}}return}
@@ -4658,20 +4661,20 @@ document.addEventListener("click",async e=>{
   if(ds.zqr){const [sid,i]=ds.zqr.split("|");const x=SL()[sid];const q=x&&payInfo(x).qrs[+i];if(q)modal({title:(q.label||"QR code")+" · "+x.name,autofocus:false,body:'<img class="zoom-img" style="background:#fff" src="'+esc(q.img)+'" alt="QR code"><p class="small muted" style="margin:0;text-align:center">Scan this with your UPI app to pay '+esc(x.name)+'.</p>',foot:'<button type="button" class="btn" data-close>Close</button>'});return}
   if(ds.copy!=null&&t.classList.contains("cp")){if(await copyText(ds.copy))toast("Copied");else toast("Could not copy — select the text and copy manually","bad");return}
   if(ds.openS){if(SL()[ds.openS])sellerDetail(ds.openS);return}
-  if(ds.editS){sellerForm(ds.editS);return}
+  if(ds.editS){if(!await pinOK("Editing needs the 4-digit PIN."))return;sellerForm(ds.editS);return}
   if(ds.payS){sellerPayForm(ds.payS);return}
   if(ds.newDS){dressForm(null,{sellerId:ds.newDS});return}
-  if(ds.delSlp){const [sid,i]=ds.delSlp.split("|");const x=SL()[sid];if(x&&await askConfirm("Delete this payment of "+inr((x.payments||[])[+i].amount)+"?","Yes, delete",true)){const o=clone(x);delete o.id;o.payments.splice(+i,1);try{await put("sellers",sid,o)}catch(e){}}return}
+  if(ds.delSlp){if(!await pinOK("Deleting needs the 4-digit PIN."))return;const [sid,i]=ds.delSlp.split("|");const x=SL()[sid];if(x&&await askConfirm("Delete this payment of "+inr((x.payments||[])[+i].amount)+"?","Yes, delete",true)){const o=clone(x);delete o.id;o.payments.splice(+i,1);try{await put("sellers",sid,o)}catch(e){}}return}
   if(ds.openP){if(P()[ds.openP])partnerDetail(ds.openP);return}
-  if(ds.editP){partnerForm(ds.editP);return}
+  if(ds.editP){if(!await pinOK("Editing needs the 4-digit PIN."))return;partnerForm(ds.editP);return}
   if(ds.payP){payoutForm(ds.payP);return}
   if(ds.bf){V.bfilter=ds.bf;render();return}
   if(ds.cal){const [y,m]=(V.calM||today().slice(0,7)).split("-").map(Number);V.calM=ds.cal==="0"?today().slice(0,7):ymd(new Date(y,m-1+(+ds.cal),1)).slice(0,7);render();return}
   if(ds.acc){const [y,m]=(V.accM||today().slice(0,7)).split("-").map(Number);V.accM=ds.acc==="0"?today().slice(0,7):ymd(new Date(y,m-1+(+ds.acc),1)).slice(0,7);render();return}
   if(ds.day){openDay(ds.day);return}
-  if(ds.editD){dressForm(ds.editD);return}
-  if(ds.editC){custForm(ds.editC);return}
-  if(ds.editB){const eb=B()[ds.editB];if(eb&&eb.status!=="draft"&&!await needPin())return;bookingForm(ds.editB);return}
+  if(ds.editD){if(!await pinOK("Editing a dress needs the 4-digit PIN."))return;dressForm(ds.editD);return}
+  if(ds.editC){if(!await pinOK("Editing a customer needs the 4-digit PIN."))return;custForm(ds.editC);return}
+  if(ds.editB){const eb=B()[ds.editB];if(eb&&eb.status!=="draft"&&!await pinOK())return;bookingForm(ds.editB);return}
   if(ds.sellD){sellDress(ds.sellD);return}
   if(ds.zoom){const d=D()[ds.zoom];if(d&&d.photo){modal({title:d.code+" · "+d.name,autofocus:false,body:'<img class="zoom-img" src="'+esc(d.photo)+'" alt="'+esc(d.name)+'">',foot:'<button type="button" class="btn" data-close>Close</button><button type="button" class="btn pri" data-open-d="'+d.id+'">Open dress</button>'});return}}
   if(ds.zph){const im=e.target.closest(".rph").querySelector("img");if(im)modal({title:"Photo",autofocus:false,body:'<img class="zoom-img" src="'+esc(im.getAttribute("src"))+'" alt="">'});return}
