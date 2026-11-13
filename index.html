@@ -635,6 +635,24 @@ select option.opt-busy,select option:disabled.opt-busy{color:#d98c8c;background:
 .gate-c .linkbtn{background:none;border:0;color:var(--accent);cursor:pointer;padding:4px;font:inherit;font-size:13px}
 .gate-ok{background:#E6F6EC;color:#1E6B3A;border-radius:10px;padding:9px 12px;font-size:13px;text-align:left}
 .cnt i{width:6px;height:6px;border-radius:50%}
+.qa-cal{margin-top:12px;background:#fff;border-radius:8px;padding:10px!important;border-top:1px solid var(--line);padding-top:10px}
+.qa-cal-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
+.qa-leg{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)}
+.qa-leg i{width:11px;height:11px;border-radius:3px;display:inline-block;margin-left:6px}
+.qa-leg i.free,.qd.free{background:#fff;color:#17663A;box-shadow:inset 0 0 0 1px #9FD4B1}
+.qa-leg i.busy,.qd.busy{background:#F9D9D9;color:#A12626}
+.qa-leg i.buf,.qd.buf{background:#FBEBC8;color:#8A5A00}
+.qa-months{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:8px}
+.qa-mn{font-weight:700;font-size:13px;margin-bottom:4px}
+.qa-wk,.qa-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.qa-wk span{text-align:center;font-size:10.5px;color:var(--muted);font-weight:600}
+.qd{display:grid;place-items:center;height:28px;border-radius:6px;font-size:12px;font-weight:600;border:0;padding:0;font-family:inherit}
+button.qd{cursor:pointer}
+button.qd:hover{outline:2px solid currentColor;outline-offset:-2px}
+.qd.off{color:#bbb;background:transparent;font-weight:400}
+.qd.pad{background:transparent}
+.qd.today,.qd.free.today{box-shadow:inset 0 0 0 2px #222}
+.qd.sel{background:#17663A;color:#fff}
 </style>
 </head>
 <body>
@@ -1191,6 +1209,38 @@ function qaPanel(){
    '<div class="fgrid c3" style="gap:10px"><div class="f"><label for="qa_fn">Function date</label><input id="qa_fn" type="date" value="'+esc(q.fn||"")+'"></div><div class="f"><label for="qa_from">Pick-up</label><input id="qa_from" type="date" value="'+esc(q.from)+'"></div><div class="f"><label for="qa_to">Return</label><input id="qa_to" type="date" value="'+esc(q.to)+'"></div></div>'+
    '<div id="qa_res">'+qaResult()+'</div></div></div>';
 }
+
+/* 2-month availability calendar for one dress */
+function qaDay(d,day){
+  if(d.status==="sold"||d.status==="retired")return {k:"x"};
+  const buf=ST().buffer,cl=clashes(d.id,day,day);
+  if(!cl.length)return {k:"free"};
+  const end=b=>b.status==="delivered"&&b.returnDate<today()?today():b.returnDate;
+  const bk=cl.find(b=>b.deliveryDate<=day&&day<=end(b));
+  return bk?{k:"busy",b:bk}:{k:"buf",b:cl[0]};
+}
+function qaCal(d){
+  const t=today(),last=addDays(t,61),q=V.qa||{};
+  let html='<div class="qa-cal"><div class="qa-cal-h"><b>Next 2 months</b><span class="qa-leg"><i class="free"></i>Free<i class="busy"></i>Booked<i class="buf"></i>Cleaning gap</span></div><div class="qa-months">';
+  let freeN=0;
+  const first=parseD(t);
+  for(let m=0;m<3;m++){
+    const y=first.getFullYear(),mo=first.getMonth()+m,m1=new Date(y,mo,1),ms=ymd(m1);
+    if(ms>last)break;
+    const days=new Date(y,mo+1,0).getDate();
+    let cells="";for(let i=0;i<m1.getDay();i++)cells+='<span class="qd pad"></span>';
+    for(let dd=1;dd<=days;dd++){const day=ymd(new Date(y,mo,dd));
+      if(day<t||day>last){cells+='<span class="qd off">'+dd+'</span>';continue}
+      const r=qaDay(d,day);if(r.k==="free")freeN++;
+      const sel=q.fn===day||(q.from&&q.to&&q.from<=day&&day<=q.to);
+      const tip=r.k==="free"?fdw(day)+" · free":r.b?fdw(day)+" · "+custName(r.b.customerId)+" "+BN(r.b.no)+(r.k==="buf"?" (cleaning gap)":""):"";
+      cells+=r.k==="free"?'<button type="button" class="qd free'+(sel?" sel":"")+(day===t?" today":"")+'" data-qa-day="'+day+'" data-qa-dress="'+d.id+'" title="'+esc(tip)+'">'+dd+'</button>'
+        :r.b?'<button type="button" class="qd '+r.k+(day===t?" today":"")+'" data-open-b="'+r.b.id+'" title="'+esc(tip)+'">'+dd+'</button>':'<span class="qd off">'+dd+'</span>';
+    }
+    html+='<div class="qa-month"><div class="qa-mn">'+m1.toLocaleDateString("en-IN",{month:"long",year:"numeric"})+'</div><div class="qa-wk"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div><div class="qa-grid">'+cells+'</div></div>';
+  }
+  return html+'</div><div class="small muted" style="margin-top:6px">'+freeN+' free days in the next 2 months. Tap a green date to check it as the function day; tap a red date to open that booking.</div></div>';
+}
 function qaResult(){
   const q=V.qa||{};let from=q.from||today(),to=q.to||from;if(to<from){const x=from;from=to;to=x}
   const t=(q.dress||"").trim().toLowerCase();
@@ -1222,7 +1272,7 @@ function qaResult(){
     if(r.k==="alt")body='<div class="small">Busy on '+range+', but free if picked up <b>'+fdw(r.alt[0])+(r.alt[0]===fn?" (function day)":"")+'</b> and returned <b>'+fdw(r.alt[1])+'</b>'+(d.rent?" · rent "+inr(d.rent):"")+'</div><button type="button" class="btn sm pri" style="margin-top:8px" data-qa-book="'+d.id+'" data-qa-alt="'+r.alt[0]+'|'+r.alt[1]+'">'+ic("plus")+'Book with these dates</button>';
     else if(r.k==="ok")body='<div class="small">Free for <b>'+range+'</b>'+(d.rent?" · rent "+inr(d.rent):"")+'</div>'+(r.note?'<div class="warnbox" style="margin-top:6px">'+r.note+'</div>':"")+'<button type="button" class="btn sm pri" style="margin-top:8px" data-qa-book="'+d.id+'">'+ic("plus")+'Book for these dates</button>';
     else if(r.cl)body=r.cl.map(b=>'<button type="button" class="qa-bk" data-open-b="'+b.id+'"><span><b>'+esc(custName(b.customerId))+'</b> <span class="mono muted">'+esc(BN(b.no))+'</span><span class="small muted" style="display:block">'+fd(b.deliveryDate)+' → '+fd(b.returnDate)+(ST().buffer?" (+"+ST().buffer+" day cleaning)":"")+(b.status==="delivered"&&b.returnDate<today()?' · <b class="neg">overdue, not returned yet</b>':"")+'</span></span><span class="pill '+BST[b.status][1]+'">'+BST[b.status][0]+'</span></button>').join("")+(()=>{if(r.cl.some(b=>b.status==="delivered"&&b.returnDate<today()))return '<div class="small" style="margin-top:6px">Free again once it is returned and cleaned.</div>';const nx=qaNextFree(d,from,to);return nx?'<div class="small" style="margin-top:6px">Next free from <b>'+fdw(nx)+'</b></div>':""})();
-    return '<div class="qa-card '+(r.k==="ok"?"ok":r.k==="alt"?"alt":"no")+'">'+head+body+'</div>'}).join("")+(ms.length>6?'<div class="small muted">'+(ms.length-6)+' more matches; type the exact code.</div>':"");
+    return '<div class="qa-card '+(r.k==="ok"?"ok":r.k==="alt"?"alt":"no")+'">'+head+body+(ms.length===1?qaCal(d):"")+'</div>'}).join("")+(ms.length>6?'<div class="small muted">'+(ms.length-6)+' more matches; type the exact code.</div>':"");
 }
 function qaNextFree(d,from,to){const len=Math.max(0,diff(from,to));let s=from;for(let i=0;i<60;i++){s=addDays(s,1);if(!clashes(d.id,s,addDays(s,len)).length)return s}return ""}
 function qaListShow(){
@@ -2268,8 +2318,8 @@ async function forgotPin(){
     el.querySelector("[data-close]").addEventListener("click",()=>{if(!done)res(false)},{once:true});
   });
 }
-/* one PIN entry unlocks edits and deletes for 3 minutes */
-async function pinOK(what){if(Date.now()<(PINS.okUntil||0))return true;const ok=await needPin(what);if(ok)PINS.okUntil=Date.now()+3*60000;return !!ok}
+/* every edit and every delete asks for the PIN */
+async function pinOK(what){return !!(await needPin(what))}
 async function needPin(what){
   if(!pinOn()){toast("Set a PIN first to protect booking edits");return await newPinFlow("Set a PIN for booking edits")}
   for(;;){
@@ -2277,7 +2327,7 @@ async function needPin(what){
     const v=await askPin("Enter PIN",(what||"Editing a confirmed booking needs the 4-digit PIN.")+(PINS.fail?' <span class="neg">Wrong PIN, '+(5-PINS.fail)+' tries left.</span>':""),{forgot:true});
     if(v===null)return false;
     if(v==="forgot")return await forgotPin();
-    if(pinHash(v)===ST().editPin){PINS.fail=0;PINS.okUntil=Date.now()+3*60000;return true}
+    if(pinHash(v)===ST().editPin){PINS.fail=0;return true}
     PINS.fail++;if(PINS.fail>=5){PINS.fail=0;PINS.until=Date.now()+60000;toast("5 wrong tries. PIN locked for 1 minute.","bad");return false}
   }
 }
@@ -4636,7 +4686,7 @@ document.addEventListener("click",async e=>{
   if(ds.hall){V.hAll=ds.hall;rerender();return}
   if(ds.actr){V.actR=ds.actr;render();return}
   if(ds.actf){V.actF=ds.actf;render();return}
-  if(ds.restore){if(await askConfirm("Restore this deleted booking? It comes back with all its payments and history.","Yes, restore"))await restoreBooking(ds.restore);return}
+  if(ds.restore){if(!await pinOK("This change needs the 4-digit PIN."))return;if(await askConfirm("Restore this deleted booking? It comes back with all its payments and history.","Yes, restore"))await restoreBooking(ds.restore);return}
   if(ds.cltab){V["clTab_"+(V.clSec||"clean")]=ds.cltab;render();return}
   if(ds.clsec){V.clSec=ds.clsec;render();return}
   if(ds.clSlip){clSlip(ds.clSlip);return}
@@ -4654,8 +4704,8 @@ document.addEventListener("click",async e=>{
   if(ds.zbilty){const o=OR()[ds.zbilty];if(o&&o.dispatch&&o.dispatch.photo)modal({title:"Bilty · "+o.no,autofocus:false,body:'<img class="zoom-img" src="'+esc(o.dispatch.photo)+'" alt="Bilty">',foot:'<button type="button" class="btn" data-close>Close</button>'});return}
   if(ds.poSlip){const o=OR()[ds.poSlip];if(o)slipPreviewModal("Order slip · "+o.no,poRows(ds.poSlip),"order-"+o.no,"Send this to the seller or keep it to check the parcel when it arrives.");return}
   if(ds.poPay){const o=OR()[ds.poPay];if(o){const c=poCalc(Object.assign({id:ds.poPay},o));sellerPayForm(o.sellerId,{amount:Math.max(0,Math.round(c.balance)),poId:ds.poPay,poNo:o.no})}return}
-  if(ds.poCancel){const r=await askReason("Cancel order "+((OR()[ds.poCancel]||{}).no||"")+"?","Pieces already received stay in Dresses. Any advance stays with the seller as credit.","Yes, cancel order",true,"e.g. seller out of stock");if(r.ok){const o=clone(OR()[ds.poCancel]);delete o.id;o.status="cancelled";poLog(o,"Order cancelled"+(r.reason?": "+r.reason:""));try{await put("orders",ds.poCancel,o);toast("Order cancelled")}catch(x){}}return}
-  if(ds.poReopen){const o=clone(OR()[ds.poReopen]);delete o.id;o.status="ordered";poLog(o,"Order reopened");try{await put("orders",ds.poReopen,o);toast("Order reopened")}catch(x){}return}
+  if(ds.poCancel){if(!await pinOK("This change needs the 4-digit PIN."))return;const r=await askReason("Cancel order "+((OR()[ds.poCancel]||{}).no||"")+"?","Pieces already received stay in Dresses. Any advance stays with the seller as credit.","Yes, cancel order",true,"e.g. seller out of stock");if(r.ok){const o=clone(OR()[ds.poCancel]);delete o.id;o.status="cancelled";poLog(o,"Order cancelled"+(r.reason?": "+r.reason:""));try{await put("orders",ds.poCancel,o);toast("Order cancelled")}catch(x){}}return}
+  if(ds.poReopen){if(!await pinOK("This change needs the 4-digit PIN."))return;const o=clone(OR()[ds.poReopen]);delete o.id;o.status="ordered";poLog(o,"Order reopened");try{await put("orders",ds.poReopen,o);toast("Order reopened")}catch(x){}return}
   if(ds.ordf){V.ordF=ds.ordf;render();return}
   if(ds.paydetS){sellerPayDetailsForm(ds.paydetS);return}
   if(ds.zqr){const [sid,i]=ds.zqr.split("|");const x=SL()[sid];const q=x&&payInfo(x).qrs[+i];if(q)modal({title:(q.label||"QR code")+" · "+x.name,autofocus:false,body:'<img class="zoom-img" style="background:#fff" src="'+esc(q.img)+'" alt="QR code"><p class="small muted" style="margin:0;text-align:center">Scan this with your UPI app to pay '+esc(x.name)+'.</p>',foot:'<button type="button" class="btn" data-close>Close</button>'});return}
@@ -4674,21 +4724,24 @@ document.addEventListener("click",async e=>{
   if(ds.day){openDay(ds.day);return}
   if(ds.editD){if(!await pinOK("Editing a dress needs the 4-digit PIN."))return;dressForm(ds.editD);return}
   if(ds.editC){if(!await pinOK("Editing a customer needs the 4-digit PIN."))return;custForm(ds.editC);return}
-  if(ds.editB){const eb=B()[ds.editB];if(eb&&eb.status!=="draft"&&!await pinOK())return;bookingForm(ds.editB);return}
+  if(ds.editB){const eb=B()[ds.editB];if(eb&&eb.status!=="draft"&&!await pinOK("Editing a booking needs the 4-digit PIN."))return;bookingForm(ds.editB);return}
   if(ds.sellD){sellDress(ds.sellD);return}
   if(ds.zoom){const d=D()[ds.zoom];if(d&&d.photo){modal({title:d.code+" · "+d.name,autofocus:false,body:'<img class="zoom-img" src="'+esc(d.photo)+'" alt="'+esc(d.name)+'">',foot:'<button type="button" class="btn" data-close>Close</button><button type="button" class="btn pri" data-open-d="'+d.id+'">Open dress</button>'});return}}
   if(ds.zph){const im=e.target.closest(".rph").querySelector("img");if(im)modal({title:"Photo",autofocus:false,body:'<img class="zoom-img" src="'+esc(im.getAttribute("src"))+'" alt="">'});return}
-  if(ds.xferB){xferForm(ds.xferB);return}
+  if(ds.xferB){if(!await pinOK("This change needs the 4-digit PIN."))return;xferForm(ds.xferB);return}
   if(ds.useadvB){useAdvForm(ds.useadvB);return}
   if(ds.advC){advForm(ds.advC,false);return}
   if(ds.advrfC){advForm(ds.advrfC,true);return}
   if(ds.advrc){const [c0,e0]=ds.advrc.split("|");advReceipt(c0,e0);return}
   if(ds.advmvC){advMoveForm(ds.advmvC);return}
   if(ds.famC){famForm(ds.famC);return}
-  if(ds.famrm){const [a,b2]=ds.famrm.split("|");if(await askConfirm("Remove the family link between <b>"+esc(custName(a))+"</b> and <b>"+esc(custName(b2))+"</b>? Their accounts and money stay as they are.","Yes, remove",true)){try{await unlinkFamily(a,b2);toast("Link removed")}catch(x){}}return}
+  if(ds.famrm){if(!await pinOK("This change needs the 4-digit PIN."))return;const [a,b2]=ds.famrm.split("|");if(await askConfirm("Remove the family link between <b>"+esc(custName(a))+"</b> and <b>"+esc(custName(b2))+"</b>? Their accounts and money stay as they are.","Yes, remove",true)){try{await unlinkFamily(a,b2);toast("Link removed")}catch(x){}}return}
   if(ds.clDel){const bt=CL()[ds.clDel];if(!bt)return;const n=(bt.items||[]).length,paid=(bt.charges||[]).filter(c=>c.paid).reduce((q,c)=>q+N(c.amount),0);
     if(!await askConfirm("Trip "+esc(bt.no||"")+" to "+esc(bt.cleaner||"the tailor/cleaner")+" ("+n+" dress"+(n===1?"":"es")+") will be deleted."+(paid?" "+inr(paid)+" paid on this trip will also be removed from the accounts.":"")+" Dresses still marked for repair or cleaning will show again in 'To give'.","Yes, delete",true,"Delete this trip?"))return;
     try{await del("cleanings",ds.clDel);toast("Trip deleted")}catch(x){}return}
+  if(ds.qaDay){const day=ds.qaDay,q=V.qa||(V.qa={});const dd=D()[ds.qaDress];if(dd)q.dress=dd.code||q.dress;q.fn=day;q.from=addDays(day,-1)<today()?today():addDays(day,-1);q.to=addDays(day,1);
+    const set=(id,v)=>{const x=document.getElementById(id);if(x)x.value=v};set("qa_fn",q.fn);set("qa_from",q.from);set("qa_to",q.to);
+    const rs=document.getElementById("qa_res");if(rs)rs.innerHTML=qaResult();return}
   if(ds.fitrm){const bk=B()[ds.fitrm];if(!bk)return;if(!await pinOK("Removing needs the 4-digit PIN."))return;
     if(!await askConfirm("Remove fitting for <b>"+esc(BN(bk.no)+" · "+custName(bk.customerId))+"</b> from the tailor list?<br><br>Use this if you will do the fitting yourself. You can add it back from <b>+ Add another dress</b>.","Yes, remove",true,"Remove from list?"))return;
     const q=clone(bk);delete q.id;q.fit=Object.assign({},q.fit||{},{want:false,noTailor:true});try{LOGCTX.skip=true;await put("bookings",ds.fitrm,q)}catch(x){}finally{LOGCTX.skip=false}render();toast("Removed from the tailor list");return}
@@ -4702,7 +4755,7 @@ document.addEventListener("click",async e=>{
   if(ds.delB){if(await askConfirm("Delete this draft?","Yes, delete",true)){try{await del("bookings",ds.delB);closeAll();toast("Draft deleted")}catch(x){}}return}
   if(ds.payB){payForm(ds.payB,ds.payK);return}
   if(ds.blDay){closeTop();V.bl=Object.assign(V.bl||{by:"deliveryDate",status:"open"},{from:ds.blDay,to:ds.blDay,status:"all"});bookingListModal();return}
-  if(ds.fixmode){const md=ds.fixmode;if(!await askConfirm("Mark all older payments without a mode as "+(md==="Cash"?"Cash":"Online (UPI)")+"? This only changes how they are shown; amounts stay the same.","Yes, mark as "+(md==="Cash"?"Cash":"Online")))return;
+  if(ds.fixmode){if(!await pinOK("This change needs the 4-digit PIN."))return;const md=ds.fixmode;if(!await askConfirm("Mark all older payments without a mode as "+(md==="Cash"?"Cash":"Online (UPI)")+"? This only changes how they are shown; amounts stay the same.","Yes, mark as "+(md==="Cash"?"Cash":"Online")))return;
     let n=0;try{for(const b of list(B())){const ps=payList(b);if(!ps.some(x=>!x.mode))continue;const o=clone(b);o.payments=ps.map(x=>x.mode?x:Object.assign({},x,{mode:md,note:x.note==="Recorded before payment history was added"?"":x.note}));delete o.id;await put("bookings",b.id,o);n++}toast(n?"Updated "+n+" booking"+(n>1?"s":""):"Nothing to update")}catch(x){}return}
   if(ds.qaBook){const q=V.qa||{};const al=ds.qaAlt?ds.qaAlt.split("|"):null;bookingForm(null,{dressId:ds.qaBook,del:al?al[0]:(q.from||today()),ret:al?al[1]:(q.to||addDays(q.from||today(),2)),ev:q.fn||""});return}
   if(ds.txnC){txnModal(ds.txnC);return}
@@ -4721,7 +4774,7 @@ document.addEventListener("click",async e=>{
   if(ds.shareSlip){const [sid,fm]=ds.shareSlip.split("|");shareSlip(sid,fm);return}
   if(ds.thxSkip){const b=B()[ds.thxSkip];if(b){const o=clone(b);delete o.id;o.thxSkip=true;try{LOGCTX.skip=true;await put("bookings",ds.thxSkip,o);toast("Thank-you reminder removed")}catch(x){}finally{LOGCTX.skip=false}}return}
   if(ds.cancelB&&N((B()[ds.cancelB]||{}).paid)>0){cancelForm(ds.cancelB);return}
-  if(ds.cancelB){const r=await askReason("Cancel booking "+BN((B()[ds.cancelB]||{}).no)+"?","The dress becomes free for these dates. Settle the advance with the customer (use Refund first if you return money).","Yes, cancel",true,"e.g. wedding postponed");if(r.ok){LOGCTX.reason=r.reason;try{await setStatus(ds.cancelB,"cancelled");toast("Booking cancelled")}catch(x){}}return}
+  if(ds.cancelB){if(!await pinOK("This change needs the 4-digit PIN."))return;const r=await askReason("Cancel booking "+BN((B()[ds.cancelB]||{}).no)+"?","The dress becomes free for these dates. Settle the advance with the customer (use Refund first if you return money).","Yes, cancel",true,"e.g. wedding postponed");if(r.ok){LOGCTX.reason=r.reason;try{await setStatus(ds.cancelB,"cancelled");toast("Booking cancelled")}catch(x){}}return}
   if(ds.walang){if(WALANG[ds.walang]&&ds.walang!==waLang()){try{await put("settings","main",Object.assign({},ST(),{waLang:ds.walang}));toast("Messages now in "+WALANG[ds.walang])}catch(x){}}return}
   if(ds.copyWam){const [bid,k]=ds.copyWam.split("|");const b=B()[bid];if(b){const box=t.closest("details,.wa-item,div");const pv=box&&box.querySelector(".wa-prev");if(await copyText(waMsg(b,k),pv))toast("Message copied ✓");else toast("Text selected — press Copy / Ctrl+C","bad")}return}
   if(ds.copyWa){const txt=waText(B()[ds.copyWa]);if(await copyText(txt,document.getElementById("wa_txt")))toast("Message copied ✓");else toast("Text selected; copy it now");return}
