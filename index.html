@@ -761,7 +761,7 @@ const SAAVE_DEF=["2026-11-21","2026-11-24","2026-11-25","2026-11-26","2026-12-02
 const SVSUG=["Vivah muhurat","Sagai muhurat","Dev Uthani Ekadashi","Akshaya Tritiya (Aakha Teej)","Basant Panchami","Phulera Dooj","Gangaur","Teej","Karwa Chauth","Navratri","Diwali","Lagan / Haldi"];
 function saaveNote(d){const m=(S.data.settings.main||{}).saaveNote||{};return m[d]||"Vivah muhurat"}
 function saave(){const v=(S.data.settings.main||{}).saave;return Array.isArray(v)?v.slice().sort():SAAVE_DEF}
-const DEF={shop:"My Dress Rental",city:"Sardarshahar",clean:250,repair:50,pack:20,lateFee:200,prepDays:2,pickBefore:1,retAfter:1,prepBefore:1,buffer:1,fixedMonthly:21000,phone:"",slipWidth:58,guard:true,waLang:"both",noShowDays:2,
+const DEF={shop:"My Dress Rental",city:"Sardarshahar",clean:250,repair:50,pack:20,lateFee:200,prepDays:2,pickTime:"5 to 8 PM",pickBefore:1,retAfter:1,prepBefore:1,buffer:1,fixedMonthly:21000,phone:"",slipWidth:58,guard:true,waLang:"both",noShowDays:2,
   terms:"Advance is not refundable if the booking is cancelled or the dress is not collected.\nA late fee of {late} per day applies after the return date.\nStains, tears or lost tassels/dupatta will be charged separately at repair or replacement cost.\nDo not wash the dress yourself; the shop handles dry-cleaning."};
 const BST={draft:["Draft","p-mute"],booked:["Booked","p-info"],ready:["Ready","p-warn"],delivered:["Rented","p-acc"],returned:["Returned · payment due","p-gold"],closed:["Closed","p-ok"],cancelled:["Cancelled","p-mute"]};
 const DST={available:["Available","p-ok"],booked:["Booked","p-info"],out:["Rented","p-acc"],cleaning:["Dry-cleaning","p-warn"],repair:["In repair","p-bad"],sold:["Sold","p-mute"],retired:["Retired","p-mute"]};
@@ -1052,7 +1052,7 @@ function thanksDue(){const t=today();return list(B()).filter(b=>(b.status==="ret
 /* ---------- UI state ---------- */
 const V={view:"dash",bfilter:"upcoming",bq:"",dq:"",dcat:"",dstat:"",cq:"",calM:null,accM:null};
 try{const v=localStorage.getItem(LKEY+"-view");if(v)V.view=v}catch(e){}
-const NAV=[["dash","Dashboard","home"],["bookings","Bookings","book"],["returns","Returns","back"],["repair","Repair","scissors"],["fitting","Fitting","tape"],["cleaning","Dry-cleaning","drop"],["dresses","Dresses","dress"],["sellers","Sellers","store"],["orders","Orders","box"],["customers","Customers","user"],["partners","Referrals","users"],["accounts","Accounts","rupee"],["expenses","Expenses","receipt"],["daybook","Day book","daybook"],["activity","Activity log","clock"],["settings","Settings","gear"]];
+const NAV=[["dash","Dashboard","home"],["bookings","Bookings","book"],["returns","Returns","back"],["repair","Repair","scissors"],["cleaning","Dry-cleaning","drop"],["fitting","Fitting","tape"],["dresses","Dresses","dress"],["sellers","Sellers","store"],["orders","Orders","box"],["customers","Customers","user"],["partners","Referrals","users"],["accounts","Accounts","rupee"],["expenses","Expenses","receipt"],["daybook","Day book","daybook"],["activity","Activity log","clock"],["settings","Settings","gear"]];
 const TABS=["dash","bookings","dresses","customers","accounts"];
 
 let raf=0;
@@ -1204,7 +1204,7 @@ function viewDash(){
   const hello=new Date().getHours()<12?"Good morning":new Date().getHours()<17?"Good afternoon":"Good evening";
   return top(hello,fdw(t)+" "+new Date().getFullYear()+" · today's work and accounts",'<button type="button" class="btn" data-go="calendar">'+ic("cal")+'Calendar</button>')+riskHtml()+draftHtml()+rushHtml()+collectHtml()+
   '<div class="kpis">'+
-   kpi("Handovers today",dels,"to hand over",dels?"click":"","bookings:upcoming")+
+   kpi("Handovers today",dels,"to hand over","click","bookings:hand")+
    kpi("Returns today",rets,"expected","","bookings:out")+
    kpi("Late returns",lates,lates?"call them now":"all on time",lates?"alert click":"","bookings:out")+
    kpi("To prepare",preps,"dry-clean / fitting",preps?"warnk click":"click","bookings:prep")+
@@ -2019,13 +2019,13 @@ function actCSV(){
 }
 
 /* ---------- Bookings ---------- */
-const BF={all:["All",()=>true],draft:["Drafts",b=>b.status==="draft"],upcoming:["Upcoming",b=>b.status==="booked"],prep:["To prepare",b=>b.status==="booked"&&addDays(b.deliveryDate,-Math.max(1,bPrep(b)))<=today()],ready:["Ready",b=>b.status==="ready"],out:["Rented",b=>b.status==="delivered"],returned:["Payment due",b=>b.status==="returned"],closed:["Closed",b=>b.status==="closed"],cancelled:["Cancelled",b=>b.status==="cancelled"]};
+const BF={all:["All",()=>true],draft:["Drafts",b=>b.status==="draft"],upcoming:["Upcoming",b=>b.status==="booked"],hand:["Hand over today",b=>(b.status==="booked"||b.status==="ready")&&b.deliveryDate===today()],prep:["To prepare",b=>b.status==="booked"&&addDays(b.deliveryDate,-Math.max(1,bPrep(b)))<=today()],ready:["Ready",b=>b.status==="ready"],out:["Rented",b=>b.status==="delivered"],returned:["Payment due",b=>b.status==="returned"],closed:["Closed",b=>b.status==="closed"],cancelled:["Cancelled",b=>b.status==="cancelled"]};
 function viewBookings(){
   const all=list(B());
   const q=V.bq.toLowerCase();
   let rows=all.filter(BF[V.bfilter][1]).filter(b=>!q||[b.no,custName(b.customerId),(C()[b.customerId]||{}).phone,b.place,b.func,bookingDresses(b)].join(" ").toLowerCase().includes(q));
-  const asc=V.bfilter==="upcoming"||V.bfilter==="prep"||V.bfilter==="ready"||V.bfilter==="out";
-  const MK={upcoming:1,prep:1,ready:1,out:1,cancelled:1}[V.bfilter];
+  const asc=V.bfilter==="upcoming"||V.bfilter==="hand"||V.bfilter==="prep"||V.bfilter==="ready"||V.bfilter==="out";
+  const MK={upcoming:1,hand:1,prep:1,ready:1,out:1,cancelled:1}[V.bfilter];
   rows.sort((a,b)=>{const x=asc?(V.bfilter==="out"?a.returnDate:a.deliveryDate):b.deliveryDate,y=asc?(V.bfilter==="out"?b.returnDate:b.deliveryDate):a.deliveryDate;return x<y?-1:x>y?1:0});
   return top("Bookings",all.length+" bookings in total",'<button type="button" class="btn" data-act="blist">'+ic("print")+'Print / download list</button>')+
   '<div class="toolbar"><div class="seg">'+Object.keys(BF).map(k=>'<button type="button" class="'+(V.bfilter===k?"on":"")+'" data-bf="'+k+'">'+BF[k][0]+' <span class="muted">'+all.filter(BF[k][1]).length+'</span></button>').join("")+'</div>'+
@@ -2284,7 +2284,7 @@ function viewSettings(){
   '</div></div></div>'+
   '<div class="panel"><div class="panel-h"><h3>Per dress, per booking</h3></div><div class="panel-b"><div class="fgrid">'+
    f("clean","Dry-clean (₹ per dress)",s.clean)+f("repair","Minor repair (₹ per dress)",s.repair)+f("pack","Packing cover (₹)",s.pack)+f("lateFee","Late fee (₹ per day)",s.lateFee)+
-   f("pickBefore","Pick-up: days before the function",s.pickBefore==null?1:s.pickBefore,"New bookings fill the pick-up date this many days before the function date. 1 = function 20 → pick-up 19")+f("retAfter","Return: days after the function",s.retAfter==null?1:s.retAfter,"1 = function 20 → return 21 (before noon)")+f("prepBefore","Prep days before pick-up",s.prepBefore==null?1:s.prepBefore,"Repair, dry-clean and fitting are done in these days. 1 = function 20 → prep on 18")+f("noShowDays","Auto-cancel if not picked up (days)",s.noShowDays,"Days after the pick-up date. The booking is cancelled and the advance is kept as cancellation charge. 0 = never")+f("buffer","Cleaning days after return",s.buffer,"Dry-clean (and fitting) after the dress comes back. 1 = function 20 → return 21 → cleaning 22 → free for the next pick-up from 23")+
+   f("pickTime","Pick-up time (in the ready message)",s.pickTime==null?"5 to 8 PM":s.pickTime,"Shown in the WhatsApp message when the dress is ready, e.g. 5 to 8 PM. Leave blank to not mention a time","text")+f("pickBefore","Pick-up: days before the function",s.pickBefore==null?1:s.pickBefore,"New bookings fill the pick-up date this many days before the function date. 1 = function 20 → pick-up 19")+f("retAfter","Return: days after the function",s.retAfter==null?1:s.retAfter,"1 = function 20 → return 21 (before noon)")+f("prepBefore","Prep days before pick-up",s.prepBefore==null?1:s.prepBefore,"Repair, dry-clean and fitting are done in these days. 1 = function 20 → prep on 18")+f("noShowDays","Auto-cancel if not picked up (days)",s.noShowDays,"Days after the pick-up date. The booking is cancelled and the advance is kept as cancellation charge. 0 = never")+f("buffer","Cleaning days after return",s.buffer,"Dry-clean (and fitting) after the dress comes back. 1 = function 20 → return 21 → cleaning 22 → free for the next pick-up from 23")+
   '</div></div></div></div>'+
   '<div class="panel" style="margin-top:16px"><div class="panel-h"><h3>App PIN</h3></div><div class="panel-b"><p class="small muted" style="margin:0 0 10px">The 4-digit PIN is asked every time the app opens, and before anyone edits a booking that is already confirmed.</p>'+
    (s.editPin?'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill p-ok">PIN is on</span><button type="button" class="btn sm" data-act="pin-change">Change PIN</button><button type="button" class="btn sm ghost" data-act="pin-off">Turn off</button></div>':'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill p-mute">No PIN yet</span><button type="button" class="btn sm pri" data-act="pin-set">Set PIN</button></div>')+'</div></div>'+
@@ -3796,8 +3796,8 @@ function fmtId(t,n){const d=String(n||"").replace(/\s/g,"");if((t||"Aadhaar")===
 function waRemind(b,type){
   const c=C()[b.customerId]||{},st=ST(),f=fin(b),dn=dressNames(b),nm=c.name||"",H="Hello "+nm+",\n",HH="Namaste "+nm+",\n";
   const bal=Math.max(0,Math.round(f.gross-N(b.paid))),bs=bal.toLocaleString("en-IN");
-  if(type==="prep"||type==="del")return waL(H+"Your dress ("+bo(dn)+") for booking "+bo(BN(b.no))+" is ready.\nPlease collect it on "+bo(fdw(b.deliveryDate))+(b.func?" for your "+b.func+" ("+bo(fdw(b.eventDate))+")":"")+".\n"+(bal>0?"Balance to pay at pick-up: "+bo("₹"+bs):"Payment: received in full")+"\n"+bo("Please bring your booking slip when you come to collect the dress."),
-    HH+"Booking "+bo(BN(b.no))+" ki aapki dress ("+bo(dn)+") taiyar hai.\nKripya "+bo(fdw(b.deliveryDate))+" ko le jaayein"+(b.func?", aapke "+b.func+" ("+bo(fdw(b.eventDate))+") ke liye":"")+".\n"+(bal>0?"Dress lete samay baaki payment: "+bo("₹"+bs):"Payment: poora mil gaya hai")+"\n"+bo("Dress lene aate samay apni booking slip saath laayein."));
+  if(type==="prep"||type==="del"){const td=b.deliveryDate===today(),pt=String(st.pickTime||"").trim(),day=td?bo("today"+(pt?", "+pt:"")):bo(fdw(b.deliveryDate))+(pt?" ("+pt+")":""),dayH=td?bo("aaj"+(pt?" "+pt:"")):bo(fdw(b.deliveryDate))+(pt?" ("+pt+")":"")+" ko";return waL(H+"Your dress ("+bo(dn)+") for booking "+bo(BN(b.no))+" is ready.\nPlease collect it "+(td?"":"on ")+day+(b.func?" for your "+b.func+" ("+bo(fdw(b.eventDate))+")":"")+".\n"+bo("Please try it on at the shop to check the size and fitting.")+" If anything small needs changing, we will do it right there.\n"+(bal>0?"Balance to pay at pick-up: "+bo("₹"+bs):"Payment: received in full")+"\n"+bo("Please bring your booking slip when you come to collect the dress."),
+    HH+"Booking "+bo(BN(b.no))+" ki aapki dress ("+bo(dn)+") taiyar hai.\nKripya "+dayH+" le jaayein"+(b.func?", aapke "+b.func+" ("+bo(fdw(b.eventDate))+") ke liye":"")+".\n"+bo("Shop par dress pehen kar size aur fitting check kar lein.")+" Kuch chhota badlaav ho to wahin kar denge.\n"+(bal>0?"Dress lete samay baaki payment: "+bo("₹"+bs):"Payment: poora mil gaya hai")+"\n"+bo("Dress lene aate samay apni booking slip saath laayein."))}
   if(type==="late-del")return waL(H+"Your dress ("+bo(dn)+") for booking "+bo(BN(b.no))+" was ready for pick-up on "+bo(fdw(b.deliveryDate))+". Please let us know when you will collect it."+"\n"+bo("Please bring your booking slip when you come to collect the dress."),
     HH+"Booking "+bo(BN(b.no))+" ki aapki dress ("+bo(dn)+") "+bo(fdw(b.deliveryDate))+" se taiyar rakhi hai. Kripya batayein aap kab lene aayenge."+"\n"+bo("Dress lene aate samay apni booking slip saath laayein."));
   if(type==="ret"){const td=b.returnDate===today();return waL(H+"A reminder that your dress ("+bo(dn)+") is due back "+(td?bo("today"):"on "+bo(fdw(b.returnDate)))+". A late fee of "+bo("₹"+st.lateFee+" per day")+" applies after that.",
@@ -4877,7 +4877,11 @@ document.addEventListener("click",async e=>{
   if(ds.rcptB){slipModal(ds.rcptB,"receipt",+ds.rcptI);return}
   if(ds.slipB){slipModal(ds.slipB,ds.slipK);return}
   if(ds.fitdone){const o=clone(B()[ds.fitdone]);delete o.id;o.fit=Object.assign({},o.fit||{},{done:true,doneOn:today()});try{await put("bookings",ds.fitdone,o);toast("Fitting marked done")}catch(x){}return}
-  if(ds.readyB){const bk=B()[ds.readyB]||{};let extra={};const bm=measTxt(bk.meas||((C()[bk.customerId]||{}).meas)||{});if(bm&&!(bk.fit&&bk.fit.done)){if(!await askConfirm("Customer size: <b>"+esc(bm)+"</b>.<br>Is the dress fitted to this size?","Yes, fitted · mark ready",false,"Fitting done?"))return;extra={fit:{done:true,doneOn:today()}}}try{await setStatus(ds.readyB,"ready",extra);if(extra.fit)for(const it of (bk.items||[]))if(fitDressOk(D()[it.dressId]))await setDressFit(it.dressId,ds.readyB,today());toast("Marked ready")}catch(x){}return}
+  if(ds.readyB){const bk=B()[ds.readyB]||{};let extra={};const bm=measTxt(bk.meas||((C()[bk.customerId]||{}).meas)||{});if(bm&&!(bk.fit&&bk.fit.done)){if(!await askConfirm("Customer size: <b>"+esc(bm)+"</b>.<br>Is the dress fitted to this size?","Yes, fitted · mark ready",false,"Fitting done?"))return;extra={fit:{done:true,doneOn:today()}}}try{await setStatus(ds.readyB,"ready",extra);if(extra.fit)for(const it of (bk.items||[]))if(fitDressOk(D()[it.dressId]))await setDressFit(it.dressId,ds.readyB,today());toast("Marked ready");
+      {const nb=B()[ds.readyB],c=C()[nb.customerId]||{},txt=waMsg(nb,"pickup"),bt=waBtn(c,txt,false,"Send on WhatsApp",nb.id+"|pickup",false);
+       const el=modal({title:"Tell "+esc(c.name||"the customer")+" the dress is ready",body:'<p style="margin:0 0 10px">Pick-up: <b>'+fdw(nb.deliveryDate)+'</b>'+(String(ST().pickTime||"").trim()?' · '+esc(ST().pickTime):'')+'. The message also asks her to try the dress on at the shop to check size and fitting.</p><div class="small wa-prev">'+waHtml(txt)+'</div>'+(bt?'':'<div class="warnbox" style="margin-top:10px">No phone number saved for this customer.</div>'),foot:'<button type="button" class="btn" data-c="0">Later</button>'+bt,autofocus:false});
+       el.querySelectorAll("[data-c]").forEach(x=>x.addEventListener("click",()=>closeTop()));el.querySelectorAll("a.wa,.wa-menu a").forEach(x=>x.addEventListener("click",()=>setTimeout(closeTop,300)))}
+    }catch(x){}return}
   if(ds.deliverB){deliverForm(ds.deliverB);return}
   if(ds.returnB){returnForm(ds.returnB);return}
   if(ds.closeB){closeForm(ds.closeB);return}
@@ -4919,7 +4923,7 @@ document.addEventListener("click",async e=>{
   if(act==="pin-change"){if(await needPin("Enter the current PIN to change it."))await newPinFlow("Choose a new PIN");return}
   if(act==="pin-off"){if(await needPin("Enter the current PIN to turn it off.")&&await askConfirm("Bookings can then be edited without a PIN.","Turn off",true,"Turn off the PIN?")){try{await savePin("");toast("PIN turned off")}catch(e){}}return}
   if(act==="saave-edit"){saaveForm();return}
-  if(act==="save-settings"){const o=Object.assign({},S.data.settings.main||{});["shop","city","phone","addr"].forEach(k=>o[k]=($("#s_"+k).value||"").trim());["expBudget","clean","repair","pack","lateFee","pickBefore","retAfter","prepBefore","buffer","noShowDays","slipWidth","openCash","openBank"].forEach(k=>o[k]=N($("#s_"+k).value));o.openDate=$("#s_openDate").value||"";o.terms=$("#s_terms").value;o.guard=$("#s_guard").checked;o.waLang=$("#s_waLang").value||"both";if(!o.shop)o.shop=DEF.shop;try{await put("settings","main",o);G.pageDirty=false;toast("Settings saved")}catch(x){}return}
+  if(act==="save-settings"){const o=Object.assign({},S.data.settings.main||{});["shop","city","phone","addr","pickTime"].forEach(k=>o[k]=($("#s_"+k).value||"").trim());["expBudget","clean","repair","pack","lateFee","pickBefore","retAfter","prepBefore","buffer","noShowDays","slipWidth","openCash","openBank"].forEach(k=>o[k]=N($("#s_"+k).value));o.openDate=$("#s_openDate").value||"";o.terms=$("#s_terms").value;o.guard=$("#s_guard").checked;o.waLang=$("#s_waLang").value||"both";if(!o.shop)o.shop=DEF.shop;try{await put("settings","main",o);G.pageDirty=false;toast("Settings saved")}catch(x){}return}
   if(act==="backup"){saveFile("dress-rental-backup-"+today()+".json",JSON.stringify(S.data,null,1));return}
   if(act==="csv"){saveFile("bookings-"+today()+".csv",csv());return}
   if(act==="cloud-check"){cloudCheck();return}
