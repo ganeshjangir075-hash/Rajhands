@@ -637,11 +637,13 @@ select option.opt-busy,select option:disabled.opt-busy{color:#d98c8c;background:
 .cnt i{width:6px;height:6px;border-radius:50%}
 .qa-cal{margin-top:12px;background:#fff;border-radius:8px;padding:10px!important;border-top:1px solid var(--line);padding-top:10px}
 .qa-cal-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}
-.qa-leg{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)}
+.qa-leg{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;font-size:11.5px;color:var(--muted);white-space:nowrap}
 .qa-leg i{width:11px;height:11px;border-radius:3px;display:inline-block;margin-left:6px}
 .qa-leg i.free,.qd.free{background:#fff;color:#17663A;box-shadow:inset 0 0 0 1px #9FD4B1}
 .qa-leg i.busy,.qd.busy{background:#F9D9D9;color:#A12626}
-.qa-leg i.buf,.qd.buf{background:#FBEBC8;color:#8A5A00}
+.qa-leg i.prep,.qd.prep{background:#FBEBC8;color:#7A4E00}
+.qa-leg i.cln,.qd.cln{background:#E6E1F7;color:#4B3C8F}
+.qd{position:relative}.qd.fn::after{content:"";position:absolute;bottom:3px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:currentColor}
 .qa-months{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:8px}
 .qa-mn{font-weight:700;font-size:13px;margin-bottom:4px}
 .qa-wk,.qa-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
@@ -661,6 +663,12 @@ button.qd:hover{outline:2px solid currentColor;outline-offset:-2px}
 .fit-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .fit-act{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:46%}
 @media(max-width:700px){.fit-row{flex-direction:column}.fit-act{max-width:none;justify-content:flex-start}}
+.blk{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0 4px;display:flex;flex-direction:column;gap:8px;background:var(--surface,#fff)}
+.blk-h{font-weight:700;font-size:13px;margin-bottom:4px}
+.blk-row{display:flex;flex-wrap:wrap;gap:6px}
+.blk-s{font-size:12px;padding:4px 8px;border-radius:6px}
+.blk-s.prep{background:#FBEBC8;color:#7A4E00}.blk-s.out{background:#F9D9D9;color:#A12626}.blk-s.cln{background:#E6E1F7;color:#4B3C8F}.blk-s.free{background:#DDF3E4;color:#17663A}
+.blk-btns{display:flex;gap:6px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -753,7 +761,7 @@ const SAAVE_DEF=["2026-11-21","2026-11-24","2026-11-25","2026-11-26","2026-12-02
 const SVSUG=["Vivah muhurat","Sagai muhurat","Dev Uthani Ekadashi","Akshaya Tritiya (Aakha Teej)","Basant Panchami","Phulera Dooj","Gangaur","Teej","Karwa Chauth","Navratri","Diwali","Lagan / Haldi"];
 function saaveNote(d){const m=(S.data.settings.main||{}).saaveNote||{};return m[d]||"Vivah muhurat"}
 function saave(){const v=(S.data.settings.main||{}).saave;return Array.isArray(v)?v.slice().sort():SAAVE_DEF}
-const DEF={shop:"My Dress Rental",city:"Sardarshahar",clean:250,repair:50,pack:20,lateFee:200,prepDays:2,readyDays:2,buffer:1,fixedMonthly:21000,phone:"",slipWidth:58,guard:true,waLang:"both",noShowDays:2,
+const DEF={shop:"My Dress Rental",city:"Sardarshahar",clean:250,repair:50,pack:20,lateFee:200,prepDays:2,pickBefore:1,retAfter:1,prepBefore:1,buffer:1,fixedMonthly:21000,phone:"",slipWidth:58,guard:true,waLang:"both",noShowDays:2,
   terms:"Advance is not refundable if the booking is cancelled or the dress is not collected.\nA late fee of {late} per day applies after the return date.\nStains, tears or lost tassels/dupatta will be charged separately at repair or replacement cost.\nDo not wash the dress yourself; the shop handles dry-cleaning."};
 const BST={draft:["Draft","p-mute"],booked:["Booked","p-info"],ready:["Ready","p-warn"],delivered:["Rented","p-acc"],returned:["Returned · payment due","p-gold"],closed:["Closed","p-ok"],cancelled:["Cancelled","p-mute"]};
 const DST={available:["Available","p-ok"],booked:["Booked","p-info"],out:["Rented","p-acc"],cleaning:["Dry-cleaning","p-warn"],repair:["In repair","p-bad"],sold:["Sold","p-mute"],retired:["Retired","p-mute"]};
@@ -981,10 +989,16 @@ function dressState(id){
 function nextBooking(id){
   return list(B()).filter(b=>(b.status==="booked"||b.status==="ready")&&(b.items||[]).some(i=>i.dressId===id)).sort((a,b)=>a.deliveryDate<b.deliveryDate?-1:1)[0];
 }
-function clashes(dressId,from,to,exceptId){
+/* booking days: prep (before pick-up, soft) · pick-up → return (dress with customer) · cleaning after return (hard) */
+const dSet=(k,def)=>{const v=ST()[k];return v===""||v==null||isNaN(+v)?def:Math.max(0,+v)};
+const bAfter=b=>b&&b.after!=null&&b.after!==""?Math.max(0,N(b.after)):dSet("buffer",1);
+const bPrep=b=>b&&b.prep!=null&&b.prep!==""?Math.max(0,N(b.prep)):dSet("prepBefore",1);
+const bRetEff=b=>b.status==="delivered"&&b.returnDate<today()?today():b.returnDate;
+const bActive=b=>["booked","ready","delivered"].includes(b.status)||(b.status==="draft"&&N(b.paid)>0);
+function clashes(dressId,from,to,exceptId,after){
   if(!dressId||!from||!to)return [];
-  const buf=ST().buffer;
-  return list(B()).filter(b=>b.id!==exceptId&&(["booked","ready","delivered"].includes(b.status)||(b.status==="draft"&&N(b.paid)>0))&&(b.items||[]).some(i=>i.dressId===dressId)&&from<=addDays(b.status==="delivered"&&b.returnDate<today()?today():b.returnDate,buf)&&b.deliveryDate<=addDays(to,buf));
+  const na=after!=null?after:dSet("buffer",1);
+  return list(B()).filter(b=>b.id!==exceptId&&bActive(b)&&(b.items||[]).some(i=>i.dressId===dressId)&&from<=addDays(bRetEff(b),bAfter(b))&&b.deliveryDate<=addDays(to,na));
 }
 function monthStats(ym){
   const bs=list(B()).filter(b=>counts(b)&&(b.deliveryDate||"").slice(0,7)===ym);
@@ -1010,7 +1024,7 @@ function tasks(){
   const t=today(), st=ST(), out=[];
   list(B()).forEach(b=>{
     if(b.status==="booked"){
-      const p=addDays(b.deliveryDate,-st.prepDays);
+      const p=addDays(b.deliveryDate,-Math.max(1,bPrep(b)));
       out.push({type:"prep",date:p<t&&b.deliveryDate>=t?t:p,late:p<t,b});
     }
     if(b.status==="booked"||b.status==="ready"){
@@ -1162,7 +1176,7 @@ function remRow(x){
 function viewDash(){
   const t=today(), st=ST();
   const tom=addDays(t,1), wk=addDays(t,7);
-  /* prep shows from its own day (prepDays before handover); handover from the day before; return only on its day */
+  /* prep shows from its own day (prep days before handover); handover from the day before; return only on its day */
   const tk=tasks().filter(x=>!(x.type==="prep"&&x.date>t)&&!(x.type==="del"&&x.date>tom)&&!(x.type==="ret"&&x.date>t));
   const over=tk.filter(x=>x.date<t&&x.type!=="dep"&&x.type!=="prep"||x.type==="prep"&&x.late);
   const tod=tk.filter(x=>x.date===t&&!(x.type==="prep"&&x.late)&&x.type!=="dep");
@@ -1222,15 +1236,15 @@ function qaPanel(){
 /* 2-month availability calendar for one dress */
 function qaDay(d,day){
   if(d.status==="sold"||d.status==="retired")return {k:"x"};
-  const buf=ST().buffer,cl=clashes(d.id,day,day);
-  if(!cl.length)return {k:"free"};
-  const end=b=>b.status==="delivered"&&b.returnDate<today()?today():b.returnDate;
-  const bk=cl.find(b=>b.deliveryDate<=day&&day<=end(b));
-  return bk?{k:"busy",b:bk}:{k:"buf",b:cl[0]};
+  let best=null;const rank={busy:3,cln:2,prep:1};
+  list(B()).filter(b=>bActive(b)&&(b.items||[]).some(i=>i.dressId===d.id)).forEach(b=>{const rt=bRetEff(b);let k=null;
+    if(b.deliveryDate<=day&&day<=rt)k="busy";else if(rt<day&&day<=addDays(rt,bAfter(b)))k="cln";else if(addDays(b.deliveryDate,-bPrep(b))<=day&&day<b.deliveryDate)k="prep";
+    if(k&&(!best||rank[k]>rank[best.k]))best={k,b,fn:b.eventDate===day}});
+  return best||{k:"free"};
 }
 function qaCal(d){
   const t=today(),last=addDays(t,61),q=V.qa||{};
-  let html='<div class="qa-cal"><div class="qa-cal-h"><b>Next 2 months</b><span class="qa-leg"><i class="free"></i>Free<i class="busy"></i>Booked<i class="buf"></i>Cleaning gap</span></div><div class="qa-months">';
+  let html='<div class="qa-cal"><div class="qa-cal-h"><b>Next 2 months</b><span class="qa-leg"><i class="free"></i>Free<i class="prep"></i>Prep<i class="busy"></i>With customer<i class="cln"></i>Cleaning</span></div><div class="qa-months">';
   let freeN=0;
   const first=parseD(t);
   for(let m=0;m<3;m++){
@@ -1242,13 +1256,13 @@ function qaCal(d){
       if(day<t||day>last){cells+='<span class="qd off">'+dd+'</span>';continue}
       const r=qaDay(d,day);if(r.k==="free")freeN++;
       const sel=q.fn===day||(q.from&&q.to&&q.from<=day&&day<=q.to);
-      const tip=r.k==="free"?fdw(day)+" · free":r.b?fdw(day)+" · "+custName(r.b.customerId)+" "+BN(r.b.no)+(r.k==="buf"?" (cleaning gap)":""):"";
+      const KL={busy:r.fn?"function day":"with customer",cln:"cleaning",prep:"prep"};const tip=r.k==="free"?fdw(day)+" · free":r.b?fdw(day)+" · "+custName(r.b.customerId)+" "+BN(r.b.no)+" ("+KL[r.k]+")":"";
       cells+=r.k==="free"?'<button type="button" class="qd free'+(sel?" sel":"")+(day===t?" today":"")+'" data-qa-day="'+day+'" data-qa-dress="'+d.id+'" title="'+esc(tip)+'">'+dd+'</button>'
-        :r.b?'<button type="button" class="qd '+r.k+(day===t?" today":"")+'" data-open-b="'+r.b.id+'" title="'+esc(tip)+'">'+dd+'</button>':'<span class="qd off">'+dd+'</span>';
+        :r.b?'<button type="button" class="qd '+r.k+(r.fn?" fn":"")+(day===t?" today":"")+'" data-open-b="'+r.b.id+'" title="'+esc(tip)+'">'+dd+'</button>':'<span class="qd off">'+dd+'</span>';
     }
     html+='<div class="qa-month"><div class="qa-mn">'+m1.toLocaleDateString("en-IN",{month:"long",year:"numeric"})+'</div><div class="qa-wk"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div><div class="qa-grid">'+cells+'</div></div>';
   }
-  return html+'</div><div class="small muted" style="margin-top:6px">'+freeN+' free days in the next 2 months. Tap a green date to check it as the function day; tap a red date to open that booking.</div></div>';
+  return html+'</div><div class="small muted" style="margin-top:6px">'+freeN+' free days in the next 2 months. Each booking keeps the dress from prep to cleaning. Tap a green date to check it as the function day; tap a coloured date to open that booking. A dot marks the function day.</div></div>';
 }
 function qaResult(){
   const q=V.qa||{};let from=q.from||today(),to=q.to||from;if(to<from){const x=from;from=to;to=x}
@@ -1432,10 +1446,9 @@ function clGive(k){return list(D()).filter(d=>clStage(d.id)==="give"&&(!k||(k===
 function clOutBatches(k){return list(CL()).filter(bt=>!bt.cancelled&&(!k||clKind(bt)===k)&&(bt.items||[]).some(i=>!i.back)).sort((a,b)=>a.sentOn<b.sentOn?-1:1)}
 function clOutCount(k){return clOutBatches(k).reduce((a,bt)=>a+bt.items.filter(i=>!i.back).length,0)}
 function clCount(){const n=document.querySelectorAll(".cl-chk:checked").length,el=document.getElementById("cl_cnt");if(el)el.textContent=n?n+" selected":"Tick the dresses you are giving now"}
-function clUrgent(nb){if(!nb)return false;return diff(today(),nb.deliveryDate)<=N(ST().prepDays)+1}
+function clUrgent(nb){if(!nb)return false;return diff(today(),nb.deliveryDate)<=bPrep(nb)+1}
 /* fitting by the tailor (before pick-up) */
-const fitWin=()=>Math.max(N(ST().prepDays)||2,readyD()+2);
-const readyD=()=>{const v=ST().readyDays;return v===""||v==null||isNaN(+v)?2:Math.max(0,+v)};
+const fitWin=()=>dSet("prepBefore",1)+1;
 function bkMeas(b){return b.meas||((C()[b.customerId]||{}).meas)||null}
 function fitDressOk(d){return d&&!/jewel/i.test(d.category||"")}
 function fitNow(b,did){const nb=clNextBooking(did);return nb&&nb.id===b.id&&["available","booked"].includes(dressState(did))}
@@ -1468,12 +1481,13 @@ function clPlan(sec,x){const t=today(),days=clDays(sec),p=String(x).split(":");l
   if(p[0]==="fit"){d=D()[p[2]]||{};nb=B()[p[1]];fit=true}else{d=D()[x]||{};const w=d.work||{};nb=sec==="repair"&&w.fitFor&&B()[w.fitFor]?B()[w.fitFor]:clNextBooking(x);both=sec==="repair"&&clNeed(d)==="both"}
   const W=sec==="repair"?"tailor":"cleaner";
   if(!nb)return {first:false,d,txt:"No booking yet, no hurry. Normal "+days+" days is fine"+(both?", then dry-cleaning":"")+"."};
-  const pick=nb.deliveryDate,rd=readyD(),ready=addDays(pick,-rd),head="Next booking "+fdw(pick)+" ("+custName(nb.customerId)+"). ";
-  let lim=addDays(ready,both?-1:0);const tight=lim<t;if(tight)lim=addDays(pick,both?-2:-1);
+  const pick=nb.deliveryDate,pr=Math.max(1,bPrep(nb)),pd=addDays(pick,-pr),head="Next booking: pick-up "+fdw(pick)+" ("+custName(nb.customerId)+"). ";
+  const lim=both?pd:W==="tailor"?pd:addDays(pick,-(pr-1));
   const first=lim<=addDays(t,days);let txt;
-  if(!first)txt=head+"Plenty of time: normal "+days+" days is fine"+(both?", then dry-cleaning":"")+". Must be back by "+fdw(lim)+" (ready "+rd+" day"+(rd===1?"":"s")+" before pick-up).";
-  else if(!tight&&lim>=t&&both)txt=head+"Tailor back by "+fdw(lim)+" → cleaner back by "+fdw(ready)+" → ready "+rd+" day"+(rd===1?"":"s")+" before pick-up.";
-  else if(!tight&&lim>=t)txt=head+(W==="tailor"?"Tailor":"Cleaner")+" back by "+fdw(lim)+(fit?" (fitting)":"")+" → ready "+rd+" day"+(rd===1?"":"s")+" before pick-up.";
+  if(!first)txt=head+"No hurry: normal "+days+" days is fine"+(both?", then dry-cleaning":"")+". Must be back by "+fdw(lim)+".";
+  else if(lim>=t&&both)txt=head+"Tailor on "+fdw(pd)+" (back in a few hours) → dry-cleaner the same day → back "+fdw(addDays(pd,1))+" morning → fitting → hand over.";
+  else if(lim>=t&&W==="tailor")txt=head+"Tailor back by "+fdw(lim)+(fit?" (fitting)":"")+" → dry-clean if needed → hand over "+fdw(pick)+".";
+  else if(lim>=t)txt=head+"Cleaner back by "+fdw(lim)+(pr===1?" morning":"")+" → fitting → hand over "+fdw(pick)+".";
   else if(lim<t)txt=head+"Very close: same-day work, get it back in 2–4 hours"+(both?", then straight to the cleaner":"")+".";
   else if(both)txt=head+"Tailor back by "+fdw(lim)+" → cleaner on "+fdw(lim)+" → ready "+fdw(addDays(pick,-1))+".";
   else txt=head+(W==="tailor"?"Tailor":"Cleaner")+" back by "+fdw(lim)+(fit?" (fitting)":"")+" → ready for pick-up.";
@@ -1486,7 +1500,7 @@ function collectHtml(){const rush=new Set(rushList().filter(x=>x.act==="collect"
   return '<div class="rush">'+L.map(x=>{const who=x.bt.cleaner||(x.sec==="repair"?"the tailor":"the cleaner");
     return '<button type="button" class="rush-row'+(x.late>0||x.up?" up":"")+'" data-go="'+(x.sec==="repair"?"repair":"cleaning")+'"><span class="rush-ic">'+ic(x.sec==="repair"?"scissors":"drop",16)+'</span><span><span class="rush-m">Bring back <b>'+esc(x.d.code||"")+'</b> '+esc(x.d.name||"")+' from <b>'+esc(who)+'</b></span><span class="small" style="display:block">'+(x.late>0?'<b>'+x.late+' day'+(x.late>1?"s":"")+' late</b> · was due '+fd(x.bt.expBack):x.up?'<b>Time is up</b> ('+t12(x.bt.expTime)+')':'Due back today'+(x.bt.expTime?' by '+t12(x.bt.expTime):""))+' · given '+fd(x.bt.sentOn)+' · '+esc(x.bt.no||"")+'</span></span>'+ic("right")+'</button>'}).join("")+'</div>'}
 /* a dress still out (late) while its next booking is close */
-function riskList(){const t=today(),p=N(ST().prepDays)||2,out=[];list(B()).filter(b=>b.status==="delivered").forEach(b=>(b.items||[]).forEach(i=>{const nb=clNextBooking(i.dressId);if(!nb||nb.id===b.id)return;const dd=diff(t,nb.deliveryDate);if((b.returnDate<t&&dd<=p+2)||(b.returnDate<=t&&dd<=1))out.push({b,nb,did:i.dressId,late:Math.max(0,diff(b.returnDate,t)),dd})}));return out.sort((a,b)=>a.dd-b.dd)}
+function riskList(){const t=today(),p=dSet("prepBefore",1)+1,out=[];list(B()).filter(b=>b.status==="delivered").forEach(b=>(b.items||[]).forEach(i=>{const nb=clNextBooking(i.dressId);if(!nb||nb.id===b.id)return;const dd=diff(t,nb.deliveryDate);if((b.returnDate<t&&dd<=p+2)||(b.returnDate<=t&&dd<=1))out.push({b,nb,did:i.dressId,late:Math.max(0,diff(b.returnDate,t)),dd})}));return out.sort((a,b)=>a.dd-b.dd)}
 const paidDrafts=()=>list(B()).filter(b=>b.status==="draft"&&N(b.paid)>0).sort((a,b)=>(a.deliveryDate||"")<(b.deliveryDate||"")?-1:1);
 function draftHtml(){const L=paidDrafts();if(!L.length)return "";return '<div class="rush">'+L.map(b=>'<button type="button" class="rush-row" data-open-b="'+b.id+'"><span class="rush-ic">'+ic("edit",16)+'</span><span><span class="rush-m"><b>Draft '+esc(BN(b.no))+'</b> · '+esc(custName(b.customerId))+': '+inr(b.paid)+' advance taken but the booking is not confirmed</span><span class="small" style="display:block">'+esc(bookingDresses(b))+(b.deliveryDate?' · pick-up '+fd(b.deliveryDate):"")+' · the dress is held for her. Open and tap "Open draft &amp; confirm".</span></span>'+ic("right")+'</button>').join("")+'</div>'}
 function riskHtml(){const L=riskList();if(!L.length)return "";return '<div class="risk">'+L.map(x=>{const c=C()[x.b.customerId]||{},d=D()[x.did]||{},when=x.dd<=0?"today":x.dd===1?"tomorrow":"in "+x.dd+" days";const ph=String(c.phone||"").replace(/[^0-9+]/g,"");
@@ -1599,7 +1613,7 @@ function clGiveForm(ids,sec){
   sec=sec||V.clSec||"clean";const W=CLW[sec],st=ST(),days=sec==="repair"?(N(st.repairDays)||4):(N(st.cleanDays)||3),cl=clCleaners(sec);
   const PF=x=>{const p=String(x).split(":");return p[0]==="fit"?{fit:true,bid:p[1],did:p[2]}:{did:x}};
   const t0=today();let backDef,same;
-  const backFor=L=>{backDef=addDays(t0,days);same=false;L.forEach(x=>{const p=PF(x);let nb,need=1;if(p.fit)nb=B()[p.bid];else{const d=D()[x]||{},w=d.work||{};nb=sec==="repair"&&w.fitFor&&B()[w.fitFor]?B()[w.fitFor]:clNextBooking(x);if(sec==="repair"&&clNeed(d)==="both")need=2}if(!nb)return;let lim=addDays(nb.deliveryDate,-(readyD()+need-1));if(lim<t0)lim=addDays(nb.deliveryDate,-need);if(lim<t0)same=true;const b2=lim<t0?t0:lim;if(b2<backDef)backDef=b2})};backFor(ids);
+  const backFor=L=>{backDef=addDays(t0,days);same=false;L.forEach(x=>{const p=PF(x);let nb,need=1;if(p.fit)nb=B()[p.bid];else{const d=D()[x]||{},w=d.work||{};nb=sec==="repair"&&w.fitFor&&B()[w.fitFor]?B()[w.fitFor]:clNextBooking(x);if(sec==="repair"&&clNeed(d)==="both")need=2}if(!nb)return;const pr=Math.max(1,bPrep(nb));const lim=addDays(nb.deliveryDate,-(sec==="repair"?pr:pr-1));if(lim<t0)same=true;const b2=lim<t0?t0:lim;if(b2<backDef)backDef=b2})};backFor(ids);
   const rushT=backDef===t0?(same?inHours(3):"20:00"):"";
   const extra=(sec==="repair"?fitGive().map(x=>"fit:"+x.b.id+":"+x.d.id):[]).concat(clGive(sec).map(x=>x.d.id)).filter(x=>!ids.includes(x)).map(x=>({x,pl:clPlan(sec,x)})).sort((a,b)=>(b.pl.first?1:0)-(a.pl.first?1:0)||((a.pl.lim||"9")<(b.pl.lim||"9")?-1:1));
   const planBox='<div class="calc"><span class="label">Plan by next booking</span>'+ids.map(x=>{const pl=clPlan(sec,x);return '<div class="cg-plan"><span class="mono muted">'+esc(pl.d.code||"")+'</span> '+clTag(pl)+'<div class="small">'+esc(pl.txt)+'</div></div>'}).join("")+'</div>'+
@@ -2270,7 +2284,7 @@ function viewSettings(){
   '</div></div></div>'+
   '<div class="panel"><div class="panel-h"><h3>Per dress, per booking</h3></div><div class="panel-b"><div class="fgrid">'+
    f("clean","Dry-clean (₹ per dress)",s.clean)+f("repair","Minor repair (₹ per dress)",s.repair)+f("pack","Packing cover (₹)",s.pack)+f("lateFee","Late fee (₹ per day)",s.lateFee)+
-   f("readyDays","Dress fully ready how many days before pick-up",s.readyDays,"Fitting, repair and dry-cleaning are planned to finish this many days before pick-up, even when there is more time. 0 = on the pick-up day")+f("prepDays","Prepare how many days ahead",s.prepDays,"The 'Get it ready' reminder appears this many days before pick-up (1 = the day before)")+f("noShowDays","Auto-cancel if not picked up (days)",s.noShowDays,"Days after the pick-up date. The booking is cancelled and the advance is kept as cancellation charge. 0 = never")+f("buffer","Ready / cleaning days (gap)",s.buffer,"Days kept free before pick-up (to get it ready) and after return (to clean it). 1 = function 15 → busy 13 to 17, next pick-up from 18")+
+   f("pickBefore","Pick-up: days before the function",s.pickBefore==null?1:s.pickBefore,"New bookings fill the pick-up date this many days before the function date. 1 = function 20 → pick-up 19")+f("retAfter","Return: days after the function",s.retAfter==null?1:s.retAfter,"1 = function 20 → return 21 (before noon)")+f("prepBefore","Prep days before pick-up",s.prepBefore==null?1:s.prepBefore,"Repair, dry-clean and fitting are done in these days. 1 = function 20 → prep on 18")+f("noShowDays","Auto-cancel if not picked up (days)",s.noShowDays,"Days after the pick-up date. The booking is cancelled and the advance is kept as cancellation charge. 0 = never")+f("buffer","Cleaning days after return",s.buffer,"Dry-clean (and fitting) after the dress comes back. 1 = function 20 → return 21 → cleaning 22 → free for the next pick-up from 23")+
   '</div></div></div></div>'+
   '<div class="panel" style="margin-top:16px"><div class="panel-h"><h3>App PIN</h3></div><div class="panel-b"><p class="small muted" style="margin:0 0 10px">The 4-digit PIN is asked every time the app opens, and before anyone edits a booking that is already confirmed.</p>'+
    (s.editPin?'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill p-ok">PIN is on</span><button type="button" class="btn sm" data-act="pin-change">Change PIN</button><button type="button" class="btn sm ghost" data-act="pin-off">Turn off</button></div>':'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill p-mute">No PIN yet</span><button type="button" class="btn sm pri" data-act="pin-set">Set PIN</button></div>')+'</div></div>'+
@@ -3380,7 +3394,7 @@ function custFields(c,cid){
   c=c||{};const m=c.meas||{};
   return '<div class="fgrid"><div class="f"><label for="c_name">Name</label><input id="c_name" value="'+esc(c.name||"")+'"></div>'+
   '<div class="f"><label for="c_phone">Phone / WhatsApp</label><input id="c_phone" type="tel" inputmode="tel" value="'+esc(c.phone||"")+'"></div>'+
-  '<div class="f"><label for="c_alt">Alternate phone (home)</label><input id="c_alt" type="tel" inputmode="tel" value="'+esc(c.alt||"")+'"></div>'+
+  '<div class="f"><label for="c_alt">Alternate number (home / family) <span class="neg">*</span></label><input id="c_alt" type="tel" inputmode="tel" required placeholder="Different from her own number" value="'+esc(c.alt||"")+'"></div>'+
   '<div class="f"><label for="c_addr">Village / area / address</label><input id="c_addr" value="'+esc(c.address||"")+'"></div>'+
   '<div class="f"><label for="c_idt">ID proof</label><select id="c_idt">'+["Aadhaar","Voter ID","PAN","Driving licence","None"].map(x=>'<option'+(c.idType===x?" selected":"")+'>'+x+'</option>').join("")+'</select></div>'+
   '<div class="f"><label for="c_idn">ID number (Aadhaar: 12 digits)</label><input id="c_idn" inputmode="numeric" maxlength="14" placeholder="'+((c.idType||"Aadhaar")==="Aadhaar"&&c.idNo?"Saved: "+esc(fmtId(c.idType,c.idNo)):"1234 5678 9012")+'" value="'+((c.idType||"Aadhaar")==="Aadhaar"?"":esc(c.idNo||""))+'"><span class="hint">'+((c.idType||"Aadhaar")==="Aadhaar"&&c.idNo?"Leave blank to keep the saved number. ":"")+'For safety only the last 4 digits of Aadhaar are saved</span></div></div>'+
@@ -3390,6 +3404,8 @@ function custFields(c,cid){
   '<div class="f"><label for="c_part">Referred by (parlour / photographer)</label><select id="c_part">'+partnerOptions(c.partnerId&&P()[c.partnerId]?c.partnerId:"","")+'</select><span class="hint">Filled in automatically in her bookings, with the commission.</span></div>'+
   '<div class="f"><label for="c_notes">Note</label><textarea id="c_notes" placeholder="Pasand, dhyan dene wali baat… jaise: maroon pasand hai, heavy kaam nahi chahiye, payment me der karti hai">'+esc(c.notes||"")+'</textarea></div>';
 }
+/* alternate number: compulsory, 10 digits, not the same as the main number */
+function altErr(alt,ph){const a=String(alt||"").replace(/\D/g,""),p=String(ph||"").replace(/\D/g,"");if(!a)return "Enter an alternate number (home / family). It is compulsory.";if(a.length<10)return "The alternate number must have 10 digits";if(p&&a.slice(-10)===p.slice(-10))return "The alternate number must be different from the main number";return ""}
 function readCust(el,base){
   const o=clone(base||{});{const pp=el.querySelector("#c_part");if(pp)o.partnerId=P()[pp.value]?pp.value:""}
   Object.assign(o,{name:val(el,"c_name"),phone:val(el,"c_phone"),alt:val(el,"c_alt"),address:val(el,"c_addr"),idType:val(el,"c_idt"),idNo:(()=>{const v=val(el,"c_idn").replace(/\s+/g,"");return !v&&base&&base.idNo&&(base.idType||"Aadhaar")===val(el,"c_idt")?base.idNo:v})(),notes:val(el,"c_notes"),refCust:val(el,"c_ref"),
@@ -3402,7 +3418,7 @@ function custForm(id){
   {const pp=el.querySelector("#c_part");let prev=pp.value;pp.addEventListener("change",()=>{if(pp.value==="__add"){pp.value=prev;partnerForm(null,nid=>{pp.innerHTML=partnerOptions(nid,"");prev=nid});return}prev=pp.value})}
   {const a=el.querySelector("#cf_adv");if(a)a.addEventListener("input",()=>{const on=N(a.value)>0;el.querySelector("#cf_advm").hidden=!on;el.querySelector("#cf_advn").hidden=!on})}
   el.querySelector("[data-save]").addEventListener("click",async()=>{
-    const base0=id?C()[id]:null,o=readCust(el,base0);if(!o.name){toast("Enter a name","bad");return}
+    const base0=id?C()[id]:null,o=readCust(el,base0);if(!o.name){toast("Enter a name","bad");return}{const e=altErr(o.alt,o.phone);if(e){toast(e,"bad");const x=el.querySelector("#c_alt");if(x){x.focus();x.classList.add("bad")}return}}
     {const a=el.querySelector("#cf_adv"),amt=a?Math.round(N(a.value)):0;if(amt>0){const mo=modeVal(el,"cf_advmode");o.adv=(o.adv||[]).concat([{id:uid(),date:today(),amount:amt,kind:"Advance (no booking yet)",mode:mo.mode||"",ref:mo.ref||"",note:val(el,"cf_advnote"),at:Date.now()}])}}
     {const old=id&&C()[id]?C()[id].meas:null,ch=measDiff(old,o.meas);if(ch.length){if(hasMeas(old)&&!await needPin("Changing saved measurements needs the 4-digit PIN."))return;o.meas=cleanMeas(o.meas);o.measHist=(o.measHist||[]).concat([{at:Date.now(),via:"Customer account",first:!hasMeas(old),ch}])}}
     if(o.idType==="Aadhaar"&&o.idNo&&!/^\d{12}$/.test(o.idNo)&&!(base0&&o.idNo===base0.idNo)){toast("Aadhaar number must be exactly 12 digits","bad");return}
@@ -3441,7 +3457,7 @@ function custDetail(id){
 function yrNext(pre,vals){const y=today().slice(0,4),re=new RegExp("^#?"+pre+"-"+y+"/(\\d+)$");let mx=0;vals.forEach(v=>{const m=String(v||"").trim().match(re);if(m)mx=Math.max(mx,+m[1])});return pre+"-"+y+"/"+String(mx+1).padStart(2,"0")}
 function nextNo(){return yrNext("B",list(B()).map(b=>b.no).concat(Object.values(S.data.deleted||{}).map(b=>b&&b.no)))}
 const fsafe=x=>String(x||"").replace(/^#/,"").replace(/[\/\\]+/g,"-");
-function altDates(dids,from,to,ev,exceptId){if(!ev||!(from<=ev&&ev<=to))return null;const ok=(a,c)=>dids.every(x=>!clashes(x,a,c,exceptId).length);
+function altDates(dids,from,to,ev,exceptId,after){if(!ev||!(from<=ev&&ev<=to))return null;const ok=(a,c)=>dids.every(x=>!clashes(x,a,c,exceptId,after).length);
   for(let a=from;a<=ev;a=addDays(a,1)){for(let c=to;c>=ev&&c>=a;c=addDays(c,-1)){if(ok(a,c))return [a,c]}}return null}
 
 /* measurements + fitting (done in the shop from the customer's size; no trial visit) */
@@ -3468,7 +3484,8 @@ function bookingForm(id,pre){
    '<span class="hint" id="bc_hint">'+(b.customerId&&C()[b.customerId]?"Existing customer selected":"Not found? Just fill in the new customer details below.")+'</span>'+
    '<div id="bc_spin">'+spinBanner(b.customerId)+'</div>'+
    '<select id="b_cust" hidden aria-hidden="true"><option value="__new"'+(!b.customerId?" selected":"")+'>+ New customer</option>'+custs.map(c=>'<option value="'+c.id+'"'+(b.customerId===c.id?" selected":"")+'>'+esc(c.name)+'</option>').join("")+'</select></div>'+
-   '<div id="b_newc"'+(b.customerId?" hidden":"")+'><div class="fgrid"><div class="f"><label for="nc_name">Name</label><input id="nc_name"></div><div class="f"><label for="nc_phone">Phone / WhatsApp</label><input id="nc_phone" type="tel" inputmode="tel"></div><div class="f"><label for="nc_addr">Village / area</label><input id="nc_addr"></div><div class="f"><label for="nc_idn">Aadhaar number (12 digits)</label><input id="nc_idn" inputmode="numeric" maxlength="14" placeholder="1234 5678 9012"></div></div><span class="hint small muted">You can add measurements and other details to the customer account later.</span></div>'+
+   '<div id="b_newc"'+(b.customerId?" hidden":"")+'><div class="fgrid"><div class="f"><label for="nc_name">Name</label><input id="nc_name"></div><div class="f"><label for="nc_phone">Phone / WhatsApp</label><input id="nc_phone" type="tel" inputmode="tel"></div><div class="f"><label for="nc_alt">Alternate number (home / family) <span class="neg">*</span></label><input id="nc_alt" type="tel" inputmode="tel" required placeholder="Different from her own number"></div><div class="f"><label for="nc_addr">Village / area</label><input id="nc_addr"></div><div class="f"><label for="nc_idn">Aadhaar number (12 digits)</label><input id="nc_idn" inputmode="numeric" maxlength="14" placeholder="1234 5678 9012"></div></div><span class="hint small muted">You can add measurements and other details to the customer account later.</span></div>'+
+   '<div id="b_altw" class="f" hidden><label for="b_alt">Alternate number (home / family) <span class="neg">*</span></label><input id="b_alt" type="tel" inputmode="tel" placeholder="Different from her own number"><span class="hint">This customer has no alternate number saved yet. It is saved to her account.</span></div>'+
    refPickerHTML("b_refc",b.refCustId||((C()[b.customerId]||{}).refCust)||"","Reference (old customer who knows her)",b.customerId||"")+
    '<div class="fsec">Function</div>'+
    '<div class="fgrid c3"><div class="f"><label for="b_func">Function</label><select id="b_func">'+FUNCS.map(f=>'<option'+(b.func===f?" selected":"")+'>'+f+'</option>').join("")+'</select></div>'+
@@ -3476,6 +3493,8 @@ function bookingForm(id,pre){
    '<div class="f"><label for="b_event">Function date</label><input id="b_event" type="date" value="'+esc(b.eventDate||"")+'"></div>'+
    '<div class="f"><label for="b_del">Handover (pick-up)</label><input id="b_del" type="date" value="'+esc(b.deliveryDate)+'"></div>'+
    '<div class="f"><label for="b_ret">Return</label><input id="b_ret" type="date" value="'+esc(b.returnDate)+'"></div></div>'+
+   '<div class="blk" id="b_blkw"><div id="b_blk" class="small"></div><div class="blk-btns"><button type="button" class="btn sm" id="b_blkbtn">'+ic("edit",14)+'Change days</button><button type="button" class="btn sm ghost" id="b_blkreset" hidden>Use standard days</button></div>'+
+   '<div class="fgrid" id="b_blkc" hidden><div class="f"><label for="b_prepfrom">Prep starts (repair / dry-clean / fitting)</label><input id="b_prepfrom" type="date"></div><div class="f"><label for="b_freeon">Free again (next pick-up from)</label><input id="b_freeon" type="date"></div><span class="hint small muted full" style="grid-column:1/-1">For a far village or a long trip, change pick-up and return above, and the cleaning days here. These days count only for this booking.</span></div></div>'+
    '<div id="b_saava"></div>'+
    '<div class="fsec">Dress</div><div id="b_items" style="display:flex;flex-direction:column;gap:10px"></div>'+
    '<div><button type="button" class="btn sm" id="b_add">'+ic("plus")+'Add another dress / jewellery</button></div>'+
@@ -3492,22 +3511,32 @@ function bookingForm(id,pre){
    '<div class="f"><label for="b_notes">Note</label><input id="b_notes" value="'+esc(b.notes||"")+'" placeholder="fitting, blouse alteration…"></div>'+(id&&b.status!=="draft"?'<div class="f full"><label for="b_why">Reason for this change <span class="muted">(saved in the booking history)</span></label><input id="b_why" placeholder="e.g. customer wanted a different colour, function date moved"></div>':"")+'</div>'+
    '<div class="calc" id="b_calc"></div>'+(id&&b.status!=="draft"?"":'<label class="chk"><input type="checkbox" id="b_slip" checked> Print the customer\'s <b>booking slip</b> after saving</label>')+'</div>',
    foot:(id?'<button type="button" class="btn danger" data-del style="margin-right:auto">'+ic("trash")+'Delete</button>':"")+'<button type="button" class="btn" data-close>Cancel</button>'+((!id||b.status==="draft")?'<button type="button" class="btn" data-draft>'+ic("edit")+'Save as draft</button>':"")+'<button type="button" class="btn pri" data-save>'+(id&&b.status!=="draft"?"Save booking":"Confirm booking")+'</button>'});
-  const dOpt=(sel,from,to)=>{const ev=val(el,"b_event");return '<option value="">— choose a dress —</option>'+dresses.map(d=>{const busy=d.id!==sel&&from&&to&&clashes(d.id,from,to,id).length;const alt=busy?altDates([d.id],from,to,ev,id):null;
+  let cPrep=b.prep!=null&&b.prep!==""?N(b.prep):null,cAfter=b.after!=null&&b.after!==""?N(b.after):null;
+  const fA=()=>cAfter!=null?cAfter:dSet("buffer",1),fP=()=>cPrep!=null?cPrep:dSet("prepBefore",1);
+  const updBlk=()=>{const w=el.querySelector("#b_blk");if(!w)return;const dl=val(el,"b_del"),rt=val(el,"b_ret"),ev=val(el,"b_event");
+    const cust=(cPrep!=null&&cPrep!==dSet("prepBefore",1))||(cAfter!=null&&cAfter!==dSet("buffer",1));
+    el.querySelector("#b_blkreset").hidden=!cust;
+    if(!dl||!rt||rt<dl){w.innerHTML='<span class="muted">Choose the function date to see which days this dress is kept for the booking.</span>';return}
+    const pp=fP(),aa=fA(),ps=addDays(dl,-pp),fr=addDays(rt,aa+1);
+    const pf=el.querySelector("#b_prepfrom"),fo=el.querySelector("#b_freeon");if(document.activeElement!==pf)pf.value=ps;if(document.activeElement!==fo)fo.value=fr;pf.max=dl;fo.min=addDays(rt,1);
+    const st=(cls,l,a,c)=>'<span class="blk-s '+cls+'"><b>'+l+'</b> '+(a===c?fdw(a):fd(a)+' – '+fd(c))+'</span>';
+    w.innerHTML='<div class="blk-h">Dress kept for this booking'+(cust?' <span class="pill p-warn">Custom days</span>':'')+'</div><div class="blk-row">'+(pp?st("prep","Prep",ps,addDays(dl,-1)):"")+st("out","With customer",dl,rt)+(aa?st("cln","Cleaning",addDays(rt,1),addDays(rt,aa)):"")+'<span class="blk-s free"><b>Free from</b> '+fdw(fr)+'</span></div>'+(ev&&(ev<dl||ev>rt)?'<div class="neg">The function date should be between pick-up and return.</div>':'')};
+  const dOpt=(sel,from,to)=>{const ev=val(el,"b_event");return '<option value="">— choose a dress —</option>'+dresses.map(d=>{const busy=d.id!==sel&&from&&to&&clashes(d.id,from,to,id,fA()).length;const alt=busy?altDates([d.id],from,to,ev,id,fA()):null;
     if(busy&&alt)return '<option value="'+d.id+'" class="opt-alt" style="color:#a86b00;background:#fff7e6">🟡 '+esc(d.code)+' · '+esc(d.name)+' · '+inr(d.rent)+' — free if picked up '+fd(alt[0])+(alt[0]===ev?" (function day)":"")+(alt[1]!==to?", returned "+fd(alt[1]):"")+'</option>';
     return '<option value="'+d.id+'"'+(sel===d.id?" selected":"")+(busy?' disabled class="opt-busy" style="color:#d98c8c;background:#fdf1f1"':"")+'>'+(busy?"🔴 ":"")+esc(d.code)+' · '+esc(d.name)+' · '+inr(d.rent)+(busy?" — booked on these dates":"")+'</option>'}).join("")};
   const paintItems=()=>{
     const from=val(el,"b_del"),to=val(el,"b_ret");
     el.querySelector("#b_items").innerHTML=items.map((it,i)=>{
-      const cl=clashes(it.dressId,from,to,id);const dstate=it.dressId?dressState(it.dressId):"";
+      const cl=clashes(it.dressId,from,to,id,fA());const dstate=it.dressId?dressState(it.dressId):"";
       return '<div class="item-row'+(items.length===1?" one":"")+'"><div class="f"><select data-item="'+i+'" aria-label="Dress '+(i+1)+'">'+dOpt(it.dressId,from,to)+'</select></div><div class="f"><input data-rent="'+i+'" type="number" inputmode="numeric" min="0" value="'+esc(it.rent)+'" aria-label="Rent"></div>'+(items.length>1?'<button type="button" class="x" data-rm="'+i+'" aria-label="Remove this dress">'+ic("x")+'</button>':"")+
        (cl.length?'<div class="clash badbox">This dress is already booked on these dates: '+cl.map(c=>esc(BN(c.no))+" ("+esc(custName(c.customerId))+", pick-up "+fd(c.deliveryDate)+" → return "+fd(c.returnDate)+")"+(N(ST().buffer)?" · busy "+fd(addDays(c.deliveryDate,-N(ST().buffer)))+" (getting ready) to "+fd(addDays(c.returnDate,N(ST().buffer)))+" (cleaning)":"")).join(", ")+'</div>':(dstate==="repair"?'<div class="clash warnbox">This dress is currently in repair.</div>':""))+'</div>';
     }).join("");
-    const bad=items.map((it,i)=>({it,i})).filter(x=>x.it.dressId&&clashes(x.it.dressId,from,to,id).length);
+    const bad=items.map((it,i)=>({it,i})).filter(x=>x.it.dressId&&clashes(x.it.dressId,from,to,id,fA()).length);
     const blk=el.querySelector("#b_block"),pay=el.querySelector("#b_paysec");
     if(bad.length){
       const used=new Set(items.map(x=>x.dressId));
-      const free=dresses.filter(d=>d.status!=="sold"&&d.status!=="retired"&&!used.has(d.id)&&!clashes(d.id,from,to,id).length);
-      const ev=val(el,"b_event");const alt=altDates(bad.map(x=>x.it.dressId),from,to,ev,id);
+      const free=dresses.filter(d=>d.status!=="sold"&&d.status!=="retired"&&!used.has(d.id)&&!clashes(d.id,from,to,id,fA()).length);
+      const ev=val(el,"b_event");const alt=altDates(bad.map(x=>x.it.dressId),from,to,ev,id,fA());
       blk.innerHTML='<div class="badbox block-msg"><b>'+(bad.length>1?"These dresses are":"This dress is")+' not free on '+fd(from)+' → '+fd(to)+'.</b><br>Choose another dress, or change the pick-up / return dates. The booking cannot be saved with a booked dress.</div>'+
         (alt?'<div class="okbox" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between"><span>The same dress is free if the customer picks it up <b>'+(alt[0]===ev?"on the function day":fdw(alt[0]))+'</b>'+(alt[0]!==ev?" ("+fdw(alt[0])+")":" ("+fdw(ev)+")")+' and returns it <b>'+(alt[1]===ev?"the same evening":fdw(alt[1]))+'</b>.</span><button type="button" class="btn sm pri" data-altd="'+alt[0]+'|'+alt[1]+'">Use these dates</button></div>':"")+
         (free.length?'<div class="small muted" style="margin:8px 0 6px">Free on these dates · tap to use instead of '+esc((D()[bad[0].it.dressId]||{}).code||"")+':</div><div class="qa-chips">'+free.slice(0,12).map(d=>'<button type="button" class="pill p-ok qa-chip" data-swap="'+bad[0].i+'|'+d.id+'">'+esc(d.code)+' '+esc(d.name)+(d.rent?' · '+inr(d.rent):"")+'</button>').join("")+'</div>':'<div class="small muted" style="margin-top:8px">No other dress is free on these dates. Try different dates.</div>');
@@ -3572,9 +3601,17 @@ function bookingForm(id,pre){
    el.querySelector("#b_cust").addEventListener("change",()=>{prevTot=0;setTimeout(()=>{famBox();calcB()},0)})}
   {const rcH=el.querySelector("#b_refc");if(rcH)rcH.addEventListener("change",famBox)}
   setTimeout(famBox,0);
-  el.querySelector("#b_cust").addEventListener("change",e=>{const v=e.target.value;el.querySelector("#b_newc").hidden=v!=="__new";const w=el.querySelector('[data-picker="b_refc"]');w.dataset.excl=v==="__new"?"":v;const rc=(C()[v]||{}).refCust;if(rc&&C()[rc]&&!val(el,"b_refc")){el.querySelector("#b_refc").value=rc;el.querySelector("#b_refc_q").value=C()[rc].name+(C()[rc].phone?" · "+C()[rc].phone:"");w.querySelector("[data-pclear]").hidden=false}});
-  el.querySelector("#b_event").addEventListener("change",e=>{const v=e.target.value;if(v&&!id){el.querySelector("#b_del").value=addDays(v,-1);el.querySelector("#b_ret").value=addDays(v,1)}saavaHint();paintItems()});
-  ["b_del","b_ret"].forEach(k=>el.querySelector("#"+k).addEventListener("change",paintItems));
+  const altW=()=>{const v=val(el,"b_cust"),c=C()[v];el.querySelector("#b_altw").hidden=!(c&&!String(c.alt||"").trim())};altW();
+  el.querySelector("#b_cust").addEventListener("change",e=>{const v=e.target.value;el.querySelector("#b_newc").hidden=v!=="__new";altW();const w=el.querySelector('[data-picker="b_refc"]');w.dataset.excl=v==="__new"?"":v;const rc=(C()[v]||{}).refCust;if(rc&&C()[rc]&&!val(el,"b_refc")){el.querySelector("#b_refc").value=rc;el.querySelector("#b_refc_q").value=C()[rc].name+(C()[rc].phone?" · "+C()[rc].phone:"");w.querySelector("[data-pclear]").hidden=false}});
+  let oldEv=b.eventDate||"";
+  el.querySelector("#b_event").addEventListener("change",e=>{const v=e.target.value,pb=dSet("pickBefore",1),ra=dSet("retAfter",1),dl=el.querySelector("#b_del"),rt=el.querySelector("#b_ret");
+    if(v&&(!id||!dl.value||!rt.value||(oldEv&&dl.value===addDays(oldEv,-pb)&&rt.value===addDays(oldEv,ra)))){dl.value=addDays(v,-pb);rt.value=addDays(v,ra)}oldEv=v;saavaHint();updBlk();paintItems()});
+  ["b_del","b_ret"].forEach(k=>el.querySelector("#"+k).addEventListener("change",()=>{updBlk();paintItems()}));
+  el.querySelector("#b_blkbtn").addEventListener("click",()=>{const c=el.querySelector("#b_blkc");c.hidden=!c.hidden;updBlk()});
+  el.querySelector("#b_blkreset").addEventListener("click",()=>{cPrep=null;cAfter=null;updBlk();paintItems()});
+  el.querySelector("#b_prepfrom").addEventListener("change",e=>{const dl=val(el,"b_del");if(dl&&e.target.value){cPrep=Math.max(0,diff(e.target.value,dl));}updBlk()});
+  el.querySelector("#b_freeon").addEventListener("change",e=>{const rt=val(el,"b_ret");if(rt&&e.target.value){cAfter=Math.max(0,diff(rt,e.target.value)-1);}updBlk();paintItems()});
+  updBlk();
   el.querySelector("#b_disc").addEventListener("input",calcB);el.querySelector("#b_comm").addEventListener("input",()=>{commTouched=true;calcB()});
   let prevRef=val(el,"b_ref");
   el.querySelector("#b_ref").addEventListener("change",e=>{
@@ -3583,7 +3620,7 @@ function bookingForm(id,pre){
   });el.querySelector("#b_paid").addEventListener("input",()=>{paidTouched=true;calcB()});
   el.querySelector("#b_items").addEventListener("change",e=>{const i=e.target.dataset.item;if(i!=null){items[i].dressId=e.target.value;items[i].rent=N((D()[e.target.value]||{}).rent);
     const from=val(el,"b_del"),to=val(el,"b_ret"),ev=val(el,"b_event"),did=e.target.value;
-    if(did&&clashes(did,from,to,id).length){const alt=altDates(items.filter(x=>x.dressId).map(x=>x.dressId),from,to,ev,id);if(alt){el.querySelector("#b_del").value=alt[0];el.querySelector("#b_ret").value=alt[1];toast((D()[did]||{}).code+": pick-up moved to "+fd(alt[0])+(alt[0]===ev?" (function day)":"")+", return "+fd(alt[1]))}}
+    if(did&&clashes(did,from,to,id,fA()).length){const alt=altDates(items.filter(x=>x.dressId).map(x=>x.dressId),from,to,ev,id,fA());if(alt){el.querySelector("#b_del").value=alt[0];el.querySelector("#b_ret").value=alt[1];toast((D()[did]||{}).code+": pick-up moved to "+fd(alt[0])+(alt[0]===ev?" (function day)":"")+", return "+fd(alt[1]))}}
     syncDeposit();paintItems()}});
   el.querySelector("#b_items").addEventListener("input",e=>{const i=e.target.dataset.rent;if(i!=null){items[i].rent=N(e.target.value);calcB()}});
   el.querySelector("#b_items").addEventListener("click",e=>{const r=e.target.closest("[data-rm]");if(r&&items.length>1){items.splice(+r.dataset.rm,1);syncDeposit();paintItems()}});
@@ -3602,16 +3639,19 @@ function bookingForm(id,pre){
       const an=val(el,"nc_idn").replace(/\D/g,"");if(an&&an.length!==12){toast("Aadhaar number must be exactly 12 digits","bad");return}
       const ph=val(el,"nc_phone");
       const ex=ph&&list(C()).find(c=>c.phone===ph);
-      if(ex){cid=ex.id;toast("An account with this phone already existed; booking added to it")}
-      else{cid=uid();try{await put("customers",cid,{partnerId:P()[val(el,"b_ref")]?val(el,"b_ref"):"",name:nm,phone:ph,address:val(el,"nc_addr"),idType:"Aadhaar",idNo:val(el,"nc_idn").replace(/\D/g,""),refCust:val(el,"b_refc"),...(()=>{const m={};MEAS.forEach(([k])=>{const v=val(el,"bm_"+k);if(v)m[k]=v});return hasMeas(m)?{meas:cleanMeas(m),measHist:[{at:Date.now(),via:"Booking "+BN(b.no),first:true,ch:measDiff({},m)}]}:{meas:{}}})(),createdAt:Date.now()})}catch(e){return}}
+      if(!(ex&&String(ex.alt||"").trim())){const e=altErr(val(el,"nc_alt"),ph);if(e){toast(e,"bad");el.querySelector("#nc_alt").focus();return}}
+      if(ex){cid=ex.id;if(!String(ex.alt||"").trim()){const co=clone(ex);co.alt=val(el,"nc_alt");delete co.id;try{await put("customers",cid,co)}catch(e){}}toast("An account with this phone already existed; booking added to it")}
+      else{cid=uid();try{await put("customers",cid,{partnerId:P()[val(el,"b_ref")]?val(el,"b_ref"):"",name:nm,phone:ph,alt:val(el,"nc_alt"),address:val(el,"nc_addr"),idType:"Aadhaar",idNo:val(el,"nc_idn").replace(/\D/g,""),refCust:val(el,"b_refc"),...(()=>{const m={};MEAS.forEach(([k])=>{const v=val(el,"bm_"+k);if(v)m[k]=v});return hasMeas(m)?{meas:cleanMeas(m),measHist:[{at:Date.now(),via:"Booking "+BN(b.no),first:true,ch:measDiff({},m)}]}:{meas:{}}})(),createdAt:Date.now()})}catch(e){return}}
     }
+    if(cid&&C()[cid]&&!String(C()[cid].alt||"").trim()){const av=val(el,"b_alt");if(!asDraft||av){const e=altErr(av,C()[cid].phone);if(e){toast(e,"bad");const x=el.querySelector("#b_alt");if(x)x.focus();return}const co=clone(C()[cid]);co.alt=av;delete co.id;try{await put("customers",cid,co)}catch(e){return}}}
     let refC=val(el,"b_refc");if(refC===cid)refC="";
     if(refC&&cid&&C()[cid]&&!C()[cid].refCust){const co=clone(C()[cid]);co.refCust=refC;delete co.id;try{await put("customers",cid,co)}catch(e){}}
-    const hasClash=good.some(i=>clashes(i.dressId,del_,ret,id).length);
+    const hasClash=good.some(i=>clashes(i.dressId,del_,ret,id,fA()).length);
     if(hasClash){toast("This dress is already booked on these dates. Choose another dress.","bad");paintItems();return}
     const wasDraft=b.status==="draft";
     b.status=asDraft?"draft":((!id||wasDraft)?"booked":b.status);
     const o=Object.assign(b,{customerId:cid,items:good.map(i=>({dressId:i.dressId,rent:N(i.rent)})),func:val(el,"b_func"),place:val(el,"b_place"),eventDate:val(el,"b_event"),deliveryDate:del_,returnDate:ret,discount:N(val(el,"b_disc")),deposit:0,partnerId:(P()[val(el,"b_ref")]?val(el,"b_ref"):""),refBy:(P()[val(el,"b_ref")]?P()[val(el,"b_ref")].name:(val(el,"b_ref")==="__legacy"?b.refBy:"")),refCustId:refC,commission:N(val(el,"b_comm")),notes:val(el,"b_notes"),updatedAt:Date.now()});
+    if(cPrep!=null&&cPrep!==dSet("prepBefore",1))o.prep=cPrep;else delete o.prep;if(cAfter!=null&&cAfter!==dSet("buffer",1))o.after=cAfter;else delete o.after;
     {const m={};MEAS.forEach(([k])=>{const v=val(el,"bm_"+k);if(v)m[k]=v});o.meas=m;
      o.fit={done:!!(b.fit&&b.fit.done),doneOn:(b.fit&&b.fit.doneOn)||""};
      if(cid&&C()[cid]&&hasMeas(m)&&(!hasMeas(C()[cid].meas)||el.dataset.mu==="1")){const nc=withMeas(C()[cid],m,"Booking "+BN(o.no));if(nc){try{await put("customers",cid,nc)}catch(e){}}}}
@@ -4879,7 +4919,7 @@ document.addEventListener("click",async e=>{
   if(act==="pin-change"){if(await needPin("Enter the current PIN to change it."))await newPinFlow("Choose a new PIN");return}
   if(act==="pin-off"){if(await needPin("Enter the current PIN to turn it off.")&&await askConfirm("Bookings can then be edited without a PIN.","Turn off",true,"Turn off the PIN?")){try{await savePin("");toast("PIN turned off")}catch(e){}}return}
   if(act==="saave-edit"){saaveForm();return}
-  if(act==="save-settings"){const o=Object.assign({},S.data.settings.main||{});["shop","city","phone","addr"].forEach(k=>o[k]=($("#s_"+k).value||"").trim());["expBudget","clean","repair","pack","lateFee","prepDays","readyDays","buffer","noShowDays","slipWidth","openCash","openBank"].forEach(k=>o[k]=N($("#s_"+k).value));o.openDate=$("#s_openDate").value||"";o.terms=$("#s_terms").value;o.guard=$("#s_guard").checked;o.waLang=$("#s_waLang").value||"both";if(!o.shop)o.shop=DEF.shop;try{await put("settings","main",o);G.pageDirty=false;toast("Settings saved")}catch(x){}return}
+  if(act==="save-settings"){const o=Object.assign({},S.data.settings.main||{});["shop","city","phone","addr"].forEach(k=>o[k]=($("#s_"+k).value||"").trim());["expBudget","clean","repair","pack","lateFee","pickBefore","retAfter","prepBefore","buffer","noShowDays","slipWidth","openCash","openBank"].forEach(k=>o[k]=N($("#s_"+k).value));o.openDate=$("#s_openDate").value||"";o.terms=$("#s_terms").value;o.guard=$("#s_guard").checked;o.waLang=$("#s_waLang").value||"both";if(!o.shop)o.shop=DEF.shop;try{await put("settings","main",o);G.pageDirty=false;toast("Settings saved")}catch(x){}return}
   if(act==="backup"){saveFile("dress-rental-backup-"+today()+".json",JSON.stringify(S.data,null,1));return}
   if(act==="csv"){saveFile("bookings-"+today()+".csv",csv());return}
   if(act==="cloud-check"){cloudCheck();return}
