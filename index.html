@@ -1121,8 +1121,8 @@ function sampleBanner(){
   return '<div class="banner">'+ic("spark",18)+'<span>This ledger contains <b>sample data</b> so you can see how the app works. Remove it before you start adding your own records.</span><button type="button" class="btn sm" data-act="clear-sample">Remove sample data</button></div>';
 }
 /* ---------- desktop quick bar + keyboard shortcuts ---------- */
-const QK=[["new","N","plus","New booking","New booking"],["search","/","search","Search","Search customer, booking or dress"],["avail","A","cal","Dress free?","Is the dress free? (availability)"],["hand","H","truck","Hand over","Hand over today"],["ret","R","back","Return","Take a return"],["pay","P","wallet","Payment","Take a payment"],["cust","C","user","Customer","New customer"],["exp","E","receipt","Expense","Expense / petty cash"],["give","G","scissors","Tailor / Cleaner","Tailor / cleaner"]];
-function quickBar(){return '<div class="qbar" role="toolbar" aria-label="Quick actions">'+QK.map(q=>'<button type="button" class="qbtn" data-qk="'+q[0]+'" title="'+q[4]+' · key '+(q[1]==="/"?"/ or Ctrl+K":q[1])+'">'+(IC[q[2]]?ic(q[2]):"")+'<span>'+q[3]+'</span><kbd>'+q[1]+'</kbd></button>').join("")+'</div>'}
+const QK=[["new","N","plus","New booking","New booking"],["search","/","search","Search","Search customer, booking or dress"],["avail","A","cal","Dress free?","Is the dress free? (availability)"],["pay","P","wallet","Payment","Take a payment"],["cust","C","user","New customer","New customer"],["exp","E","receipt","Expense","Expense / petty cash"]];
+function quickBar(){return '<div class="qbar" role="toolbar" aria-label="Quick actions">'+QK.map(q=>'<button type="button" class="qbtn" data-qk="'+q[0]+'" title="'+q[4]+(q[1]?' · key '+(q[1]==="/"?"/ or Ctrl+K":q[1]):"")+'">'+(IC[q[2]]?ic(q[2]):"")+'<span>'+q[3]+'</span>'+(q[1]?'<kbd>'+q[1]+'</kbd>':"")+'</button>').join("")+'</div>'}
 function qkGo(view,focus){V.view=view;render();window.scrollTo(0,0);if(focus)setTimeout(()=>{const x=document.getElementById(focus);if(x){x.scrollIntoView({block:"center"});x.focus()}},80)}
 function qkDo(k){if(!loaded()||document.getElementById("gate"))return;
   if(k!=="search"&&k!=="pay")closeAll();
@@ -1157,7 +1157,7 @@ document.addEventListener("keydown",e=>{
   if(e.ctrlKey||e.metaKey||e.altKey||e.repeat)return;
   const t=e.target,tag=(t&&t.tagName)||"";if(/INPUT|TEXTAREA|SELECT/.test(tag)||(t&&t.isContentEditable))return;
   if(stack.length||document.getElementById("gate"))return;
-  const m={n:"new","/":"search",a:"avail",h:"hand",r:"ret",p:"pay",c:"cust",e:"exp",g:"give"}[e.key.length===1?e.key.toLowerCase():""];
+  const m={n:"new","/":"search",a:"avail",p:"pay",c:"cust",e:"exp"}[e.key.length===1?e.key.toLowerCase():""];
   if(m){e.preventDefault();qkDo(m)}});
 function top(title,sub,actions){return '<div class="topbar"><div><h1>'+title+'</h1>'+(sub?'<div class="sub">'+sub+'</div>':"")+'</div><div class="top-actions">'+(actions||"")+'</div></div>'}
 
@@ -1207,7 +1207,7 @@ function viewDash(){
    kpi("Handovers today",dels,"to hand over",dels?"click":"","bookings:upcoming")+
    kpi("Returns today",rets,"expected","","bookings:out")+
    kpi("Late returns",lates,lates?"call them now":"all on time",lates?"alert click":"","bookings:out")+
-   kpi("To prepare",preps,"dry-clean / fitting",preps?"warnk click":"","bookings:upcoming")+
+   kpi("To prepare",preps,"dry-clean / fitting",preps?"warnk click":"click","bookings:prep")+
    kpi(MON[+ym.slice(5)-1]+" revenue",inr(ms.revenue),ms.count+" bookings","money click","accounts")+
    kpi(MON[+ym.slice(5)-1]+" profit",inr(ms.net),ms.noExp?"no shop expenses recorded yet":"after shop expenses","click","accounts")+
   '</div>'+
@@ -2019,13 +2019,13 @@ function actCSV(){
 }
 
 /* ---------- Bookings ---------- */
-const BF={all:["All",()=>true],draft:["Drafts",b=>b.status==="draft"],upcoming:["Upcoming",b=>b.status==="booked"],ready:["Ready",b=>b.status==="ready"],out:["Rented",b=>b.status==="delivered"],returned:["Payment due",b=>b.status==="returned"],closed:["Closed",b=>b.status==="closed"],cancelled:["Cancelled",b=>b.status==="cancelled"]};
+const BF={all:["All",()=>true],draft:["Drafts",b=>b.status==="draft"],upcoming:["Upcoming",b=>b.status==="booked"],prep:["To prepare",b=>b.status==="booked"&&addDays(b.deliveryDate,-Math.max(1,bPrep(b)))<=today()],ready:["Ready",b=>b.status==="ready"],out:["Rented",b=>b.status==="delivered"],returned:["Payment due",b=>b.status==="returned"],closed:["Closed",b=>b.status==="closed"],cancelled:["Cancelled",b=>b.status==="cancelled"]};
 function viewBookings(){
   const all=list(B());
   const q=V.bq.toLowerCase();
   let rows=all.filter(BF[V.bfilter][1]).filter(b=>!q||[b.no,custName(b.customerId),(C()[b.customerId]||{}).phone,b.place,b.func,bookingDresses(b)].join(" ").toLowerCase().includes(q));
-  const asc=V.bfilter==="upcoming"||V.bfilter==="ready"||V.bfilter==="out";
-  const MK={upcoming:1,ready:1,out:1,cancelled:1}[V.bfilter];
+  const asc=V.bfilter==="upcoming"||V.bfilter==="prep"||V.bfilter==="ready"||V.bfilter==="out";
+  const MK={upcoming:1,prep:1,ready:1,out:1,cancelled:1}[V.bfilter];
   rows.sort((a,b)=>{const x=asc?(V.bfilter==="out"?a.returnDate:a.deliveryDate):b.deliveryDate,y=asc?(V.bfilter==="out"?b.returnDate:b.deliveryDate):a.deliveryDate;return x<y?-1:x>y?1:0});
   return top("Bookings",all.length+" bookings in total",'<button type="button" class="btn" data-act="blist">'+ic("print")+'Print / download list</button>')+
   '<div class="toolbar"><div class="seg">'+Object.keys(BF).map(k=>'<button type="button" class="'+(V.bfilter===k?"on":"")+'" data-bf="'+k+'">'+BF[k][0]+' <span class="muted">'+all.filter(BF[k][1]).length+'</span></button>').join("")+'</div>'+
