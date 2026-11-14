@@ -1546,6 +1546,7 @@ function viewFitting(){
     '<div class="small">'+(r.m?'<b>Size:</b> '+esc(r.m):'<span class="neg">Size not saved</span>')+(r.b.fit&&r.b.fit.note?' · '+esc(r.b.fit.note):'')+'</div>'+
     '<div class="small muted">'+esc(r.txt)+'</div></div><div class="fit-act">'+
     (r.k==="give"?'<button type="button" class="btn sm pri" data-fit-give="1">'+ic("scissors",14)+'Give to tailor</button>':"")+
+    (r.k!=="done"&&r.k!=="skip"?'<button type="button" class="btn sm" data-fit-slip="'+r.b.id+'|'+r.d.id+'">'+ic("print",14)+'Fitting slip</button>':"")+
     (r.k==="tailor"?'<button type="button" class="btn sm" data-fit-out="1">'+ic("back",14)+'Receive</button>':"")+
     (!r.m&&r.k!=="done"?'<button type="button" class="btn sm" data-open-b="'+r.b.id+'">'+ic("edit",14)+'Add size</button>':"")+
     (r.k==="later"||r.k==="size"?'<button type="button" class="btn sm" data-fit-now="'+r.b.id+'">Fit now</button>':"")+
@@ -1695,6 +1696,29 @@ function clPayForm(bid){
   wireBal(el,"cp_bal","cp_amt","cp_mode",false);
   el.querySelector("[data-ok]").addEventListener("click",async()=>{const on=val(el,"cp_on")||today(),mo=modeVal(el,"cp_mode");const o=clone(bt);delete o.id;o.charges=(o.charges||[]).map(c=>c.paid?c:Object.assign({},c,{paid:true,paidOn:on,mode:mo.mode,ref:mo.ref}));try{await put("cleanings",bid,o);closeTop();toast("Payment to "+W.who+" recorded");render()}catch(x){}});
 }
+/* fitting details for slips: one line per measurement */
+function fitSlipRows(b,did,was,note){const R=[],m=bkMeas(b)||{},d=D()[did]||{};
+  R.push({t:"lr",l:"Booking",r:BN(b.no),b:1,z:"s"},{t:"lr",l:"Customer",r:custName(b.customerId),z:"s"});
+  R.push({t:"lr",l:"Pick-up",r:fdw(b.deliveryDate),b:1,z:"s"});if(b.eventDate)R.push({t:"lr",l:"Function"+(b.func?" ("+b.func+")":""),r:fdw(b.eventDate),z:"s"});
+  const ms=MEAS.filter(([k])=>m[k]);
+  if(ms.length){R.push({t:"p",x:"SIZE (inches)",z:"s",b:1});ms.forEach(([k,l])=>R.push({t:"lr",l:"  "+l,r:String(m[k]),b:1}))}
+  else R.push({t:"p",x:"SIZE: not saved. Take the customer's size first.",z:"s",b:1});
+  if(m.note)R.push({t:"p",x:"Size note: "+m.note,z:"s"});
+  if(d.size)R.push({t:"lr",l:"Dress size",r:String(d.size),z:"s"});
+  if(was)R.push({t:"lr",l:"Now stitched to",r:was,z:"s"});
+  const fn=[note,(b.fit||{}).note].filter(Boolean).join(" · ");if(fn)R.push({t:"p",x:"Fitting note: "+fn,z:"s",b:1});
+  return R}
+function fitSlip(bid,did){const st=ST(),b=B()[bid];if(!b)return;const R=[],now=new Date();
+  R.push({t:"c",x:st.shop,z:"xl",b:1});const sub=[st.city,st.phone].filter(Boolean).join(" · ");if(sub)R.push({t:"c",x:sub,z:"s"});
+  R.push({t:"hr"},{t:"c",x:"FITTING SLIP",z:"l",b:1},{t:"lr",l:"Printed",r:fdy(today())+" "+pad(now.getHours())+":"+pad(now.getMinutes()),z:"s"},{t:"hr"});
+  const ids=did?[did]:(b.items||[]).map(i=>i.dressId).filter(x=>fitDressOk(D()[x]));
+  const back=addDays(b.deliveryDate,-1);
+  ids.forEach((x,k)=>{const d=D()[x]||{};R.push({t:"lr",l:(ids.length>1?(k+1)+". ":"")+(d.code||"")+" "+(d.name||""),r:"☐",b:1});const det=[d.color,d.category].filter(Boolean).join(" · ");if(det)R.push({t:"p",x:det,z:"s"});
+    fitSlipRows(b,x,d.fitNow?d.fitNow.size:"","").forEach(r=>R.push(r));if(k<ids.length-1)R.push({t:"hr"})});
+  R.push({t:"hr"},{t:"lr",l:"Fitting done by",r:fdw(back<today()?today():back),b:1});
+  R.push({t:"p",x:"Tailor: write any change made to the size here:",z:"s"},{t:"gap"},{t:"gap"});
+  R.push({t:"sig",l:"Tailor",r:"Shop"});
+  slipPreviewModal("Fitting slip · "+BN(b.no),R,"fitting-"+String(BN(b.no)).replace(/[^A-Za-z0-9-]/g,"")+"-"+today(),"Give this to the tailor with the dress. It has the customer's full size.")}
 function clSlipRows(bid){
   const st=ST(),bt=CL()[bid]||{},W=CLW[clKind(bt)],R=[],now=new Date();
   R.push({t:"c",x:st.shop,z:"xl",b:1});
@@ -1704,7 +1728,7 @@ function clSlipRows(bid){
   if(bt.expBack)R.push({t:"lr",l:"Return by",r:fdw(bt.expBack)+(bt.expTime?" "+t12(bt.expTime):""),b:1});
   R.push({t:"lr",l:"Printed",r:fdy(today())+" "+pad(now.getHours())+":"+pad(now.getMinutes()),z:"s"});
   R.push({t:"hr"});
-  (bt.items||[]).forEach((i,k)=>{const d=D()[i.dressId]||{};R.push({t:"lr",l:(k+1)+". "+(d.code||"")+" "+(d.name||""),r:i.back?"back "+fd(i.back):(i.kind==="repair"&&clKind(bt)!=="repair"?"repair":"☐"),b:1,z:"s"});const det=[d.color,d.category].filter(Boolean).join(" · ");if(det)R.push({t:"p",x:"    "+det,z:"s"});if(i.kind==="fit"||i.fitFor){const b=B()[i.fitFor||i.bookingId]||{};R.push({t:"p",x:"    FITTING · "+BN(b.no)+" · "+custName(b.customerId)+" · pick-up "+fd(b.deliveryDate),z:"s",b:1});if(i.size)R.push({t:"p",x:"    New size: "+i.size,z:"s",b:1});if(i.was)R.push({t:"p",x:"    Now stitched to: "+i.was,z:"s"})}if(i.note)R.push({t:"p",x:"    "+(i.kind==="fit"?"Note":"Fix")+": "+i.note,z:"s",b:1})});
+  (bt.items||[]).forEach((i,k)=>{const d=D()[i.dressId]||{};R.push({t:"lr",l:(k+1)+". "+(d.code||"")+" "+(d.name||""),r:i.back?"back "+fd(i.back):(i.kind==="repair"&&clKind(bt)!=="repair"?"repair":"☐"),b:1,z:"s"});const det=[d.color,d.category].filter(Boolean).join(" · ");if(det)R.push({t:"p",x:"    "+det,z:"s"});if(i.kind==="fit"||i.fitFor){const b=B()[i.fitFor||i.bookingId]||{};R.push({t:"p",x:"FITTING",z:"s",b:1});if(b.no)fitSlipRows(b,i.dressId,i.was,i.kind==="fit"?i.note:"").forEach(r=>R.push(r));else if(i.size)R.push({t:"p",x:"Size: "+i.size,z:"s",b:1})}if(i.note&&i.kind!=="fit")R.push({t:"p",x:"    Fix: "+i.note,z:"s",b:1})});
   R.push({t:"hr"},{t:"lr",l:"TOTAL PIECES",r:String((bt.items||[]).length),b:1,z:"l"});
   if(bt.note)R.push({t:"p",x:"Note: "+bt.note,z:"s"});
   const cost=clCost(bt);if(cost){R.push({t:"lr",l:"Charge",r:inr(cost)});(bt.charges||[]).filter(c=>c.paid).forEach(c=>R.push({t:"lr",l:"Paid "+fd(c.paidOn||c.date)+" · "+(c.mode||"mode not noted")+(c.ref?" · "+c.ref:""),r:inr(c.amount),z:"s"}));const up=clUnpaid(bt);R.push({t:"lr",l:up?"To pay":"Paid in full",r:inr(up||cost),b:1})}
@@ -4853,6 +4877,7 @@ document.addEventListener("click",async e=>{
     const set=(id,v)=>{const x=document.getElementById(id);if(x)x.value=v};set("qa_fn",q.fn);set("qa_from",q.from);set("qa_to",q.to);
     const rs=document.getElementById("qa_res");if(rs)rs.innerHTML=qaResult();return}
   if(ds.fitf){V.fitF=ds.fitf;render();return}
+  if(ds.fitSlip){const [bb,dd]=ds.fitSlip.split("|");fitSlip(bb,dd);return}
   if(ds.fitGive){V.clTab_repair="give";closeAll();go("repair");return}
   if(ds.fitOut){V.clTab_repair="out";closeAll();go("repair");return}
   if(ds.fitNow){const bk=B()[ds.fitNow];if(!bk)return;const q=clone(bk);delete q.id;q.fit=Object.assign({},q.fit||{},{want:true,noTailor:false});try{LOGCTX.skip=true;await put("bookings",ds.fitNow,q)}catch(x){}finally{LOGCTX.skip=false}render();toast("Added to the tailor list");return}
