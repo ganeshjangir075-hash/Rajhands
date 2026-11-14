@@ -670,6 +670,8 @@ button.qd:hover{outline:2px solid currentColor;outline-offset:-2px}
 .blk-s.prep{background:#FBEBC8;color:#7A4E00}.blk-s.out{background:#F9D9D9;color:#A12626}.blk-s.cln{background:#E6E1F7;color:#4B3C8F}.blk-s.free{background:#DDF3E4;color:#17663A}
 .blk-btns{display:flex;gap:6px;flex-wrap:wrap}
 .rt-afnote{margin:6px 0 2px;line-height:1.5}
+.slip2{display:inline-flex;gap:4px;flex-wrap:nowrap}
+body.nomoney .mny{display:none!important}
 </style>
 </head>
 <body>
@@ -762,14 +764,14 @@ const SAAVE_DEF=["2026-11-21","2026-11-24","2026-11-25","2026-11-26","2026-12-02
 const SVSUG=["Vivah muhurat","Sagai muhurat","Dev Uthani Ekadashi","Akshaya Tritiya (Aakha Teej)","Basant Panchami","Phulera Dooj","Gangaur","Teej","Karwa Chauth","Navratri","Diwali","Lagan / Haldi"];
 function saaveNote(d){const m=(S.data.settings.main||{}).saaveNote||{};return m[d]||"Vivah muhurat"}
 function saave(){const v=(S.data.settings.main||{}).saave;return Array.isArray(v)?v.slice().sort():SAAVE_DEF}
-const DEF={shop:"My Dress Rental",city:"Sardarshahar",clean:250,repair:50,pack:20,lateFee:200,prepDays:2,pickTime:"5 to 8 PM",pickBefore:1,retAfter:1,prepBefore:1,buffer:1,fixedMonthly:21000,phone:"",slipWidth:58,guard:true,waLang:"both",noShowDays:2,
+const DEF={shop:"My Dress Rental",city:"Sardarshahar",clean:250,repair:50,pack:20,lateFee:200,prepDays:2,pickFrom:"17:00",pickTo:"20:00",fitHours:2,inShop:true,pickBefore:1,retAfter:1,prepBefore:1,buffer:1,fixedMonthly:21000,phone:"",slipWidth:58,guard:true,waLang:"both",noShowDays:2,
   terms:"Advance is not refundable if the booking is cancelled or the dress is not collected.\nA late fee of {late} per day applies after the return date.\nStains, tears or lost tassels/dupatta will be charged separately at repair or replacement cost.\nDo not wash the dress yourself; the shop handles dry-cleaning."};
 const BST={draft:["Draft","p-mute"],booked:["Booked","p-info"],ready:["Ready","p-warn"],delivered:["Rented","p-acc"],returned:["Returned · payment due","p-gold"],closed:["Closed","p-ok"],cancelled:["Cancelled","p-mute"]};
 const DST={available:["Available","p-ok"],booked:["Booked","p-info"],out:["Rented","p-acc"],cleaning:["Dry-cleaning","p-warn"],repair:["In repair","p-bad"],sold:["Sold","p-mute"],retired:["Retired","p-mute"]};
 
 /* ---------- store ---------- */
 const COLS=["dresses","customers","bookings","expenses","settings","partners","recurring","cleanings","deleted","sellers","orders","cashbook"];
-const S={mode:"loading",db:null,dl:null,data:{dresses:{},customers:{},bookings:{},expenses:{},settings:{},partners:{},recurring:{},cleanings:{},deleted:{},sellers:{},orders:{},cashbook:{}},got:new Set()};
+const S={mode:"loading",db:null,dl:null,data:{dresses:{},customers:{},bookings:{},expenses:{},settings:{},partners:{},recurring:{},cleanings:{},deleted:{},sellers:{},orders:{},cashbook:{},staff:{}},got:new Set(),role:"owner",me:null,need:0};
 const LKEY="dress-rental-khata-v1";
 function loadLocal(){try{const j=JSON.parse(localStorage.getItem(LKEY)||"null");if(j)COLS.forEach(c=>S.data[c]=j[c]||{})}catch(e){}}
 function saveLocal(){try{localStorage.setItem(LKEY,JSON.stringify(S.data))}catch(e){}}
@@ -777,6 +779,21 @@ function saveLocal(){try{localStorage.setItem(LKEY,JSON.stringify(S.data))}catch
 const FB_CFG={apiKey:"AIzaSyCHbw0eM0rY3_7hlfNczKxPp0XO_QKICjg",authDomain:"rental-dresses-booking.firebaseapp.com",projectId:"rental-dresses-booking",storageBucket:"rental-dresses-booking.firebasestorage.app",messagingSenderId:"378901811151",appId:"1:378901811151:web:1c0ad8292b2d86eee74cba"};
 /* only these accounts can open the ledger (the same list is in the Firestore security rules) */
 const ALLOW=["ganeshjangir075@gmail.com"];
+/* ---------- staff roles ---------- */
+const ROLE_INFO={
+  owner:{name:"Owner",desc:"Only one: you. Everything, including settings, staff and deleting",max:1},
+  manager:{name:"Manager",desc:"Only one person. Bookings, customers, payments, expenses, accounts, reports, and also fitting, repair and dry-cleaning. No settings, no staff, no deleting",max:1},
+  sales:{name:"Sales team",desc:"As many as you need. New bookings, customers and their sizes, hand over, returns, dry-cleaning. Sees only what a customer owes, not revenue or profit. No deleting"},
+  tailor:{name:"Tailor team",desc:"As many as you need. Only the Fitting and Repair pages: sizes, fitting slips, Fitted / Repaired. No money, no customer list"}};
+const ROLE_NAV={manager:["dash","bookings","returns","repair","cleaning","fitting","dresses","sellers","orders","customers","partners","accounts","expenses","daybook","activity"],
+  sales:["dash","bookings","returns","cleaning","dresses","customers"],tailor:["fitting","repair"]};
+const ROLE_W={sales:["dresses","customers","bookings","cleanings"],tailor:["dresses","customers","bookings"]};
+const canWrite=c=>isOwner()||(role()==="manager"?!["staff","settings","deleted"].includes(c):(ROLE_W[role()]||[]).includes(c));
+const ROLE_COLS={sales:["dresses","customers","bookings","settings","cleanings","partners"],tailor:["dresses","customers","bookings","settings"]};
+const role=()=>S.role||"owner",isOwner=()=>role()==="owner",seeMoney=()=>role()==="owner"||role()==="manager";
+const canNav=k=>{if(isOwner())return true;const L=ROLE_NAV[role()]||[];return L.includes(k)||(k==="calendar"&&L.includes("dash"))};
+const roleCols=()=>isOwner()?COLS.concat(["staff"]):ROLE_COLS[role()]||COLS;
+const meName=()=>(S.me&&S.me.name)||"Owner";
 const okEmail=u=>!!(u&&u.email&&ALLOW.includes(String(u.email).toLowerCase()));
 let SUBS=[];
 const LOCK={open:false,started:false,fail:0,until:0};
@@ -815,14 +832,19 @@ async function initStore(){
   const db=firebase.firestore();
   try{db.settings({ignoreUndefinedProperties:true,experimentalAutoDetectLongPolling:true,merge:true})}catch(e){}
   try{await db.enablePersistence({synchronizeTabs:true})}catch(e){}
-  firebase.auth().onAuthStateChanged(u=>{
+  firebase.auth().onAuthStateChanged(async u=>{
     SUBS.forEach(f=>{try{f()}catch(e){}});SUBS=[];
     if(!u){S.mode="loading";LOCK.open=false;LOCK.started=false;loginScreen();return}
-    if(!okEmail(u)){const em=u.email||"this account";firebase.auth().signOut();loginScreen(em+" is not allowed to open this ledger. Sign in with the shop's account.");return}
+    if(okEmail(u)){S.role="owner";S.me={name:"Owner",email:String(u.email||"").toLowerCase(),role:"owner"}}
+    else{const em=String(u.email||"").toLowerCase();let sd=null;gate(gateHead("Checking your account…")+'<p class="small muted" style="margin:0">'+esc(em)+'</p>');
+      try{const sn=await db.collection("staff").doc(em).get();sd=sn.exists?sn.data():null}catch(e){sd=null}
+      if(!sd||sd.active===false||!ROLE_INFO[sd.role]||sd.role==="owner"){firebase.auth().signOut();loginScreen((em||"This account")+(sd&&sd.active===false?" has been turned off by the owner.":" is not added as staff yet. Ask the owner to add this Google email in Settings → Staff."));return}
+      S.role=sd.role;S.me={name:sd.name||u.displayName||em,email:em,role:sd.role}}
     S.user={email:u.email,name:u.displayName||"",google:(u.providerData||[]).some(x=>x&&x.providerId==="google.com")};
     gate(gateHead("Opening your ledger…")+'<p class="small muted" style="margin:0">Loading your data</p>');
-    S.db=db;S.mode="cloud";S.got=new Set();
-    SUBS=COLS.map(c=>db.collection(c).onSnapshot(snap=>{
+    S.db=db;S.mode="cloud";S.got=new Set();const cols=roleCols();S.need=cols.length;
+    if(!isOwner()&&ROLE_NAV[role()]&&!canNav(V.view))V.view=ROLE_NAV[role()][0];
+    SUBS=cols.map(c=>db.collection(c).onSnapshot(snap=>{
       const o={};snap.docs.forEach(d=>{o[d.id]=d.data()});S.data[c]=o;S.got.add(c);rerender();afterLoad();
     },err=>{if(err&&err.code==="permission-denied"){gate(gateHead("No access")+'<p style="margin:0">'+esc(u.email)+' does not have permission to read the ledger. Check the Firestore rules.</p><button type="button" class="btn" id="g_out">Sign out</button>');document.getElementById("g_out").onclick=()=>signOutNow()}
       else toast("Could not load data ("+(err&&err.code)+"). Reopen the page.","bad")}));
@@ -848,7 +870,7 @@ async function cloudDiff(){const miss={};let total=0,fail=false;const cnt={};
   return {miss,total,fail,cnt}}
 async function sendMissing(miss){let n=0,bad=0;for(const c of COLS)for(const id of (miss[c]||[])){const o=Object.assign({},S.data[c][id]);delete o.id;try{await Promise.race([S.db.collection(c).doc(id).set(c==="customers"?safeCust(o):o),new Promise((_,r)=>setTimeout(()=>r(new Error("timeout")),20000))]);n++}catch(e){bad++}}return {n,bad}}
 let autoSynced=false;
-async function autoSync(){if(autoSynced||S.mode!=="cloud"||!S.db)return;autoSynced=true;
+async function autoSync(){if(autoSynced||S.mode!=="cloud"||!S.db||!seeMoney())return;autoSynced=true;
   try{const d=await cloudDiff();
     if(d.fail){SYNC.state="wait";SYNC.since=SYNC.since||Date.now();paintSync();toast("This device cannot reach the cloud right now. Entries are kept here and will be sent when the connection works. Settings → Cloud check","bad");autoSynced=false;setTimeout(autoSync,120000);return}
     if(d.total){const r=await sendMissing(d.miss);toast(r.n+" entr"+(r.n===1?"y":"ies")+" from this device sent to the cloud"+(r.bad?" · "+r.bad+" could not be sent":""),r.bad?"bad":"");if(r.bad){autoSynced=false;setTimeout(autoSync,120000)}}
@@ -864,7 +886,7 @@ async function cloudCheck(){
   const up=el.querySelector("#cc_up");if(up)up.addEventListener("click",async()=>{up.disabled=true;up.textContent="Sending…";let n=0,bad=0;
     for(const c of COLS)for(const id of miss[c]){const o=Object.assign({},S.data[c][id]);delete o.id;try{await Promise.race([S.db.collection(c).doc(id).set(c==="customers"?safeCust(o):o),new Promise((_,r)=>setTimeout(()=>r(new Error("timeout")),20000))]);n++}catch(e){bad++}}
     closeTop();toast(n+" entries sent to the cloud"+(bad?" · "+bad+" failed":""),bad?"bad":"");setTimeout(cloudCheck,400)})}
-function afterLoad(){if(LOCK.started||!loaded())return;LOCK.started=true;migrateIds();pinGate()}
+function afterLoad(){if(LOCK.started||!loaded())return;LOCK.started=true;if(!isOwner()){unlockNow();return}migrateIds();pinGate()}
 /* Aadhaar: only the last 4 digits are kept */
 function safeCust(o){if(o&&(o.idType||"Aadhaar")==="Aadhaar"&&o.idNo){const d=String(o.idNo).replace(/\D/g,"");if(d.length>4)o=Object.assign({},o,{idNo:d.slice(-4)})}return o}
 function migrateIds(){list(C()).forEach(c=>{if((c.idType||"Aadhaar")==="Aadhaar"&&String(c.idNo||"").replace(/\D/g,"").length>4){const o=clone(c);delete o.id;put("customers",c.id,o).catch(()=>{})}})}
@@ -906,6 +928,7 @@ async function reauthUser(){
 }
 async function put(col,id,obj){
   if(id==null||id==="undefined"||id===""){toast("Could not save (missing record id). Please try again.","bad");throw new Error("missing id")}
+  if(!canWrite(col)){toast(col==="settings"?"Only the owner can change settings.":"Your role cannot change this. Ask the owner.","bad");throw new Error("role")}
   if(col==="bookings"&&obj&&obj.status==="closed"&&!obj.invNo){obj=Object.assign({},obj,{invNo:nextInv(id),invDate:today()})}
   if(col==="bookings"&&!LOGCTX.skip)obj=withLog(id,obj);
   if(col==="customers")obj=safeCust(obj);
@@ -917,6 +940,7 @@ async function put(col,id,obj){
   }else{S.data[col][id]=obj;saveLocal();rerender()}
 }
 async function del(col,id){
+  if(!isOwner()&&col!=="deleted"){toast("Only the owner can delete. Ask the owner to do it from their phone.","bad");throw new Error("not owner")}
   if(col!=="deleted"&&!await pinOK("Deleting needs the 4-digit PIN."))throw new Error("PIN not entered");
   if(col==="bookings"){const old=S.data.bookings[id];if(old&&!old.sample){const x=clone(old);delete x.id;x.deletedAt=Date.now();x.log=(x.log||[]).concat([{at:Date.now(),ch:[{k:"delete",t:"Booking deleted"+(x.status?" (it was "+((BST[x.status]||[x.status])[0])+")":"")}],reason:LOGCTX.reason||""}]);LOGCTX.reason="";try{await put("deleted",id,x)}catch(e){}}}
   if(S.mode==="cloud"){const pr=S.db.collection(col).doc(id).delete();syncTrack(pr);pr.catch(e=>toast("Could not delete ("+((e&&e.code)||"error")+").","bad"));await Promise.race([pr,new Promise(r=>setTimeout(r,1200))])}
@@ -928,7 +952,7 @@ const ST=()=>{const o=Object.assign({},DEF,S.data.settings.main||{});
   return o};
 const D=()=>S.data.dresses, C=()=>S.data.customers, B=()=>S.data.bookings, E=()=>S.data.expenses, P=()=>S.data.partners||{};
 const list=o=>Object.entries(o).map(([id,v])=>Object.assign({id},v));
-const loaded=()=>S.mode==="local"||(S.mode==="cloud"&&S.got.size>=COLS.length);
+const loaded=()=>S.mode==="local"||(S.mode==="cloud"&&S.got.size>=(S.need||COLS.length));
 
 /* ---------- accounting ---------- */
 function landed(d){return N(d.cost)+N(d.extra)}
@@ -1066,17 +1090,20 @@ function goNow(v,noHist){if(!noHist&&v!==V.view){V.hist=V.hist||[];V.hist.push(V
 
 function render(){
   const st=ST();
+  if(!isOwner()&&!canNav(V.view)&&ROLE_NAV[role()])V.view=ROLE_NAV[role()][0];
+  document.body.classList.toggle("nomoney",!seeMoney());
   try{const n=loaded()?urgentAll():0;document.title=(n?"("+n+") ":"")+"Dress Rental Ledger";if(loaded()&&!openShown)setTimeout(openPopup,600)}catch(e){}
   const urgent=tasks().filter(x=>x.date<=today()&&x.type!=="dep").length;
   const navTop=(document.querySelector("#side .side-nav")||{}).scrollTop||0;
-  $("#side").innerHTML='<div class="brand"><div class="brand-mark">'+esc((st.shop||"D").trim().charAt(0).toUpperCase())+'</div><div><div class="brand-name">'+esc(st.shop)+'</div><div class="brand-sub">'+esc(st.city)+' · Rental ledger</div></div></div><div class="side-nav">'+
-    NAV.map(([k,l,i])=>'<button type="button" class="nav-btn'+(V.view===k||(k==="dash"&&V.view==="calendar")?" on":"")+'" data-go="'+k+'">'+ic(i)+'<span>'+l+'</span>'+(k==="dash"&&urgent?'<span class="badge">'+urgent+'</span>':k==="fitting"&&loaded()&&fitRows().filter(r=>r.act).length?'<span class="badge" title="Fittings that need action">'+fitRows().filter(r=>r.act).length+'</span>':(k==="repair"||k==="cleaning")&&loaded()&&collectList(k==="repair"?"repair":"clean").length?'<span class="badge" title="Dresses to bring back">'+collectList(k==="repair"?"repair":"clean").length+'</span>':"")+'</button>').join("")+'</div>'+
+  $("#side").innerHTML='<div class="brand"><div class="brand-mark">'+esc((st.shop||"D").trim().charAt(0).toUpperCase())+'</div><div><div class="brand-name">'+esc(st.shop)+'</div><div class="brand-sub">'+(isOwner()?esc(st.city)+' · Rental ledger':esc(meName())+' · '+esc(ROLE_INFO[role()].name))+'</div></div></div><div class="side-nav">'+
+    NAV.filter(n=>canNav(n[0])).map(([k,l,i])=>'<button type="button" class="nav-btn'+(V.view===k||(k==="dash"&&V.view==="calendar")?" on":"")+'" data-go="'+k+'">'+ic(i)+'<span>'+l+'</span>'+(k==="dash"&&urgent?'<span class="badge">'+urgent+'</span>':k==="fitting"&&loaded()&&fitRows().filter(r=>r.act).length?'<span class="badge" title="Fittings that need action">'+fitRows().filter(r=>r.act).length+'</span>':(k==="repair"||k==="cleaning")&&loaded()&&collectList(k==="repair"?"repair":"clean").length?'<span class="badge" title="Dresses to bring back">'+collectList(k==="repair"?"repair":"clean").length+'</span>':"")+'</button>').join("")+'</div>'+
     '<div class="side-foot"'+(SYNC.state==="wait"?' data-act="cloud-check" style="cursor:pointer"':"")+'>'+(S.mode==="local"?'<span class="dot warn"></span><span>Saved on this device only</span>':(()=>{const [c,t]=syncTxt();return '<span class="dot '+c+'"></span><span>'+t+'</span>'})())+'</div>';
   {const sn=document.querySelector("#side .side-nav");if(sn&&navTop)sn.scrollTop=navTop}
-  $("#tabbar").innerHTML=TABS.map(k=>{const n=NAV.find(x=>x[0]===k);return '<button type="button" class="'+(V.view===k?"on":"")+'" data-go="'+k+'">'+ic(n[2])+'<span>'+(k==="dash"?"Home":n[1])+'</span>'+(k==="dash"&&urgent?'<span class="badge">'+urgent+'</span>':"")+'</button>'}).join("")+'<button type="button" class="'+(TABS.includes(V.view)?"":"on")+'" data-act="more">'+ic("menu")+'<span>More</span></button>';
+  const TB=(()=>{const a=TABS.filter(canNav);return a.length>=2?a:(ROLE_NAV[role()]||TABS).slice(0,4)})();
+  $("#tabbar").innerHTML=TB.map(k=>{const n=NAV.find(x=>x[0]===k);return '<button type="button" class="'+(V.view===k?"on":"")+'" data-go="'+k+'">'+ic(n[2])+'<span>'+(k==="dash"?"Home":n[1])+'</span>'+(k==="dash"&&urgent?'<span class="badge">'+urgent+'</span>':"")+'</button>'}).join("")+'<button type="button" class="'+(TB.includes(V.view)?"":"on")+'" data-act="more">'+ic("menu")+'<span>More</span></button>';
   const fab=$("#fab");
   fab.innerHTML=ic("plus")+'<span>New booking</span>';
-  fab.hidden=!loaded()||V.view==="settings"||V.view==="accounts"||V.view==="returns"||V.view==="daybook"||V.view==="activity"||V.view==="cleaning"||V.view==="repair"||V.view==="fitting";
+  fab.hidden=!loaded()||role()==="tailor"||V.view==="settings"||V.view==="accounts"||V.view==="returns"||V.view==="daybook"||V.view==="activity"||V.view==="cleaning"||V.view==="repair"||V.view==="fitting";
   if(V.view==="dresses"){fab.innerHTML=ic("plus")+"<span>New dress</span>"}
   if(V.view==="customers"){fab.innerHTML=ic("plus")+"<span>New customer</span>"}
   if(V.view==="partners"){fab.innerHTML=ic("plus")+"<span>New partner</span>"}
@@ -1123,7 +1150,7 @@ function sampleBanner(){
 }
 /* ---------- desktop quick bar + keyboard shortcuts ---------- */
 const QK=[["new","N","plus","New booking","New booking"],["search","/","search","Search","Search customer, booking or dress"],["avail","A","cal","Dress free?","Is the dress free? (availability)"],["pay","P","wallet","Payment","Take a payment"],["cust","C","user","New customer","New customer"],["exp","E","receipt","Expense","Expense / petty cash"]];
-function quickBar(){return '<div class="qbar" role="toolbar" aria-label="Quick actions">'+QK.map(q=>'<button type="button" class="qbtn" data-qk="'+q[0]+'" title="'+q[4]+(q[1]?' · key '+(q[1]==="/"?"/ or Ctrl+K":q[1]):"")+'">'+(IC[q[2]]?ic(q[2]):"")+'<span>'+q[3]+'</span>'+(q[1]?'<kbd>'+q[1]+'</kbd>':"")+'</button>').join("")+'</div>'}
+function quickBar(){if(role()==="tailor")return "";return '<div class="qbar" role="toolbar" aria-label="Quick actions">'+QK.filter(q=>seeMoney()||q[0]!=="exp").map(q=>'<button type="button" class="qbtn" data-qk="'+q[0]+'" title="'+q[4]+(q[1]?' · key '+(q[1]==="/"?"/ or Ctrl+K":q[1]):"")+'">'+(IC[q[2]]?ic(q[2]):"")+'<span>'+q[3]+'</span>'+(q[1]?'<kbd>'+q[1]+'</kbd>':"")+'</button>').join("")+'</div>'}
 function qkGo(view,focus){V.view=view;render();window.scrollTo(0,0);if(focus)setTimeout(()=>{const x=document.getElementById(focus);if(x){x.scrollIntoView({block:"center"});x.focus()}},80)}
 function qkDo(k){if(!loaded()||document.getElementById("gate"))return;
   if(k!=="search"&&k!=="pay")closeAll();
@@ -1135,7 +1162,7 @@ function qkDo(k){if(!loaded()||document.getElementById("gate"))return;
   if(k==="search")return quickSearch();
   if(k==="pay")return quickSearch(true);
   if(k==="give"){const g=s=>clGive(s).length+(s==="repair"?fitGive().length:0),o=s=>clOutCount(s);
-    return modal({title:"Tailor / cleaner",autofocus:false,body:'<div class="grid" style="gap:8px">'+[["repair","Tailor (repair / fitting)","scissors"],["cleaning","Dry-cleaner","drop"]].map(x=>{const s0=x[0]==="repair"?"repair":"clean";return '<button type="button" class="nav-btn" data-go="'+x[0]+'" style="padding:14px 12px">'+ic(x[2])+'<span>'+x[1]+'<span class="small muted" style="display:block">'+g(s0)+' to give · '+o(s0)+' with them'+(collectList(s0).length?' · <b class="neg">'+collectList(s0).length+' to bring back</b>':"")+'</span></span></button>'}).join("")+'</div>',foot:'<button type="button" class="btn" data-close>Close</button>'})}
+    return modal({title:"Repair / cleaner",autofocus:false,body:'<div class="grid" style="gap:8px">'+[["repair","Repair (in the shop)","scissors"],["cleaning","Dry-cleaner","drop"]].map(x=>{const s0=x[0]==="repair"?"repair":"clean";return '<button type="button" class="nav-btn" data-go="'+x[0]+'" style="padding:14px 12px">'+ic(x[2])+'<span>'+x[1]+'<span class="small muted" style="display:block">'+g(s0)+' to give · '+o(s0)+' with them'+(collectList(s0).length?' · <b class="neg">'+collectList(s0).length+' to bring back</b>':"")+'</span></span></button>'}).join("")+'</div>',foot:'<button type="button" class="btn" data-close>Close</button>'})}
   if(k==="hand"){const t=today(),L=list(B()).filter(b=>(b.status==="booked"||b.status==="ready")&&b.deliveryDate<=t).sort((a,b)=>a.deliveryDate<b.deliveryDate?-1:1);
     return modal({title:"Hand over today",autofocus:false,body:L.length?'<div class="hist">'+L.map(b=>{const f=fin(b);return '<div class="hist-i" data-open-b="'+b.id+'"><div class="hist-d">'+(b.deliveryDate<t?'<span class="neg">'+fd(b.deliveryDate)+'</span>':"Today")+'</div><div style="min-width:0"><b>'+esc(custName(b.customerId))+'</b> <span class="mono muted">'+esc(BN(b.no))+'</span><div class="small muted">'+esc(bookingDresses(b))+'</div></div><div class="hist-r"><span class="pill '+BST[b.status][1]+'">'+BST[b.status][0]+'</span><b class="num'+(f.due>0?" neg":"")+'">'+(f.due>0?"Due "+inr(f.due):"Paid")+'</b></div></div>'}).join("")+'</div>':'<div class="empty"><b>Nothing to hand over today</b>No pick-up is due today.</div>',foot:'<button type="button" class="btn" data-close>Close</button>'})}
 }
@@ -1209,15 +1236,15 @@ function viewDash(){
    kpi("Returns today",rets,"expected","","bookings:out")+
    kpi("Late returns",lates,lates?"call them now":"all on time",lates?"alert click":"","bookings:out")+
    kpi("To prepare",preps,"dry-clean / fitting",preps?"warnk click":"click","bookings:prep")+
-   kpi(MON[+ym.slice(5)-1]+" revenue",inr(ms.revenue),ms.count+" bookings","money click","accounts")+
-   kpi(MON[+ym.slice(5)-1]+" profit",inr(ms.net),ms.noExp?"no shop expenses recorded yet":"after shop expenses","click","accounts")+
+   kpi(MON[+ym.slice(5)-1]+" revenue",inr(ms.revenue),ms.count+" bookings","money click mny","accounts")+
+   kpi(MON[+ym.slice(5)-1]+" profit",inr(ms.net),ms.noExp?"no shop expenses recorded yet":"after shop expenses","click mny","accounts")+
   '</div>'+
   '<div class="grid cols-2 dash-cards">'+qaPanel()+
-   (clGive().length||clOutCount("clean")||clOutCount("repair")||cleanList.length?'<div class="panel"><div class="panel-h"><h3>Dresses not ready</h3><span class="muted small">'+cleanList.length+' at cleaner / tailor / to give</span></div><div class="panel-b">'+
-    (()=>{const card=(k,go,icn,name,at)=>{const g=clGive(k),o=clOutCount(k),u=g.filter(x=>clUrgent(x.nb)).length;return g.length||o?'<button type="button" class="cl-dash" data-go="'+go+'"><span>'+ic(icn)+'</span><span style="flex:1"><b>'+name+'</b><span class="small muted" style="display:block">To give: <b>'+g.length+'</b>'+(u?' ('+u+' needed soon)':"")+' · '+at+': <b>'+o+'</b></span></span>'+ic("right")+'</button>':""};return card("clean","cleaning","drop","Dry-cleaning","At cleaner")+card("repair","repair","scissors","Repair","At tailor")})()+
-    (cleanList.length?'<div style="margin-top:14px" class="label">Dress-wise</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">'+cleanList.map(d=>{const op=clOpen(d.id);return '<div class="drow" style="align-items:center"><span><span class="mono muted">'+esc(d.code)+'</span> '+esc(d.name)+'<span class="small muted" style="display:block">'+(dressState(d.id)==="repair"?"Repair · ":"Dry-cleaning · ")+(op?"With "+esc(op.bt.cleaner||"cleaner")+" since "+fd(op.bt.sentOn):"In the shop · not given yet")+'</span></span><button type="button" class="btn sm" '+(op?'data-ready-dress="'+d.id+'">Received':'data-go="'+(dressState(d.id)==="repair"?"repair":"cleaning")+'">Give')+'</button></div>'}).join("")+'</div>':"")+
+   (clGive().length||clOutCount("clean")||clOutCount("repair")||cleanList.length?'<div class="panel"><div class="panel-h"><h3>Dresses not ready</h3><span class="muted small">'+cleanList.length+' to repair or dry-clean</span></div><div class="panel-b">'+
+    (()=>{const card=(k,go,icn,name,at)=>{const g=clGive(k),o=clOutCount(k),u=g.filter(x=>clUrgent(x.nb)).length;return g.length||o?'<button type="button" class="cl-dash" data-go="'+go+'"><span>'+ic(icn)+'</span><span style="flex:1"><b>'+name+'</b><span class="small muted" style="display:block">To give: <b>'+g.length+'</b>'+(u?' ('+u+' needed soon)':"")+' · '+at+': <b>'+o+'</b></span></span>'+ic("right")+'</button>':""};const nR=list(D()).filter(d=>d.status==="repair").length;return card("clean","cleaning","drop","Dry-cleaning","At cleaner")+(nR?'<button type="button" class="cl-dash" data-go="repair"><span>'+ic("scissors")+'</span><span style="flex:1"><b>Repair</b><span class="small muted" style="display:block">To repair in the shop: <b>'+nR+'</b></span></span>'+ic("right")+'</button>':"")})()+
+    (cleanList.length?'<div style="margin-top:14px" class="label">Dress-wise</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">'+cleanList.map(d=>{const op=clOpen(d.id);return '<div class="drow" style="align-items:center"><span><span class="mono muted">'+esc(d.code)+'</span> '+esc(d.name)+'<span class="small muted" style="display:block">'+(dressState(d.id)==="repair"?"Repair · to do in the shop":"Dry-cleaning · "+(op?"With "+esc(op.bt.cleaner||"cleaner")+" since "+fd(op.bt.sentOn):"In the shop · not given yet"))+'</span></span><button type="button" class="btn sm" '+(dressState(d.id)==="repair"?'data-go="repair">Repair':op?'data-ready-dress="'+d.id+'">Received':'data-go="cleaning">Give')+'</button></div>'}).join("")+'</div>':"")+
    '</div></div>':"")+
-   '<div class="panel"><div class="panel-h"><h3>Upcoming wedding dates</h3><button type="button" class="btn sm ghost" data-act="saave-edit">'+ic("edit")+'Edit</button></div><div class="panel-b"><div class="saave">'+
+   '<div class="panel"><div class="panel-h"><h3>Upcoming wedding dates</h3>'+(isOwner()?'<button type="button" class="btn sm ghost" data-act="saave-edit">'+ic("edit")+'Edit</button>':"")+'</div><div class="panel-b"><div class="saave">'+
     (upSaave.length?upSaave.map(s=>{const n=diff(t,s);return '<span class="'+(n<=21?"soon":"")+'" title="'+esc(fdw(s)+" · "+saaveNote(s))+'">'+MON[parseD(s).getMonth()]+'<b>'+parseD(s).getDate()+'</b><i>'+esc(saaveNote(s))+'</i></span>'}).join(""):'<span class="muted">No dates in the list. Tap Edit to add the wedding dates from your pandit / calendar.</span>')+
     '</div><p class="small muted" style="margin:10px 0 0">General Panchang dates; confirm with a local pandit. Bookings pick up 2–3 weeks before these days.</p></div></div>'+
   '</div>';
@@ -1403,7 +1430,7 @@ function viewReturns(){
   const row=(b,kind)=>{const c=C()[b.customerId]||{},ri=b.ret||{},ch=retCharges(ri),dl=Math.max(0,diff(b.returnDate,t));
     const right=kind==="out"?'<span class="pill '+(dl?"p-bad":b.returnDate===t?"p-warn":"p-info")+'">'+(dl?dl+" days late":b.returnDate===t?"Due today":rel(b.returnDate))+'</span>':'<span class="pill '+(ch.length||N(ri.lateFee)?"p-bad":"p-ok")+'">'+(ch.length?ch.length+" issue"+(ch.length>1?"s":""):N(ri.lateFee)?"Late":"All OK")+'</span>';
     return '<div class="due-row"><button type="button" class="due-main" data-open-b="'+b.id+'"><span><b>'+esc(c.name||"Customer")+'</b> <span class="mono muted">'+esc(BN(b.no))+'</span><span class="small muted" style="display:block">'+esc([c.phone,bookingDresses(b)].filter(Boolean).join(" · "))+'</span><span class="small" style="display:block">'+(kind==="out"?"Due back "+fdw(b.returnDate):"Returned "+fdw(ri.on||b.returnDate)+(ch.length?" · "+esc(ch.map(x=>x.reason).join(", ")):"")+(N(ri.lateFee)+N(ri.damage)?" · charged "+inr(N(ri.lateFee)+N(ri.damage)):""))+'</span></span><span class="due-amt">'+right+'</span></button>'+
-      '<div class="due-act">'+(kind==="out"?(()=>{const wk=dl?"late":"ret",sw=(b.wa||{})[wk];return waBtn(c,waRemind(b,wk),true,(dl?"Late msg":"Return reminder")+(sw?" sent":""),b.id+"|"+wk,!!sw)})()+'<button type="button" class="btn sm pri" data-return-b="'+b.id+'">'+ic("back")+'Check & accept</button>':'<button type="button" class="btn sm" data-slip-b="'+b.id+'" data-slip-k="wapsi">'+ic("print")+'Return slip</button>')+'</div></div>'};
+      '<div class="due-act">'+(kind==="out"?(()=>{const wk=dl?"late":"ret",sw=(b.wa||{})[wk];return waBtn(c,waRemind(b,wk),true,(dl?"Late msg":"Return reminder")+(sw?" sent":""),b.id+"|"+wk,!!sw)})()+'<button type="button" class="btn sm pri" data-return-b="'+b.id+'">'+ic("back")+'Check & accept</button>':SB('data-slip-b="'+b.id+'" data-slip-k="wapsi"',"return slip"))+'</div></div>'};
   const grp=(title,arr,cls,kind)=>arr.length?'<div class="label" style="margin:14px 0 6px">'+(cls?'<span class="pill '+cls+'">'+title+'</span>':title)+' <span class="muted">· '+arr.length+'</span></div><div class="panel">'+arr.map(b=>row(b,kind)).join("")+'</div>':"";
   const chargedM=list(B()).filter(b=>b.ret&&((b.ret.on||"").slice(0,7)===t.slice(0,7))).reduce((a,b)=>a+N(b.ret.lateFee)+N(b.ret.damage),0);
   /* filters */
@@ -1450,6 +1477,7 @@ function clCount(){const n=document.querySelectorAll(".cl-chk:checked").length,e
 function clUrgent(nb){if(!nb)return false;return diff(today(),nb.deliveryDate)<=bPrep(nb)+1}
 /* fitting by the tailor (before pick-up) */
 const fitWin=()=>dSet("prepBefore",1)+1;
+const inShop=()=>true;
 function bkMeas(b){return b.meas||((C()[b.customerId]||{}).meas)||null}
 function fitDressOk(d){return d&&!/jewel/i.test(d.category||"")}
 function fitNow(b,did){const nb=clNextBooking(did);return nb&&nb.id===b.id&&["available","booked"].includes(dressState(did))}
@@ -1462,6 +1490,11 @@ function fitNowTxt(d){const f=d&&d.fitNow;if(!f)return "";const b=B()[f.bookingI
 function fitFor(i){const b=B()[i.fitFor||i.bookingId];return b?'For '+esc(BN(b.no))+' · '+esc(custName(b.customerId))+' · pick-up '+fd(b.deliveryDate):""}
 /* rush: next pick-up today/tomorrow — tailor in hours, then cleaner the same day */
 const hm=d=>String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+/* pick-up time: the booking's own time, else the shop's pick-up window */
+const pkFrom=()=>ST().pickFrom||"17:00",pkTo=()=>ST().pickTo||"";
+function pickTimeTxt(b){if(b&&b.pickTime)return t12(b.pickTime);const a=pkFrom(),z=pkTo();return a?t12(a)+(z&&z>a?" to "+t12(z):""):""}
+function pickWhen(b){const t=pickTimeTxt(b);return fdw(b.deliveryDate)+(t?", "+t:"")}
+function fitBy(b){const hrs=Math.max(0,N(ST().fitHours==null?2:ST().fitHours)),base=(b&&b.pickTime)||pkFrom()||"17:00";const [h,m]=base.split(":").map(Number);let mins=h*60+(m||0)-hrs*60,day=b.deliveryDate;if(mins<9*60){day=addDays(day,-1);mins=18*60}const tt=String(Math.floor(mins/60)).padStart(2,"0")+":"+String(mins%60).padStart(2,"0");return {day:day<today()?today():day,time:tt}}
 function t12(x){if(!x)return "";const [h,m]=x.split(":").map(Number);return ((h%12)||12)+(m?":"+String(m).padStart(2,"0"):"")+" "+(h<12?"am":"pm")}
 function inHours(n){const d=new Date(Date.now()+n*36e5);d.setMinutes(Math.ceil(d.getMinutes()/15)*15,0,0);return d.toDateString()!==new Date().toDateString()?"23:45":hm(d)}
 function clTimeUp(bt){const t=today();return !!bt.expBack&&(bt.expBack<t||(bt.expBack===t&&!!bt.expTime&&hm(new Date())>=bt.expTime))}
@@ -1474,14 +1507,17 @@ function rushList(){const t=today(),out=[],dd=nb=>nb?diff(t,nb.deliveryDate):99,
 function rushHtml(sec){const L=rushList().filter(x=>!sec||x.sec===sec);if(!L.length)return "";const t=today();
   return '<div class="rush">'+L.map(x=>{const who=x.act==="collect"?(x.bt.cleaner||(x.sec==="repair"?"the tailor":"the cleaner")):"";const pk=x.dd<=0?"today":x.dd===1?"tomorrow":"in "+x.dd+" days",nx=x.dd>=2?" tomorrow":" the same day";
     const msg=x.act==="collect"?(x.up?'<b>Time is up.</b> Collect '+esc(x.d.code)+' from '+esc(who)+' now'+(x.then?' and give it to the dry-cleaner'+(x.dd>=2?" tomorrow":""):''):'Collect '+esc(x.d.code)+' from '+esc(who)+(x.bt.expBack===t&&x.bt.expTime?' by <b>'+t12(x.bt.expTime)+'</b> today':x.bt.expBack?' by '+fd(x.bt.expBack):'')+(x.then?', then give it to the dry-cleaner'+nx:'')):
-      'Give '+esc(x.d.code)+' to the '+(x.sec==="repair"?"tailor"+(x.fit?" for fitting":""):"dry-cleaner")+' today'+(x.sec==="repair"&&x.then?(x.dd>=2?' (full day) · dry-cleaning tomorrow':' for 2–4 hours · dry-cleaning the same day'):(x.dd>=1?' (full day)':''));
+      'Give '+esc(x.d.code)+' to the '+(x.sec==="repair"?"repair table"+(x.fit?" for fitting":""):"dry-cleaner")+' today'+(x.sec==="repair"&&x.then?(x.dd>=2?' (full day) · dry-cleaning tomorrow':' for 2–4 hours · dry-cleaning the same day'):(x.dd>=1?' (full day)':''));
     return '<button type="button" class="rush-row'+(x.up?" up":"")+'" data-go="'+(x.sec==="repair"?"repair":"cleaning")+'"><span class="rush-ic">'+ic(x.sec==="repair"?"scissors":"drop",16)+'</span><span><span class="rush-m">'+msg+'</span><span class="small" style="display:block">Pick-up <b>'+pk+'</b> ('+fd(x.nb.deliveryDate)+') · '+esc(BN(x.nb.no))+' · '+esc(custName(x.nb.customerId))+'</span></span>'+ic("right")+'</button>'}).join("")+'</div>'}
 /* work plan for a dress going to the tailor / cleaner, worked out from its next booking */
 function clDays(sec){const st=ST();return sec==="repair"?(N(st.repairDays)||4):(N(st.cleanDays)||3)}
 function clPlan(sec,x){const t=today(),days=clDays(sec),p=String(x).split(":");let d,nb,both=false,fit=false;
   if(p[0]==="fit"){d=D()[p[2]]||{};nb=B()[p[1]];fit=true}else{d=D()[x]||{};const w=d.work||{};nb=sec==="repair"&&w.fitFor&&B()[w.fitFor]?B()[w.fitFor]:clNextBooking(x);both=sec==="repair"&&clNeed(d)==="both"}
   const W=sec==="repair"?"tailor":"cleaner";
-  if(!nb)return {first:false,d,txt:"No booking yet, no hurry. Normal "+days+" days is fine"+(both?", then dry-cleaning":"")+"."};
+  if(sec==="repair"){if(!nb)return {first:false,d,txt:"No booking yet. Repair it in the shop"+(both?", then send to dry-cleaning":"")+"."};
+    const pick=nb.deliveryDate,pd=addDays(pick,-Math.max(1,bPrep(nb))),lim=both?addDays(pd,-0):addDays(pick,-1),first=lim<=addDays(t,1);
+    return {first,d,nb,lim,txt:"Next booking: pick-up "+fdw(pick)+" ("+custName(nb.customerId)+"). Repair by "+(lim<t?"today, as soon as possible":fdw(lim))+(both?", then dry-clean":"")+"."}}
+  if(!nb)return {first:false,d,txt:"No booking yet, no hurry. Normal "+days+" days is fine."};
   const pick=nb.deliveryDate,pr=Math.max(1,bPrep(nb)),pd=addDays(pick,-pr),head="Next booking: pick-up "+fdw(pick)+" ("+custName(nb.customerId)+"). ";
   const lim=both?pd:W==="tailor"?pd:addDays(pick,-(pr-1));
   const first=lim<=addDays(t,days);let txt;
@@ -1525,47 +1561,75 @@ function fitRows(){const t=today(),win=fitWin(),rows=[];
       if(f.done){r.k="done";r.txt="Fitted"+(f.doneOn?" on "+fd(f.doneOn):"")+(f.by?" by "+f.by:"")}
       else if(op){r.k="tailor";r.txt="At "+(op.bt.cleaner||"the tailor")+" since "+fd(op.bt.sentOn)+(op.bt.expBack?" · back by "+fdw(op.bt.expBack)+(op.bt.expTime?" "+t12(op.bt.expTime):""):"")}
       else if(f.noTailor&&!f.want){r.k="skip";r.txt="Marked as no fitting needed"}
-      else if(st==="repair"&&w.fitFor===b.id&&!clOpen(d.id)){r.k="give";r.act=1;r.txt="Back from the last customer. Give to the tailor"+(w.need==="both"?" (repair + fitting, then dry-cleaning)":"")}
+      else if(st==="repair"&&w.fitFor===b.id&&!clOpen(d.id)){r.k="give";r.act=1;r.txt="Back from the last customer. Repair it in the shop"+(w.need==="both"?" (repair + fitting, then dry-cleaning)":"")}
       else if(!fitNow(b,d.id)){const ob=list(B()).find(x=>x.status==="delivered"&&(x.items||[]).some(y=>y.dressId===d.id)),nb=clNextBooking(d.id);
-        r.k="wait";r.txt=st==="out"&&ob?"Dress is with "+custName(ob.customerId)+" ("+BN(ob.no)+"), due back "+fdw(ob.returnDate):st==="cleaning"?"Dress is at dry-cleaning now":st==="repair"?"Dress is at the tailor for other work":nb&&nb.id!==b.id?"Booking "+BN(nb.no)+" uses this dress first ("+fd(nb.deliveryDate)+")":"Dress is not free yet";
+        r.k="wait";r.txt=st==="out"&&ob?"Dress is with "+custName(ob.customerId)+" ("+BN(ob.no)+"), due back "+fdw(ob.returnDate):st==="cleaning"?"Dress is at dry-cleaning now":st==="repair"?"Dress is waiting for repair in the shop":nb&&nb.id!==b.id?"Booking "+BN(nb.no)+" uses this dress first ("+fd(nb.deliveryDate)+")":"Dress is not free yet";
         if(dd<=win)r.act=1}
-      else if(!m){r.k="size";r.act=dd<=win+3?1:0;r.txt="Add the size first, then give the dress to the tailor"}
-      else if(f.want||dd<=win){r.k="give";r.act=1;r.txt="Dress is at the shop. Give it to the tailor"}
-      else{r.k="later";r.txt="Comes into the tailor list "+fdw(addDays(b.deliveryDate,-win))}
+      else if(!m){r.k="size";r.act=dd<=win+3?1:0;r.txt="Add the size first, then do the fitting"}
+      else if(f.want||dd<=win){r.k="give";r.act=1;r.txt=inShop()?"Dress is at the shop. Do the fitting before the time above":"Dress is at the shop. Give it to the tailor"}
+      else{r.k="later";r.txt="Fitting is due "+fdw(addDays(b.deliveryDate,-win+1))+" or on the pick-up day"}
       rows.push(r)})});
   return rows}
 function viewFitting(){
   const rows=fitRows(),f=V.fitF||"todo";
   const C={todo:rows.filter(r=>r.act),tailor:rows.filter(r=>r.k==="tailor"),later:rows.filter(r=>r.k==="later"||r.k==="size"&&!r.act||r.k==="wait"&&!r.act),done:rows.filter(r=>r.k==="done"),all:rows};
-  const FL=[["todo","Needs action"],["tailor","At tailor"],["later","Coming up"],["done","Fitted"],["all","All"]];
+  const FL=[["todo","Needs action"],["later","Coming up"],["done","Fitted"],["all","All"]].concat(C.tailor.length?[["tailor","At tailor (old)"]]:[]);
   const L=C[f]||rows;
-  const pill={done:["p-ok","Fitted"],tailor:["p-info","At tailor"],give:["p-bad","Give to tailor"],size:["p-warn","Size missing"],wait:["p-warn","Waiting for dress"],later:["p-mute","Later"],skip:["p-mute","Not needed"]};
+  const pill={done:["p-ok","Fitted"],tailor:["p-info","At tailor"],give:["p-bad",inShop()?"To fit":"Give to tailor"],size:["p-warn","Size missing"],wait:["p-warn","Waiting for dress"],later:["p-mute","Later"],skip:["p-mute","Not needed"]};
   const when=dd=>dd<=0?"today":dd===1?"tomorrow":"in "+dd+" days";
   const row=r=>{const c=C0(r.b.customerId),ph=c.phone||"";return '<div class="fit-row"><div class="fit-main"><div class="fit-top"><span class="pill '+pill[r.k][0]+'">'+pill[r.k][1]+'</span> <b>'+esc(custName(r.b.customerId))+'</b> <span class="mono muted small">'+esc(BN(r.b.no))+'</span></div>'+
-    '<div class="small"><span class="mono muted">'+esc(r.d.code)+'</span> '+esc(r.d.name||"")+' · pick-up <b class="'+(r.dd<=1&&r.k!=="done"?"neg":"")+'">'+fdw(r.b.deliveryDate)+'</b> ('+when(r.dd)+')</div>'+
+    '<div class="small"><span class="mono muted">'+esc(r.d.code)+'</span> '+esc(r.d.name||"")+' · pick-up <b class="'+(r.dd<=1&&r.k!=="done"?"neg":"")+'">'+esc(pickWhen(r.b))+'</b> ('+when(r.dd)+')'+(r.k!=="done"&&r.k!=="skip"?' · fitting before <b>'+(()=>{const f=fitBy(r.b);return (f.day===r.b.deliveryDate?"":fd(f.day)+" ")+t12(f.time)})()+'</b>':'')+'</div>'+
     '<div class="small">'+(r.m?'<b>Size:</b> '+esc(r.m):'<span class="neg">Size not saved</span>')+(r.b.fit&&r.b.fit.note?' · '+esc(r.b.fit.note):'')+'</div>'+
     '<div class="small muted">'+esc(r.txt)+'</div></div><div class="fit-act">'+
-    (r.k==="give"?'<button type="button" class="btn sm pri" data-fit-give="1">'+ic("scissors",14)+'Give to tailor</button>':"")+
-    (r.k!=="done"&&r.k!=="skip"?'<button type="button" class="btn sm" data-fit-slip="'+r.b.id+'|'+r.d.id+'">'+ic("print",14)+'Fitting slip</button>':"")+
+    (r.k==="give"&&!inShop()?'<button type="button" class="btn sm pri" data-fit-give="1">'+ic("scissors",14)+'Give to tailor</button>':"")+
+    (r.k!=="done"&&r.k!=="skip"?SB('data-fit-slip="'+r.b.id+'|'+r.d.id+'"',"fitting slip"):"")+
     (r.k==="tailor"?'<button type="button" class="btn sm" data-fit-out="1">'+ic("back",14)+'Receive</button>':"")+
-    (!r.m&&r.k!=="done"?'<button type="button" class="btn sm" data-open-b="'+r.b.id+'">'+ic("edit",14)+'Add size</button>':"")+
-    (r.k==="later"||r.k==="size"?'<button type="button" class="btn sm" data-fit-now="'+r.b.id+'">Fit now</button>':"")+
+    (r.k!=="done"?'<button type="button" class="btn sm'+(!r.m?" pri":"")+'" data-size-b="'+r.b.id+'">'+ic("edit",14)+(r.m?"Edit size":"Add size")+'</button>':"")+
+    (!inShop()&&(r.k==="later"||r.k==="size")?'<button type="button" class="btn sm" data-fit-now="'+r.b.id+'">Fit now</button>':"")+
     (r.k==="skip"?'<button type="button" class="btn sm" data-fit-now="'+r.b.id+'">Needs fitting</button>':"")+
-    (r.k!=="done"&&r.k!=="tailor"?'<button type="button" class="btn sm" data-fit-done="'+r.b.id+'">'+ic("check",14)+'Fitted</button>':"")+
+    (r.k!=="done"&&r.k!=="tailor"?'<button type="button" class="btn sm'+(r.k==="give"&&inShop()?" pri":"")+'" data-fit-done="'+r.b.id+'">'+ic("check",14)+'Fitted</button>':"")+
     (r.k!=="done"&&r.k!=="skip"&&r.k!=="tailor"&&(r.d.work||{}).fitFor!==r.b.id?'<button type="button" class="btn sm" data-fitrm="'+r.b.id+'">'+ic("x",14)+'Not needed</button>':"")+
     (ph?'<a class="btn sm" href="tel:'+esc(ph)+'">Call</a>':"")+
-    '<button type="button" class="btn sm" data-open-b="'+r.b.id+'">Booking</button></div></div>'};
-  return top("Fitting","Every upcoming booking, and where its fitting stands")+
-   '<div class="kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">'+kpi("Needs action",C.todo.length,"give, size or wait",(C.todo.length?"alert ":"")+"click","fitf:todo")+kpi("At tailor",C.tailor.length,"for fitting","click","fitf:tailor")+kpi("Coming up",C.later.length,"later bookings","click","fitf:later")+kpi("Fitted",C.done.length,"ready for pick-up","click","fitf:done")+'</div>'+
+    (role()!=="tailor"?'<button type="button" class="btn sm" data-open-b="'+r.b.id+'">Booking</button>':"")+'</div></div>'};
+  return top("Fitting",inShop()?"Every upcoming booking, its size and when the fitting must be done in the shop":"Every upcoming booking, and where its fitting stands")+
+   '<div class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))">'+kpi("Needs action",C.todo.length,"fit, size or wait",(C.todo.length?"alert ":"")+"click","fitf:todo")+kpi("Coming up",C.later.length,"later bookings","click","fitf:later")+kpi("Fitted",C.done.length,"ready for pick-up","click","fitf:done")+'</div>'+
    '<div class="rf-bar"><div class="chips">'+FL.map(x=>'<button type="button" class="chip'+(f===x[0]?" on":"")+'" data-fitf="'+x[0]+'">'+x[1]+' <span class="rf-n">'+C[x[0]].length+'</span></button>').join("")+'</div></div>'+
-   '<div class="panel">'+(L.length?L.map(row).join(""):'<div class="empty"><b>'+(f==="todo"?"No fitting work right now":"Nothing here")+'</b>'+(f==="todo"?"Bookings that need a fitting in the next "+fitWin()+" days show here. Choose “Fitting” when you accept a return to send the dress straight to the tailor.":"Bookings show here when they match this filter.")+'</div>')+'</div>';
+   '<div class="panel">'+(L.length?L.map(row).join(""):'<div class="empty"><b>'+(f==="todo"?"No fitting work right now":"Nothing here")+'</b>'+(f==="todo"?"Bookings that need a fitting in the next "+fitWin()+" days show here. Choose “Fitting” when you accept a return and pick the next customer\u2019s booking.":"Bookings show here when they match this filter.")+'</div>')+'</div>';
 }
 const C0=id=>C()[id]||{};
+
+/* ---------- Repair: done in the shop ---------- */
+function viewRepairShop(){
+  const t=today(),ym=t.slice(0,7);
+  const rows=list(D()).filter(d=>d.status==="repair").map(d=>{const w=d.work||{};return {d,w,nb:clNextBooking(d.id),lb:w.bookingId&&B()[w.bookingId]}}).sort((a,b)=>(a.nb?a.nb.deliveryDate:"9")<(b.nb?b.nb.deliveryDate:"9")?-1:1);
+  const done=[];list(D()).forEach(d=>(d.fixLog||[]).forEach(f=>done.push(Object.assign({d},f))));done.sort((a,b)=>a.on<b.on?1:-1);
+  const soon=rows.filter(r=>r.nb&&diff(t,r.nb.deliveryDate)<=Math.max(1,bPrep(r.nb))+1).length,mon=done.filter(x=>(x.on||"").slice(0,7)===ym).length;
+  const tab=V.rpTab||"todo";
+  const dl=d=>'<span class="mono muted">'+esc(d.code)+'</span> <b>'+esc(d.name)+'</b>'+(d.color?' <span class="small muted">· '+esc(d.color)+'</span>':"");
+  let body="";
+  if(tab==="todo"){
+    body=rows.length?'<div class="panel">'+rows.map(r=>{const d=r.d,w=r.w;return '<div class="fit-row"><div class="fit-main"><div class="fit-top">'+dl(d)+' '+(r.nb?'<span class="pill '+(clUrgent(r.nb)?"p-bad":"p-info")+'">Next pick-up '+fd(r.nb.deliveryDate)+'</span>':'<span class="pill p-mute">No booking yet</span>')+'</div>'+
+      clPlanLine("repair",d.id)+
+      '<div class="f" style="margin:4px 0 0"><input class="rp-note" data-rpnote="'+d.id+'" value="'+esc(w.note||"")+'" placeholder="What to repair, e.g. zip broken, stitch open on blouse" aria-label="What to repair for '+esc(d.code)+'"></div>'+
+      '<div class="small muted">'+(r.lb?"Back from "+esc(custName(r.lb.customerId))+" ("+esc(BN(r.lb.no))+")":"Added from the shelf")+(w.since?" · since "+fd(w.since):"")+' · after repair: <select class="cl-need" data-clneed="'+d.id+'" aria-label="After repair">'+[["both","dry-clean"],["repair","back on the shelf"]].map(([k,l])=>'<option value="'+k+'"'+((w.need==="both"?"both":"repair")===k?" selected":"")+'>'+l+'</option>').join("")+'</select></div></div>'+
+      '<div class="fit-act"><button type="button" class="btn sm pri" data-shop-fix="'+d.id+'">'+ic("check",14)+'Repaired</button><button type="button" class="btn sm" data-clrm="'+d.id+'">'+ic("x",14)+'Remove</button></div></div>'}).join("")+'</div>'
+     :'<div class="panel"><div class="empty"><b>Nothing to repair</b>When you accept a return and mark something damaged, the dress comes here. You can also add any dress below.</div></div>';
+    const avail=list(D()).filter(d=>["available","booked"].includes(dressState(d.id))||dressState(d.id)==="cleaning"&&!clOpen(d.id)).sort((a,b)=>String(a.code).localeCompare(String(b.code),undefined,{numeric:true}));
+    if(avail.length)body+='<div class="cl-addw"><select id="cl_add" class="cl-addsel" data-sec="repair" aria-label="Add a dress for repair"><option value="">+ Add a dress for repair…</option>'+avail.map(d=>'<option value="'+d.id+'">'+esc(d.code+" · "+d.name)+'</option>').join("")+'</select></div>';
+  }else{
+    body=done.length?'<div class="panel">'+done.slice(0,200).map(x=>'<div class="due-row"><div class="due-main" style="cursor:default"><span>'+dl(x.d)+'<span class="small" style="display:block">'+esc(x.note||"Repair")+'</span><span class="small muted" style="display:block">'+fdw(x.on)+(x.by&&x.by!=="shop"?" · by "+esc(x.by):"")+'</span></span></div></div>').join("")+'</div>'
+     :'<div class="panel"><div class="empty"><b>No repairs yet</b>Every repair done in the shop is listed here.</div></div>';
+  }
+  return top("Repair","Dresses to repair in the shop, before dry-cleaning")+
+   '<div class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))">'+kpi("To repair",rows.length,"in the shop",rows.length?"click":"","rptab:todo")+kpi("Needed soon",soon,"booking coming",soon?"warnk":"")+kpi("Repaired",mon,"this month","click","rptab:hist")+'</div>'+
+   '<div class="toolbar"><div class="seg"><button type="button" class="'+(tab==="todo"?"on":"")+'" data-rptab="todo">To repair <span class="muted">'+rows.length+'</span></button><button type="button" class="'+(tab==="hist"?"on":"")+'" data-rptab="hist">Repaired <span class="muted">'+done.length+'</span></button></div></div>'+body;
+}
 function viewCleaning(){
+  if(V.view==="repair")return viewRepairShop();
   const t=today();
   V.clSec=V.view==="repair"?"repair":"clean";
   const sec=V.clSec,W=CLW[sec];
-  const give=clGive(sec),fits=sec==="repair"?fitGive():[],nGive=give.length+fits.length,outs=clOutBatches(sec),all=list(CL()).filter(b=>!b.cancelled&&clKind(b)===sec).sort((a,b)=>a.sentOn<b.sentOn?1:a.sentOn>b.sentOn?-1:(b.createdAt||0)-(a.createdAt||0));
+  const give=clGive(sec),fits=sec==="repair"&&!inShop()?fitGive():[],nGive=give.length+fits.length,outs=clOutBatches(sec),all=list(CL()).filter(b=>!b.cancelled&&clKind(b)===sec).sort((a,b)=>a.sentOn<b.sentOn?1:a.sentOn>b.sentOn?-1:(b.createdAt||0)-(a.createdAt||0));
   const nOut=outs.reduce((a,bt)=>a+bt.items.filter(i=>!i.back).length,0);
   const late=outs.filter(bt=>clTimeUp(bt)).reduce((a,bt)=>a+bt.items.filter(i=>!i.back).length,0);
   const unpaid=all.reduce((a,bt)=>a+clUnpaid(bt),0),ym=t.slice(0,7);
@@ -1580,7 +1644,7 @@ function viewCleaning(){
   if(tab==="give"){
     const fitRow=x=>{const b=x.b,d=x.d,m=measTxt(bkMeas(b)||{});return '<div class="cl-row"><input type="checkbox" class="cl-chk" value="fit:'+b.id+':'+d.id+'" aria-label="Select '+esc(d.code)+' for fitting"> <span class="cl-m">'+dl(d)+' <span class="pill p-info">Fitting</span>'+clPlanLine("repair","fit:"+b.id+":"+d.id)+'<span class="small" style="display:block">For <b>'+esc(BN(b.no))+'</b> · '+esc(custName(b.customerId))+'</span><span class="small" style="display:block">'+(m?'<b>Size:</b> '+esc(m):'<span class="muted">Size not saved in the booking</span>')+'</span>'+(d.fitNow?'<span class="small muted" style="display:block">Now stitched to: '+esc(d.fitNow.size)+'</span>':"")+'</span><span class="cl-r"><span class="pill '+(clUrgent(b)?"p-bad":"p-info")+'">Pick-up '+fd(b.deliveryDate)+'</span><button type="button" class="btn sm cl-rm" data-fitrm="'+b.id+'" aria-label="Remove fitting for '+esc(BN(b.no))+'">'+ic("x")+'Remove</button></span></div>'};
     body=nGive?'<div class="panel">'+'<label class="cl-row cl-head"><input type="checkbox" id="cl_all"'+'> <span><b>Select all</b> <span class="small muted">· '+nGive+' dress'+(nGive>1?"es":"")+' to give</span></span></label>'+fits.map(fitRow).join("")+
-      give.map(x=>{const d=x.d,w=d.work||{};return '<div class="cl-row"><input type="checkbox" class="cl-chk" value="'+d.id+'" aria-label="Select '+esc(d.code)+'"> <span class="cl-m">'+dl(d)+clPlanLine(sec,d.id)+(sec==="repair"&&w.fitFor&&B()[w.fitFor]?(()=>{const fb=B()[w.fitFor],m=measTxt(bkMeas(fb)||{});return ' <span class="pill p-info">+ Fitting</span><span class="small" style="display:block">Fitting for <b>'+esc(BN(fb.no))+'</b> · '+esc(custName(fb.customerId))+' · pick-up '+fd(fb.deliveryDate)+'</span>'+(m?'<span class="small" style="display:block"><b>Size:</b> '+esc(m)+'</span>':"")})():"")+(sec==="repair"&&w.note?'<span class="small" style="display:block"><b>Fix:</b> '+esc(w.note)+'</span>':"")+'<span class="small muted" style="display:block">'+(x.lb?"Back from "+esc(custName(x.lb.customerId))+" ("+esc(BN(x.lb.no))+")":"Added manually")+(x.since?" · waiting since "+fd(x.since)+(diff(x.since,t)>0?" ("+diff(x.since,t)+" days)":""):"")+'</span>'+needSel(d)+'</span><span class="cl-r">'+nbTxt(x.nb)+'<button type="button" class="btn sm cl-rm" data-clrm="'+d.id+'" aria-label="Remove '+esc(d.code)+' from this list">'+ic("x")+'Remove</button></span></div>'}).join("")+'</div>'+
+      give.map(x=>{const d=x.d,w=d.work||{};return '<div class="cl-row"><input type="checkbox" class="cl-chk" value="'+d.id+'" aria-label="Select '+esc(d.code)+'"> <span class="cl-m">'+dl(d)+clPlanLine(sec,d.id)+(sec==="repair"&&w.fitFor&&B()[w.fitFor]?(()=>{const fb=B()[w.fitFor],m=measTxt(bkMeas(fb)||{});return ' <span class="pill p-info">+ Fitting</span><span class="small" style="display:block">Fitting for <b>'+esc(BN(fb.no))+'</b> · '+esc(custName(fb.customerId))+' · pick-up '+fd(fb.deliveryDate)+'</span>'+(m?'<span class="small" style="display:block"><b>Size:</b> '+esc(m)+'</span>':"")})():"")+(sec==="repair"&&w.note?'<span class="small" style="display:block"><b>Fix:</b> '+esc(w.note)+'</span>':"")+'<span class="small muted" style="display:block">'+(x.lb?"Back from "+esc(custName(x.lb.customerId))+" ("+esc(BN(x.lb.no))+")":"Added manually")+(x.since?" · waiting since "+fd(x.since)+(diff(x.since,t)>0?" ("+diff(x.since,t)+" days)":""):"")+'</span>'+needSel(d)+'</span><span class="cl-r">'+nbTxt(x.nb)+(sec==="repair"&&inShop()?'<button type="button" class="btn sm pri" data-shop-fix="'+d.id+'">'+ic("check",14)+'Repaired in shop</button>':"")+'<button type="button" class="btn sm cl-rm" data-clrm="'+d.id+'" aria-label="Remove '+esc(d.code)+' from this list">'+ic("x")+'Remove</button></span></div>'}).join("")+'</div>'+
       '<div class="cl-bar"><span class="small muted" id="cl_cnt">Tick the dresses you are giving now</span><button type="button" class="btn pri" data-act="cl-give">'+ic(sec==="repair"?"scissors":"truck")+'Give to '+W.who+'</button></div>'
      :'<div class="panel"><div class="empty"><b>Nothing to give right now</b>'+(sec==="repair"?"When you accept a return and choose Repair, the dress comes here. Dresses that need fitting for a booking in the next "+fitWin()+" days also come here. You can also add any dress below.":"When you accept a return, the dress comes here automatically. You can also add any dress below.")+'</div></div>';
     const avail=list(D()).filter(d=>["available","booked"].includes(dressState(d.id))||(sec==="repair"&&dressState(d.id)==="cleaning"&&!clOpen(d.id))).sort((a,b)=>String(a.code).localeCompare(String(b.code),undefined,{numeric:true}));
@@ -1592,7 +1656,7 @@ function viewCleaning(){
       return '<div class="panel" style="margin-bottom:12px"><div class="panel-h"><div><h3>'+esc(bt.cleaner||W.Who)+' <span class="mono muted small">'+esc(bt.no||"")+'</span></h3><div class="small muted">Given '+fdw(bt.sentOn)+' · '+(days?days+' day'+(days===1?"":"s")+' ago':"today")+(bt.expBack?' · expected back '+fdw(bt.expBack)+(bt.expTime?' by '+t12(bt.expTime):""):"")+'</div></div>'+(lt?'<span class="pill p-bad">Late</span>':clTimeUp(bt)?'<span class="pill p-bad">Time is up</span>':bt.expBack===t?'<span class="pill p-warn">Due today'+(bt.expTime?" "+t12(bt.expTime):"")+'</span>':"")+'</div>'+
         its.map(i=>{const d=D()[i.dressId]||{code:"?",name:"Deleted dress"},nb=clNextBooking(i.dressId),risk=nb&&(clUrgent(nb)||(bt.expBack&&bt.expBack>=nb.deliveryDate));
           return '<label class="cl-row"><input type="checkbox" class="cl-ochk" data-bt="'+bt.id+'" value="'+i.dressId+'"> <span class="cl-m">'+dl(d)+(i.kind==="repair"&&sec!=="repair"?' <span class="pill p-bad">Repair</span>':"")+(i.kind==="fit"||i.fitFor?' <span class="pill p-info">'+(i.fitFor?"+ ":"")+'Fitting</span><span class="small" style="display:block">'+fitFor(i)+'</span>'+(i.size?'<span class="small" style="display:block"><b>Size:</b> '+esc(i.size)+'</span>':""):"")+(i.note?'<span class="small" style="display:block"><b>'+(i.kind==="fit"?"Note":"Fix")+':</b> '+esc(i.note)+'</span>':"")+(i.then==="clean"?'<span class="small muted" style="display:block">Goes to dry-cleaning after this</span>':"")+(risk?'<span class="small neg" style="display:block"><b>Needed for booking '+esc(BN(nb.no))+' on '+fd(nb.deliveryDate)+'. Get it back in time.</b></span>':"")+'</span><span class="cl-r">'+nbTxt(nb)+'</span></label>'}).join("")+
-        '<div class="cl-bar" style="border-top:1px solid var(--line);padding:10px 14px;margin:0"><button type="button" class="btn sm" data-cl-del="'+bt.id+'" aria-label="Delete this trip">'+ic("trash")+'Delete</button><button type="button" class="btn sm" data-cl-slip="'+bt.id+'">'+ic("print")+'Slip</button><button type="button" class="btn sm" data-cl-recv="'+bt.id+'" data-cl-sel="1">Received ticked</button><button type="button" class="btn sm pri" data-cl-recv="'+bt.id+'">'+ic("back")+'All received</button></div></div>'}).join("")
+        '<div class="cl-bar" style="border-top:1px solid var(--line);padding:10px 14px;margin:0"><button type="button" class="btn sm" data-cl-del="'+bt.id+'" aria-label="Delete this trip">'+ic("trash")+'Delete</button>'+SB('data-cl-slip="'+bt.id+'"',"slip")+'<button type="button" class="btn sm" data-cl-recv="'+bt.id+'" data-cl-sel="1">Received ticked</button><button type="button" class="btn sm pri" data-cl-recv="'+bt.id+'">'+ic("back")+'All received</button></div></div>'}).join("")
      :'<div class="panel"><div class="empty"><b>No dresses '+(sec==="repair"?"at the tailor":"at the cleaner")+'</b>Dresses you give from the "To give" tab show here until they come back.</div></div>';
   }
   if(tab==="hist"){
@@ -1603,7 +1667,7 @@ function viewCleaning(){
     body='<div class="toolbar" style="margin-bottom:8px"><div class="f" style="min-width:180px"><select id="cl_mon" data-sec="'+sec+'" aria-label="Month">'+mons.concat(["all"]).map(m=>'<option value="'+m+'"'+(m===mon?" selected":"")+'>'+ml(m)+'</option>').join("")+'</select></div></div>'+
      (Object.keys(byC).length?'<div class="label" style="margin-bottom:6px">By '+W.who+' · '+ml(mon)+'</div><div class="panel tbl-wrap" style="margin-bottom:14px"><table class="cl-rep"><thead><tr><th>'+W.Who+'</th><th class="num">Dresses</th><th class="num">Cost</th><th class="num">Avg days</th><th class="num">Late</th><th></th></tr></thead><tbody>'+Object.keys(byC).sort((a,b)=>byC[b].n-byC[a].n).map(k=>{const o=byC[k];return '<tr><td><b>'+esc(k)+'</b><div class="small muted">'+o.trips+' trip'+(o.trips>1?"s":"")+'</div></td><td class="num">'+o.n+'</td><td class="num">'+inr(o.cost)+(o.n?'<div class="small muted">'+inr(Math.round(o.cost/o.n))+' / dress</div>':"")+'</td><td class="num">'+(o.back?(o.days/o.back).toFixed(1):"—")+'</td><td class="num">'+(o.late?'<span class="pill p-bad">'+o.late+'</span>':'<span class="pill p-ok">0</span>')+'</td><td>'+(o.unpaid?'<span class="pill p-bad">'+inr(o.unpaid)+' to pay</span>':'<span class="pill p-ok">Settled</span>')+'</td></tr>'}).join("")+'</tbody></table></div>':'<div class="panel" style="margin-bottom:14px"><div class="empty"><b>Nothing in '+ml(mon)+'</b>Pick another month above.</div></div>')+
      (all.length?'<div class="label" style="margin-bottom:6px">All trips</div><div class="panel">'+all.map(bt=>{const n=(bt.items||[]).length,back=(bt.items||[]).filter(i=>i.back).length,cost=clCost(bt),up=clUnpaid(bt);
-       return '<div class="due-row"><div class="due-main" style="cursor:default"><span><b>'+esc(bt.cleaner||W.Who)+'</b> <span class="mono muted">'+esc(bt.no||"")+'</span><span class="small muted" style="display:block">Given '+fd(bt.sentOn)+(back===n?" · all back":(" · "+back+"/"+n+" back"))+'</span><span class="small" style="display:block">'+esc((bt.items||[]).map(i=>(D()[i.dressId]||{}).code||"?").join(", "))+'</span></span><span class="due-amt"><b class="num">'+(cost?inr(cost):"—")+'</b>'+(up?'<span class="pill p-bad">'+inr(up)+' unpaid</span>':cost?'<span class="pill p-ok">Paid'+(()=>{const ms=[...new Set((bt.charges||[]).filter(c=>c.paid).map(c=>c.mode||"mode not noted"))];return ms.length?" · "+esc(ms.join(", ")):""})()+'</span>':"")+'</span></div><div class="due-act">'+(up?'<button type="button" class="btn sm pri" data-cl-pay="'+bt.id+'">'+ic("wallet")+'Pay</button>':"")+'<button type="button" class="btn sm" data-cl-slip="'+bt.id+'">'+ic("print")+'Slip</button><button type="button" class="btn sm" data-cl-del="'+bt.id+'" aria-label="Delete this trip">'+ic("trash")+'Delete</button></div></div>'}).join("")+'</div>'
+       return '<div class="due-row"><div class="due-main" style="cursor:default"><span><b>'+esc(bt.cleaner||W.Who)+'</b> <span class="mono muted">'+esc(bt.no||"")+'</span><span class="small muted" style="display:block">Given '+fd(bt.sentOn)+(back===n?" · all back":(" · "+back+"/"+n+" back"))+'</span><span class="small" style="display:block">'+esc((bt.items||[]).map(i=>(D()[i.dressId]||{}).code||"?").join(", "))+'</span></span><span class="due-amt"><b class="num">'+(cost?inr(cost):"—")+'</b>'+(up?'<span class="pill p-bad">'+inr(up)+' unpaid</span>':cost?'<span class="pill p-ok">Paid'+(()=>{const ms=[...new Set((bt.charges||[]).filter(c=>c.paid).map(c=>c.mode||"mode not noted"))];return ms.length?" · "+esc(ms.join(", ")):""})()+'</span>':"")+'</span></div><div class="due-act">'+(up?'<button type="button" class="btn sm pri" data-cl-pay="'+bt.id+'">'+ic("wallet")+'Pay</button>':"")+''+SB('data-cl-slip="'+bt.id+'"',"slip")+'<button type="button" class="btn sm" data-cl-del="'+bt.id+'" aria-label="Delete this trip">'+ic("trash")+'Delete</button></div></div>'}).join("")+'</div>'
      :'<div class="panel"><div class="empty"><b>No history yet</b>Every trip to the '+W.who+' is saved here with its cost.</div></div>');
   }
   const cnt=k=>clGive(k).length+clOutCount(k);
@@ -1699,7 +1763,7 @@ function clPayForm(bid){
 /* fitting details for slips: one line per measurement */
 function fitSlipRows(b,did,was,note){const R=[],m=bkMeas(b)||{},d=D()[did]||{};
   R.push({t:"lr",l:"Booking",r:BN(b.no),b:1,z:"s"},{t:"lr",l:"Customer",r:custName(b.customerId),z:"s"});
-  R.push({t:"lr",l:"Pick-up",r:fdw(b.deliveryDate),b:1,z:"s"});if(b.eventDate)R.push({t:"lr",l:"Function"+(b.func?" ("+b.func+")":""),r:fdw(b.eventDate),z:"s"});
+  const fb=fitBy(b);R.push({t:"lr",l:"Pick-up",r:pickWhen(b),b:1,z:"s"},{t:"lr",l:"Fitting done by",r:fdw(fb.day)+", before "+t12(fb.time),b:1});if(b.eventDate)R.push({t:"lr",l:"Function"+(b.func?" ("+b.func+")":""),r:fdw(b.eventDate),z:"s"});
   const ms=MEAS.filter(([k])=>m[k]);
   if(ms.length){R.push({t:"p",x:"SIZE (inches)",z:"s",b:1});ms.forEach(([k,l])=>R.push({t:"lr",l:"  "+l,r:String(m[k]),b:1}))}
   else R.push({t:"p",x:"SIZE: not saved. Take the customer's size first.",z:"s",b:1});
@@ -1708,17 +1772,32 @@ function fitSlipRows(b,did,was,note){const R=[],m=bkMeas(b)||{},d=D()[did]||{};
   if(was)R.push({t:"lr",l:"Now stitched to",r:was,z:"s"});
   const fn=[note,(b.fit||{}).note].filter(Boolean).join(" · ");if(fn)R.push({t:"p",x:"Fitting note: "+fn,z:"s",b:1});
   return R}
+function readyMsg(bid){const nb=B()[bid],c=C()[nb.customerId]||{},txt=waMsg(nb,"pickup"),bt=waBtn(c,txt,false,"Send on WhatsApp",nb.id+"|pickup",false);
+       const el=modal({title:"Tell "+esc(c.name||"the customer")+" the dress is ready",body:'<p style="margin:0 0 10px">Pick-up: <b>'+esc(pickWhen(nb))+'</b>. The message also asks her to try the dress on at the shop to check size and fitting.</p><div class="small wa-prev">'+waHtml(txt)+'</div>'+(bt?'':'<div class="warnbox" style="margin-top:10px">No phone number saved for this customer.</div>'),foot:'<button type="button" class="btn" data-c="0">Later</button>'+bt,autofocus:false});
+       el.querySelectorAll("[data-c]").forEach(x=>x.addEventListener("click",()=>closeTop()));el.querySelectorAll("a.wa,.wa-menu a").forEach(x=>x.addEventListener("click",()=>setTimeout(closeTop,300)))}
+
+/* size only (for the person doing the fitting) */
+function sizeForm(bid){const b=B()[bid];if(!b)return;const m=Object.assign({},bkMeas(b)||{});
+  const el=modal({title:"Size · "+esc(custName(b.customerId))+" · "+esc(BN(b.no)),body:'<div class="fgrid">'+MEAS.map(([k,l])=>'<div class="f"><label for="sz_'+k+'">'+l+' (inches)</label><input id="sz_'+k+'" inputmode="decimal" value="'+esc(m[k]||"")+'"></div>').join("")+
+    '<div class="f full" style="grid-column:1/-1"><label for="sz_note">Size note</label><input id="sz_note" value="'+esc(m.note||"")+'" placeholder="e.g. blouse sleeves 2 inch shorter"></div>'+
+    '<div class="f full" style="grid-column:1/-1"><label for="sz_fit">Fitting note</label><input id="sz_fit" value="'+esc((b.fit||{}).note||"")+'" placeholder="e.g. waist 1 inch in"></div></div>',
+    foot:'<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" data-ok>Save size</button>'});
+  el.querySelector("[data-ok]").addEventListener("click",async()=>{const nm={};MEAS.forEach(([k])=>{const v=val(el,"sz_"+k);if(v)nm[k]=v});const nt=val(el,"sz_note");if(nt)nm.note=nt;
+    if(!Object.keys(nm).filter(k=>k!=="note").length){toast("Enter at least one size","bad");return}
+    const q=clone(B()[bid]);delete q.id;q.meas=nm;q.fit=Object.assign({},q.fit||{},{note:val(el,"sz_fit")});
+    try{LOGCTX.reason="Size updated";await put("bookings",bid,q);const c=C()[b.customerId];if(c){const co=clone(c);delete co.id;co.meas=nm;try{await put("customers",b.customerId,co)}catch(e){}}closeTop();render();toast("Size saved")}catch(e){}finally{LOGCTX.reason=""}});
+}
 function fitSlip(bid,did){const st=ST(),b=B()[bid];if(!b)return;const R=[],now=new Date();
   R.push({t:"c",x:st.shop,z:"xl",b:1});const sub=[st.city,st.phone].filter(Boolean).join(" · ");if(sub)R.push({t:"c",x:sub,z:"s"});
   R.push({t:"hr"},{t:"c",x:"FITTING SLIP",z:"l",b:1},{t:"lr",l:"Printed",r:fdy(today())+" "+pad(now.getHours())+":"+pad(now.getMinutes()),z:"s"},{t:"hr"});
   const ids=did?[did]:(b.items||[]).map(i=>i.dressId).filter(x=>fitDressOk(D()[x]));
-  const back=addDays(b.deliveryDate,-1);
+
   ids.forEach((x,k)=>{const d=D()[x]||{};R.push({t:"lr",l:(ids.length>1?(k+1)+". ":"")+(d.code||"")+" "+(d.name||""),r:"☐",b:1});const det=[d.color,d.category].filter(Boolean).join(" · ");if(det)R.push({t:"p",x:det,z:"s"});
-    fitSlipRows(b,x,d.fitNow?d.fitNow.size:"","").forEach(r=>R.push(r));if(k<ids.length-1)R.push({t:"hr"})});
-  R.push({t:"hr"},{t:"lr",l:"Fitting done by",r:fdw(back<today()?today():back),b:1});
-  R.push({t:"p",x:"Tailor: write any change made to the size here:",z:"s"},{t:"gap"},{t:"gap"});
-  R.push({t:"sig",l:"Tailor",r:"Shop"});
-  slipPreviewModal("Fitting slip · "+BN(b.no),R,"fitting-"+String(BN(b.no)).replace(/[^A-Za-z0-9-]/g,"")+"-"+today(),"Give this to the tailor with the dress. It has the customer's full size.")}
+    fitSlipRows(b,x,d.fitNow?d.fitNow.size:"","").filter(r=>r.l!=="Fitting done by").forEach(r=>R.push(r));if(k<ids.length-1)R.push({t:"hr"})});
+  {const fb=fitBy(b);R.push({t:"hr"},{t:"c",x:"FITTING DONE BY",z:"s",b:1},{t:"c",x:fdw(fb.day)+", before "+t12(fb.time),z:"l",b:1})}
+  R.push({t:"p",x:"Write any change made to the size here:",z:"s"},{t:"gap"},{t:"gap"});
+  R.push({t:"sig",l:"Fitted by",r:"Checked by"});
+  slipPreviewModal("Fitting slip · "+BN(b.no),R,"fitting-"+String(BN(b.no)).replace(/[^A-Za-z0-9-]/g,"")+"-"+today(),"Give this with the dress to the person doing the fitting. It has the customer's full size.")}
 function clSlipRows(bid){
   const st=ST(),bt=CL()[bid]||{},W=CLW[clKind(bt)],R=[],now=new Date();
   R.push({t:"c",x:st.shop,z:"xl",b:1});
@@ -1777,7 +1856,7 @@ function viewDaybook(){
       '<span class="small muted" style="display:block">'+esc([hhmm(y.x.at),y.c.phone,bookingDresses(y.b)].filter(Boolean).join(" · "))+'</span>'+
       '<span class="small" style="display:block">'+esc(rf?"Refund":(y.x.kind||"Payment"))+(y.x.ref?' · Ref '+esc(y.x.ref):"")+(y.x.note?' · '+esc(y.x.note):"")+'</span></span>'+
       '<span class="due-amt"><b class="num '+(rf?"neg":"pos")+'">'+(rf?"− ":"+ ")+inr(Math.abs(y.amt))+'</b>'+mp(y.mode)+'</span></button>'+
-      '<div class="due-act"><button type="button" class="btn sm" data-rcpt-b="'+y.b.id+'" data-rcpt-i="'+y.pi+'">'+ic("print")+'Receipt</button></div></div>'};
+      '<div class="due-act">'+SB('data-rcpt-b="'+y.b.id+'" data-rcpt-i="'+y.pi+'"',"receipt")+'</div></div>'};
   const isT=d===t;
   return top("Day book",(isT?"Today · ":"")+fdw(d)+" · every payment of the day with its receipt",
     '<button type="button" class="btn" data-dbd="-1" aria-label="Previous day">'+ic("left")+'</button><input id="db_date" type="date" value="'+esc(d)+'" aria-label="Date" style="width:auto"><button type="button" class="btn" data-dbd="1" aria-label="Next day"'+(d>=t?" disabled":"")+'>'+ic("right")+'</button>'+(isT?"":'<button type="button" class="btn" data-dbd="0">Today</button>'))+
@@ -1792,8 +1871,8 @@ function viewDaybook(){
    '<div class="calc" style="margin-bottom:14px"><span class="label">This day’s money movement (not your balance)</span><div class="ln"><span class="muted">Cash: came in '+inr(T.inCash)+' − refunds '+inr(T.rfCash)+' − paid out '+inr(T.exCash)+'</span><b class="num'+(T.netCash<0?" neg":T.netCash>0?" pos":"")+'">'+(T.netCash>0?"+":"")+inr(T.netCash)+'</b></div><div class="ln"><span class="muted">Online: came in '+inr(T.inOnl)+' − refunds '+inr(T.rfOnl)+' − paid out '+inr(T.exOnl)+'</span><b class="num'+(T.netOnl<0?" neg":T.netOnl>0?" pos":"")+'">'+(T.netOnl>0?"+":"")+inr(T.netOnl)+'</b></div><div class="ln tot"><span>Net for the day</span><b class="num">'+(T.net>0?"+":"")+inr(T.net)+'</b></div>'+(T.exPetty||T.ptIn?'<div class="ln"><span class="muted">Petty cash box: added '+inr(T.ptIn)+' − small expenses '+inr(T.exPetty)+'</span><span class="num">'+(T.ptIn-T.exPetty>0?"+":"")+inr(T.ptIn-T.exPetty)+'</span></div>':"")+'<p class="small muted" style="margin:6px 0 0">A minus here only means more money went out than came in on this day. What you actually have is in <b>Overall balance</b> below.</p></div>'+
    (()=>{const b=moneyBal();const cbs=list(CB()).filter(c=>c.date===d);return '<div class="calc" style="margin-bottom:14px"><div class="h-head"><span class="label">Overall balance now</span><button type="button" class="btn sm" data-act="cash-entry">'+ic("wallet")+'Cash / bank entry</button></div><div class="bal-box"><div class="bal-c on"><span class="label">Cash in hand</span><b class="num'+(b.cash<0?" neg":"")+'">'+inr(b.cash)+'</b></div><div class="bal-c on"><span class="label">Bank / UPI</span><b class="num'+(b.online<0?" neg":"")+'">'+inr(b.online)+'</b></div><div class="bal-c on petty-c"><span class="label">Petty cash box</span><b class="num'+(b.petty<0?" neg":"")+'">'+inr(b.petty)+'</b><span class="petty-b"><button type="button" class="btn sm" data-act="petty-add">'+ic("plus")+'Add money</button><button type="button" class="btn sm pri" data-act="petty-exp">'+ic("receipt")+'Small expense</button></span></div></div>'+(cbs.length?'<div class="small">'+cbs.map(c=>esc({deposit:"Cash deposited in bank",withdraw:"Cash withdrawn from bank",add:"Owner added money",take:"Owner took money",petty:c.from==="owner"?"Petty cash added (owner's money)":"Petty cash filled from galla",pettyback:"Petty cash returned to galla"}[c.type]||c.type)+(c.type==="add"||c.type==="take"?" ("+(c.where==="cash"?"cash":"bank/UPI")+")":"")+" · "+inr(c.amount)+(c.note?" · "+esc(c.note):"")+' <button type="button" class="linkish" data-del-cb="'+c.id+'">delete</button>').join("<br>")+'</div>':"")+(!b.set?'<div class="small muted">Set opening cash and bank balance in <button type="button" class="linkish" data-go="settings">Settings</button> for exact figures.</div>':"")+'</div>'})()+
    '<div class="toolbar"><label class="search">'+ic("search")+'<input id="dbq" type="search" placeholder="Name, phone, booking no., UPI ref…" value="'+esc(V.dbq||"")+'" aria-label="Search payments"></label>'+
-    '<button type="button" class="btn sm" data-act="db-slip" style="margin-left:auto">'+ic("print")+'Day summary</button>'+
-    (dd.pays.length?'<button type="button" class="btn sm" data-act="db-all">'+ic("print")+'Print all receipts</button>':"")+
+    '<span style="margin-left:auto"></span>'+SB('data-act="db-slip"',"day summary")+
+    (dd.pays.length?SB('data-act="db-all"',"all receipts"):"")+
     '<button type="button" class="btn sm" data-act="db-csv">'+ic("down")+'Excel (CSV)</button></div>'+
    '<div class="label" style="margin:4px 0 6px">Payments <span class="muted">· '+pays.length+'</span></div>'+
    (pays.length?'<div class="panel">'+pays.map(prow).join("")+'</div>':'<div class="panel"><div class="empty"><b>'+(dd.pays.length?"No payments match the search":"No payments on this day")+'</b>Advances, balances, late fees and refunds recorded on this date show here, each with its receipt.</div></div>')+
@@ -1836,8 +1915,11 @@ function dayCSV(d){
   dd.outs.forEach(y=>L.push([d,"","Commission","",y.p.name,y.p.phone||"","Commission","","",-y.amt,y.o.note||""]));
   return "﻿"+["Date","Time","Type","Booking No.","Name","Phone","For","Mode","Ref","Amount","Note"].join(",")+"\n"+L.map(r=>r.map(q).join(",")).join("\n");
 }
+let SLIP_GO=null;document.addEventListener("click",e=>{const x=e.target.closest&&e.target.closest("[data-go-slip]");SLIP_GO=x?x.dataset.goSlip:null},true);
+const SB=(attrs,label,cls)=>'<span class="slip2"><button type="button" class="btn '+(cls||"sm")+'" '+attrs+' data-go-slip="print">'+ic("print",14)+'Print '+label+'</button><button type="button" class="btn '+(cls||"sm")+'" '+attrs+' data-go-slip="pdf" title="Download '+label+' as PDF">'+ic("down",14)+'Download</button></span>';
+function slipGo(rows,w,cv,base,msg){const g=SLIP_GO;SLIP_GO=null;if(g==="print"){printSlip(slipHTML(rows,w));return true}if(g==="pdf"){pdfDl(cv,base,w,msg||"Downloading PDF");return true}return false}
 function slipPreviewModal(title,rows,base,note){
-  const w=N(ST().slipWidth)===80?80:58,cv=slipCanvas(rows,w),url=cv.toDataURL("image/png");
+  const w=N(ST().slipWidth)===80?80:58,cv=slipCanvas(rows,w);if(slipGo(rows,w,cv,base))return;const url=cv.toDataURL("image/png");
   let canShare=false;try{canShare=!!(navigator.canShare&&navigator.canShare({files:[new File([new Blob(["x"])],"a.png",{type:"image/png"})]}))}catch(e){}
   const el=modal({title,autofocus:false,body:'<div class="slip-prev"><img src="'+url+'" alt="Preview"></div>'+(note?'<p class="small muted" style="margin:0">'+note+'</p>':""),
    foot:'<button type="button" class="btn" data-close>Close</button><button type="button" class="btn" data-sd>'+ic("down")+'Download PDF</button>'+(canShare?'<button type="button" class="btn" data-ss>'+ic("share")+'Share</button>':"")+'<button type="button" class="btn pri" data-sp>'+ic("print")+'Print</button>'});
@@ -1940,8 +2022,8 @@ function diffBooking(o,n){
   if(!o.invNo&&n.invNo)txt("invoice","Invoice "+IN(n.invNo)+" made"+(n.invDate?" · "+fd(n.invDate):""));
   {const a=o.fit||{},b2=n.fit||{};if(!a.done&&b2.done)txt("fit","Fitting done"+(b2.by?" by "+b2.by:"")+(N(b2.cost)?" · tailor charge "+inr(b2.cost):""));
    else if(a.done&&b2.done&&N(a.cost)!==N(b2.cost))add("fit","Fitting charge",inr(a.cost),inr(b2.cost));
-   else if(!a.noTailor&&b2.noTailor)txt("fit","Fitting will be done in the shop (removed from the tailor list)");
-   else if(!a.want&&b2.want)txt("fit","Added to the tailor's fitting list")}
+   else if(!a.noTailor&&b2.noTailor)txt("fit","Marked as no fitting needed");
+   else if(!a.want&&b2.want)txt("fit","Added to the fitting list")}
   if((n.outPhotos||[]).length>(o.outPhotos||[]).length)txt("photo",(n.outPhotos.length-(o.outPhotos||[]).length)+" photo(s) taken at handover");
   if(JSON.stringify(cleanMeas(o.meas||{}))!==JSON.stringify(cleanMeas(n.meas||{})))add("edit","Measurements",measTxt(o.meas||{})||"none",measTxt(n.meas||{})||"none");
   // anything else
@@ -1953,7 +2035,7 @@ function withLog(id,obj){
   const old=S.data.bookings[id];
   const ch=diffBooking(old,obj);
   const o=Object.assign({},obj);o.log=((old&&old.log)||obj.log||[]).slice();
-  if(ch.length){o.log.push({at:Date.now(),ch,reason:LOGCTX.reason||""});if(o.log.length>400)o.log=o.log.slice(-400)}
+  if(ch.length){o.log.push({at:Date.now(),ch,reason:LOGCTX.reason||"",by:isOwner()?"":meName()});if(o.log.length>400)o.log=o.log.slice(-400)}
   LOGCTX.reason="";
   return o;
 }
@@ -1971,7 +2053,7 @@ function hTime(at){const d=new Date(at);return fdy(ymd(d))+", "+pad(d.getHours()
 function hAgo(at){const m=Math.round((Date.now()-at)/60000);if(m<1)return "just now";if(m<60)return m+" min ago";const h=Math.round(m/60);if(h<24)return h+" hr ago";const d=Math.round(h/24);return d===1?"yesterday":d+" days ago"}
 function hEntry(e,extra){
   const ks=eKinds(e),main=ks.find(k=>k!=="create")||ks[0]||"edit",h=HK[main]||HK.edit;
-  return '<div class="h-ent"><span class="h-dot '+h[1]+'">'+ic(h[2])+'</span><div class="h-body"><div class="h-top">'+(extra||"")+'<b>'+hTime(e.at)+'</b><span class="small muted">'+hAgo(e.at)+'</span>'+ks.map(k=>'<span class="pill '+(HK[k]||HK.edit)[1]+'">'+(HK[k]||HK.edit)[0]+'</span>').join("")+'</div><ul class="h-list">'+(e.ch||[]).map(hLine).join("")+'</ul>'+(e.reason?'<div class="h-why"><b>Reason:</b> '+esc(e.reason)+'</div>':"")+'</div></div>';
+  return '<div class="h-ent"><span class="h-dot '+h[1]+'">'+ic(h[2])+'</span><div class="h-body"><div class="h-top">'+(extra||"")+'<b>'+hTime(e.at)+'</b><span class="small muted">'+hAgo(e.at)+'</span>'+ks.map(k=>'<span class="pill '+(HK[k]||HK.edit)[1]+'">'+(HK[k]||HK.edit)[0]+'</span>').join("")+'</div><ul class="h-list">'+(e.ch||[]).map(hLine).join("")+'</ul>'+(e.reason?'<div class="h-why"><b>Reason:</b> '+esc(e.reason)+'</div>':"")+(e.by?'<div class="h-why"><b>By:</b> '+esc(e.by)+'</div>':"")+'</div></div>';
 }
 /* dry-clean / repair costs are shown only in "Your profit", not in the history */
 function hLog(b){return (b.log||[]).map(e=>{const ch=(e.ch||[]).filter(c=>!/^Costs: dry-clean/.test(c.t||""));return ch.length===(e.ch||[]).length?e:Object.assign({},e,{ch})}).filter(e=>(e.ch||[]).length||e.reason)}
@@ -2295,6 +2377,62 @@ function viewAccounts(){
 }
 
 /* ---------- Settings ---------- */
+
+/* ---------- Staff (owner only) ---------- */
+function rulesText(){const own=ALLOW.map(e=>"'"+String(e).toLowerCase()+"'").join(", ");
+return `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null && request.auth.token.email != null; }
+    function myEmail() { return request.auth.token.email.lower(); }
+    function isOwner() { return signedIn() && myEmail() in [${own}]; }
+    function staffPath() { return /databases/$(database)/documents/staff/$(myEmail()); }
+    function isStaff() { return signedIn() && request.auth.token.email_verified == true && exists(staffPath()) && get(staffPath()).data.active == true; }
+    function hasRole(r) { return isStaff() && get(staffPath()).data.role in r; }
+
+    // staff list: only the owner changes it; each staff member can read their own entry
+    match /staff/{email} {
+      allow read: if isOwner() || (signedIn() && myEmail() == email);
+      allow write: if isOwner();
+    }
+    match /{col}/{id} {
+      allow read: if isOwner()
+        || (hasRole(['manager']) && col != 'staff')
+        || (hasRole(['sales']) && col in ['dresses','customers','bookings','settings','cleanings','partners'])
+        || (hasRole(['tailor']) && col in ['dresses','customers','bookings','settings']);
+      allow create, update: if isOwner()
+        || (hasRole(['manager']) && !(col in ['staff','settings','deleted']))
+        || (hasRole(['sales']) && col in ['dresses','customers','bookings','cleanings'])
+        || (hasRole(['tailor']) && col in ['dresses','customers','bookings']);
+      allow delete: if isOwner();
+    }
+  }
+}`}
+function staffPanel(){if(!isOwner())return "";const RO={manager:0,sales:1,tailor:2};const L=list(S.data.staff||{}).sort((a,b)=>(a.active===false)-(b.active===false)||(RO[a.role]-RO[b.role])||String(a.name).localeCompare(String(b.name)));
+  return '<div class="panel" style="margin-top:16px"><div class="panel-h"><h3>Staff</h3><button type="button" class="btn sm pri" data-act="staff-add">'+ic("plus",14)+'Add staff</button></div><div class="panel-b">'+
+   '<p class="small muted" style="margin:0 0 10px">Each staff member signs in on their own phone with their own Google account. They see only what their role allows. Only you can delete anything or change settings. Every change they make to a booking is saved with their name.</p>'+
+   '<div class="small" style="margin:0 0 8px"><b>Owner:</b> 1 (you) · <b>Manager:</b> '+L.filter(x=>x.role==="manager"&&x.active!==false).length+' of 1 · <b>Sales team:</b> '+L.filter(x=>x.role==="sales"&&x.active!==false).length+' · <b>Tailor team:</b> '+L.filter(x=>x.role==="tailor"&&x.active!==false).length+'</div>'+
+   (L.length?'<div class="hist">'+L.map(x=>'<div class="due-row"><div class="due-main" data-staff-edit="'+esc(x.id)+'"><span><b>'+esc(x.name||x.id)+'</b> <span class="pill '+(x.active===false?"p-mute":"p-info")+'">'+(x.active===false?"Turned off":esc((ROLE_INFO[x.role]||{}).name||x.role))+'</span><span class="small muted" style="display:block">'+esc(x.id)+(x.phone?" · "+esc(x.phone):"")+'</span></span></div></div>').join("")+'</div>':'<div class="empty" style="padding:14px"><b>No staff yet</b>Tap "Add staff" and enter their Google email.</div>')+
+   '<details style="margin-top:12px"><summary class="small"><b>Roles: who can do what</b></summary><div class="small" style="margin-top:8px;line-height:1.6">'+["owner","manager","sales","tailor"].map(r=>'<div><b>'+ROLE_INFO[r].name+':</b> '+ROLE_INFO[r].desc+'</div>').join("")+'</div></details>'+
+   '<details style="margin-top:8px"><summary class="small"><b>One-time setup: Firebase rules for staff</b></summary><div class="small" style="margin-top:8px;line-height:1.6">Open <b>console.firebase.google.com</b> → your project → <b>Firestore Database → Rules</b>. Delete the old rules, paste these, and tap <b>Publish</b>. Without this, staff cannot open the ledger.</div><textarea id="st_rules" readonly rows="10" style="width:100%;font-family:monospace;font-size:11px;margin-top:6px">'+esc(rulesText())+'</textarea><button type="button" class="btn sm" data-act="copy-rules" style="margin-top:6px">'+ic("copy",14)+'Copy rules</button></details>'+
+  '</div></div>'}
+function staffForm(id){const x=id?(S.data.staff||{})[id]||{}:{};
+  const el=modal({title:id?"Edit staff":"Add staff",body:'<div class="fgrid">'+
+   '<div class="f"><label for="sf_name">Name</label><input id="sf_name" value="'+esc(x.name||"")+'" placeholder="e.g. Pooja"></div>'+
+   '<div class="f"><label for="sf_phone">Phone</label><input id="sf_phone" type="tel" inputmode="tel" value="'+esc(x.phone||"")+'"></div>'+
+   '<div class="f full" style="grid-column:1/-1"><label for="sf_email">Google email (Gmail) they sign in with</label><input id="sf_email" type="email" inputmode="email" value="'+esc(id||"")+'"'+(id?" readonly":"")+' placeholder="name@gmail.com"><span class="hint">'+(id?"To change the email, turn this one off and add a new entry.":"They tap “Sign in with Google” on their phone and choose this account.")+'</span></div>'+
+   '<div class="f full" style="grid-column:1/-1"><label>Role</label>'+["manager","sales","tailor"].map(r=>'<label class="chk" style="margin:4px 0"><input type="radio" name="sf_role" value="'+r+'"'+((x.role||"sales")===r?" checked":"")+'> <span><b>'+ROLE_INFO[r].name+'</b><br><span class="small muted">'+ROLE_INFO[r].desc+'</span></span></label>').join("")+'</div>'+
+   (id?'<label class="chk full" style="grid-column:1/-1"><input type="checkbox" id="sf_active"'+(x.active===false?"":" checked")+'> <span><b>Can sign in</b><br><span class="small muted">Untick when someone leaves. They cannot open the ledger again.</span></span></label>':"")+
+   '</div>',foot:'<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" data-ok>Save</button>'});
+  el.querySelector("[data-ok]").addEventListener("click",async()=>{const name=val(el,"sf_name"),em=val(el,"sf_email").toLowerCase(),r=(el.querySelector('input[name="sf_role"]:checked')||{}).value||"sales";
+    if(!name){toast("Enter a name","bad");return}if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){toast("Enter a valid email","bad");return}
+    if(ALLOW.includes(em)){toast("This is the owner's email","bad");return}
+    if(!id&&(S.data.staff||{})[em]){toast("This email is already added","bad");return}
+    if(r==="manager"&&(id?(el.querySelector("#sf_active")||{}).checked:true)){const other=list(S.data.staff||{}).find(x=>x.id!==em&&x.role==="manager"&&x.active!==false);if(other){toast("There can be only one Manager. "+(other.name||other.id)+" is the Manager now. Change or turn off that entry first.","bad");return}}
+    if(id&&!await pinOK("Changing staff needs the 4-digit PIN."))return;
+    const o={name,phone:val(el,"sf_phone"),role:r,active:id?!!(el.querySelector("#sf_active")||{}).checked:true,addedOn:x.addedOn||today(),updatedAt:Date.now()};
+    try{await put("staff",em,o);closeTop();toast(id?"Saved":name+" added. Now they can sign in with "+em)}catch(e){}});
+}
 function viewSettings(){
   const s=ST();
   const f=(id,l,v,h,type)=>'<div class="f"><label for="s_'+id+'">'+l+'</label><input id="s_'+id+'" type="'+(type||"number")+'" value="'+esc(v)+'"'+(type?"":' inputmode="numeric" min="0"')+'>'+(h?'<span class="hint">'+h+'</span>':"")+'</div>';
@@ -2309,7 +2447,7 @@ function viewSettings(){
   '</div></div></div>'+
   '<div class="panel"><div class="panel-h"><h3>Per dress, per booking</h3></div><div class="panel-b"><div class="fgrid">'+
    f("clean","Dry-clean (₹ per dress)",s.clean)+f("repair","Minor repair (₹ per dress)",s.repair)+f("pack","Packing cover (₹)",s.pack)+f("lateFee","Late fee (₹ per day)",s.lateFee)+
-   f("pickTime","Pick-up time (in the ready message)",s.pickTime==null?"5 to 8 PM":s.pickTime,"Shown in the WhatsApp message when the dress is ready, e.g. 5 to 8 PM. Leave blank to not mention a time","text")+f("pickBefore","Pick-up: days before the function",s.pickBefore==null?1:s.pickBefore,"New bookings fill the pick-up date this many days before the function date. 1 = function 20 → pick-up 19")+f("retAfter","Return: days after the function",s.retAfter==null?1:s.retAfter,"1 = function 20 → return 21 (before noon)")+f("prepBefore","Prep days before pick-up",s.prepBefore==null?1:s.prepBefore,"Repair, dry-clean and fitting are done in these days. 1 = function 20 → prep on 18")+f("noShowDays","Auto-cancel if not picked up (days)",s.noShowDays,"Days after the pick-up date. The booking is cancelled and the advance is kept as cancellation charge. 0 = never")+f("buffer","Cleaning days after return",s.buffer,"Dry-clean (and fitting) after the dress comes back. 1 = function 20 → return 21 → cleaning 22 → free for the next pick-up from 23")+
+   f("pickFrom","Pick-up time: from",s.pickFrom||"17:00","Customers usually collect dresses in this time window. Shown in the ready message and on slips","time")+f("pickTo","Pick-up time: until",s.pickTo==null?"20:00":s.pickTo,"Leave blank for a single time","time")+f("fitHours","Fitting done how many hours before pick-up",s.fitHours==null?2:s.fitHours,"2 = pick-up 5 pm → fitting must be done before 3 pm. Printed on the fitting slip")+f("pickBefore","Pick-up: days before the function",s.pickBefore==null?1:s.pickBefore,"New bookings fill the pick-up date this many days before the function date. 1 = function 20 → pick-up 19")+f("retAfter","Return: days after the function",s.retAfter==null?1:s.retAfter,"1 = function 20 → return 21 (before noon)")+f("prepBefore","Prep days before pick-up",s.prepBefore==null?1:s.prepBefore,"Repair, dry-clean and fitting are done in these days. 1 = function 20 → prep on 18")+f("noShowDays","Auto-cancel if not picked up (days)",s.noShowDays,"Days after the pick-up date. The booking is cancelled and the advance is kept as cancellation charge. 0 = never")+f("buffer","Cleaning days after return",s.buffer,"Dry-clean (and fitting) after the dress comes back. 1 = function 20 → return 21 → cleaning 22 → free for the next pick-up from 23")+
   '</div></div></div></div>'+
   '<div class="panel" style="margin-top:16px"><div class="panel-h"><h3>App PIN</h3></div><div class="panel-b"><p class="small muted" style="margin:0 0 10px">The 4-digit PIN is asked every time the app opens, and before anyone edits a booking that is already confirmed.</p>'+
    (s.editPin?'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill p-ok">PIN is on</span><button type="button" class="btn sm" data-act="pin-change">Change PIN</button><button type="button" class="btn sm ghost" data-act="pin-off">Turn off</button></div>':'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill p-mute">No PIN yet</span><button type="button" class="btn sm pri" data-act="pin-set">Set PIN</button></div>')+'</div></div>'+
@@ -2323,7 +2461,7 @@ function viewSettings(){
    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+(S.mode==="cloud"?'<button type="button" class="btn" data-act="cloud-check">'+ic("check")+'Cloud check</button>':"")+'<button type="button" class="btn" data-act="backup">'+ic("down")+'Full backup (JSON)</button><button type="button" class="btn" data-act="csv">'+ic("down")+'Bookings Excel (CSV)</button>'+
    (S.mode==="local"||S.mode==="cloud"?'<label class="btn" for="restore_f">'+ic("back")+'Restore from backup</label><input id="restore_f" type="file" accept=".json,application/json" hidden>':"")+'</div>'+
    '<p class="small muted" style="margin:0">Download a backup once a week and keep it on WhatsApp or Google Drive. On a new phone, open this file and use "Restore from backup" to bring back all your data.</p>'+
-  '</div></div>';
+  '</div></div>'+staffPanel();
 }
 
 /* ---------- modals ---------- */
@@ -3062,7 +3200,7 @@ function orderDetail(id){
      (o.note?'<div class="calc"><span class="label">Note</span>'+esc(o.note)+'</div>':"")+
      '<div><div class="label" style="margin-bottom:6px">Order history</div><div class="h-tl">'+(o.log||[]).slice().reverse().map(e=>'<div class="h-ent"><span class="h-dot p-info">'+ic("clock")+'</span><div class="h-body"><div class="h-top"><b>'+hTime(e.at)+'</b><span class="small muted">'+hAgo(e.at)+'</span></div><div class="small">'+esc(e.t)+'</div></div></div>').join("")+'</div></div>';
   },foot:()=>{const o=OR()[id]||{},c=poCalc(Object.assign({id},o)),x=SL()[o.sellerId]||{};const open=poOpen(c);
-    return '<button type="button" class="btn" data-edit-o="'+id+'">'+ic("edit")+'Edit</button><button type="button" class="btn" data-po-slip="'+id+'">'+ic("print")+'Slip</button>'+
+    return '<button type="button" class="btn" data-edit-o="'+id+'">'+ic("edit")+'Edit</button>'+SB('data-po-slip="'+id+'"',"slip","")+''+
      (open?'<button type="button" class="btn ghost" data-po-cancel="'+id+'">Cancel order</button>':c.status==="cancelled"?'<button type="button" class="btn ghost" data-po-reopen="'+id+'">Reopen</button>':"")+
      waBtn({phone:x.phone,alt:x.alt},c.late?poRemindText(id):poWaText(id),false,c.late?"Remind seller":"Send order")+
      (c.balance>0.5&&c.status!=="cancelled"?'<button type="button" class="btn" data-po-pay="'+id+'">'+ic("wallet")+'Pay seller</button>':"")+
@@ -3272,15 +3410,15 @@ function dressDetail(id){
     return '<div style="display:grid;grid-template-columns:minmax(0,160px) minmax(0,1fr);gap:16px;align-items:start">'+
      '<div class="dphoto" style="border-radius:10px;aspect-ratio:3/4">'+(d.photo?'<img src="'+esc(d.photo)+'" alt="">':'<div class="ph-pattern"></div><span class="ph">'+esc((d.category||"D").charAt(0))+'</span>')+'</div>'+
      '<div style="display:flex;flex-direction:column;gap:10px;min-width:0"><div><span class="pill '+DST[s][1]+'">'+DST[s][0]+'</span></div>'+
-     '<dl class="dl"><div><dt>Category</dt><dd>'+esc(d.category)+'</dd></div><div><dt>Colour · Size</dt><dd>'+esc([d.color,d.size].filter(Boolean).join(" · ")||"—")+'</dd></div><div><dt>Rent</dt><dd class="num">'+inr(d.rent)+'</dd></div><div><dt>Purchased</dt><dd>'+fdy(d.bought)+'</dd></div><div><dt>Bought from</dt><dd>'+(sellerOf(d)?'<button type="button" class="linkish" data-open-s="'+d.sellerId+'">'+esc(sellerOf(d).name)+(sellerOf(d).city?" · "+esc(sellerOf(d).city):"")+'</button>':esc(d.from||"—"))+(d.poId&&OR()[d.poId]?' · <button type="button" class="linkish" data-open-o="'+d.poId+'">order '+esc(OR()[d.poId].no)+'</button>':"")+'</dd></div><div><dt>Landed cost</dt><dd class="num">'+inr(landed(d))+'<div class="small muted" style="font-weight:500">'+inr(d.cost)+' price'+(N(d.extra)?' '+esc(extraLabel(d)):"")+'</div></dd></div></dl></div></div>'+
-     '<div class="hero-fin"><div><div class="label">Rentals so far</div><div class="v">'+L.count+'<span class="small muted"> / '+N(d.life)+'</span></div></div><div><div class="label">Contribution so far</div><div class="v">'+inr(L.net)+'</div></div><div><div class="label">Cost recovered</div><div class="v">'+Math.round(L.recovered*100)+'%</div></div><div><div class="label">Profit</div><div class="v '+(L.profit>=0?"pos":"neg")+'">'+inr(L.profit)+'</div></div></div>'+
-     '<div class="meter'+(L.recovered>=1?" done":"")+'" style="height:8px"><span style="width:'+Math.round(L.recovered*100)+'%"></span></div>'+
-     '<div class="small muted">'+(L.recovered>=1?"This dress has paid for itself; every booking now is pure profit.":"About "+Math.max(0,Math.ceil((L.cost-L.net)/Math.max(1,N(d.rent)-st.clean-st.repair-st.pack)))+" more bookings to recover its cost.")+' Each new booking adds about '+inr(perB)+' (after depreciation). '+(L.left>0?"Time to sell after "+L.left+" more bookings.":(d.status!=="sold"?"It has reached its expected life; time to sell it.":""))+'</div>'+
+     '<dl class="dl"><div><dt>Category</dt><dd>'+esc(d.category)+'</dd></div><div><dt>Colour · Size</dt><dd>'+esc([d.color,d.size].filter(Boolean).join(" · ")||"—")+'</dd></div><div><dt>Rent</dt><dd class="num">'+inr(d.rent)+'</dd></div><div><dt>Purchased</dt><dd>'+fdy(d.bought)+'</dd></div><div><dt>Bought from</dt><dd>'+(sellerOf(d)?'<button type="button" class="linkish" data-open-s="'+d.sellerId+'">'+esc(sellerOf(d).name)+(sellerOf(d).city?" · "+esc(sellerOf(d).city):"")+'</button>':esc(d.from||"—"))+(d.poId&&OR()[d.poId]?' · <button type="button" class="linkish" data-open-o="'+d.poId+'">order '+esc(OR()[d.poId].no)+'</button>':"")+'</dd></div><div class="mny"><dt>Landed cost</dt><dd class="num">'+inr(landed(d))+'<div class="small muted" style="font-weight:500">'+inr(d.cost)+' price'+(N(d.extra)?' '+esc(extraLabel(d)):"")+'</div></dd></div></dl></div></div>'+
+     '<div class="hero-fin mny"><div><div class="label">Rentals so far</div><div class="v">'+L.count+'<span class="small muted"> / '+N(d.life)+'</span></div></div><div><div class="label">Contribution so far</div><div class="v">'+inr(L.net)+'</div></div><div><div class="label">Cost recovered</div><div class="v">'+Math.round(L.recovered*100)+'%</div></div><div><div class="label">Profit</div><div class="v '+(L.profit>=0?"pos":"neg")+'">'+inr(L.profit)+'</div></div></div>'+
+     '<div class="meter mny'+(L.recovered>=1?" done":"")+'" style="height:8px"><span style="width:'+Math.round(L.recovered*100)+'%"></span></div>'+
+     '<div class="small muted mny">'+(L.recovered>=1?"This dress has paid for itself; every booking now is pure profit.":"About "+Math.max(0,Math.ceil((L.cost-L.net)/Math.max(1,N(d.rent)-st.clean-st.repair-st.pack)))+" more bookings to recover its cost.")+' Each new booking adds about '+inr(perB)+' (after depreciation). '+(L.left>0?"Time to sell after "+L.left+" more bookings.":(d.status!=="sold"?"It has reached its expected life; time to sell it.":""))+'</div>'+
      (d.status==="sold"?'<div class="okbox">Sold on '+fdy(d.soldOn)+' for '+inr(d.soldFor)+'.</div>':"")+
      (L.upcoming.length?'<div><div class="label" style="margin-bottom:6px">Upcoming bookings</div><div class="hist">'+L.upcoming.map(histRow).join("")+'</div></div>':"")+
      '<div><div class="label" style="margin-bottom:6px">Rental history: when, where, to whom</div>'+(L.bookings.length?'<div class="hist">'+L.bookings.map(histRow).join("")+'</div>':'<div class="muted small">No bookings handed over yet.</div>')+'</div>'+
      '<div class="calc"><span class="label">Items given with this dress</span>'+(partsOf(d)?'<div class="chips" style="margin-top:4px">'+d.parts.map(x=>'<span class="chip" style="cursor:default">'+esc(partTxt(x))+'</span>').join("")+'</div>':'<span class="small muted">Not listed yet. Tap Edit and add the items (blouse, dupatta, latkan…).</span>')+'</div>'+
-     (d.fitNow?'<div class="calc"><span class="label">Stitched to right now</span><div><b>'+esc(d.fitNow.size)+'</b></div><div class="small muted">'+esc(fitNowTxt(d).slice(d.fitNow.size.length).replace(/^ \(|\)$/g,""))+'. Tell the tailor this when the next customer has a different size.</div></div>':"")+
+     (d.fitNow?'<div class="calc"><span class="label">Stitched to right now</span><div><b>'+esc(d.fitNow.size)+'</b></div><div class="small muted">'+esc(fitNowTxt(d).slice(d.fitNow.size.length).replace(/^ \(|\)$/g,""))+'. Check this when the next customer has a different size.</div></div>':"")+
      (d.notes?'<div class="calc"><span class="label">Note</span>'+esc(d.notes)+'</div>':"")+
      (()=>{const h=dressHist(id);return h.length?'<div><div class="label" style="margin-bottom:6px">Booking changes for this dress</div><div class="panel">'+h.map(x=>{const c=x.c,removed=c.rm||(c.did===id&&c.did2&&c.did2!==id),txt=c.t||(c.f+": "+c.a+" → "+c.b);return '<div class="due-row"><'+(x.src==="b"?'button type="button" class="due-main" data-open-b="'+x.b.id+'"':'div class="due-main"')+'><span><b>'+(removed?"Taken off ":"Put on ")+esc(BN(x.b.no))+'</b> <span class="small muted">'+esc(custName(x.b.customerId))+(x.src==="x"?" · deleted booking":"")+'</span><span class="small" style="display:block">'+esc(txt)+'</span>'+(x.reason?'<span class="small muted" style="display:block">Reason: '+esc(x.reason)+'</span>':"")+'</span><span class="due-amt small muted">'+hTime(x.at)+'</span></'+(x.src==="b"?"button":"div")+'></div>'}).join("")+'</div></div>':""})();
   },foot:()=>{const d=D()[id]||{};const s=dressState(id);return '<button type="button" class="btn" data-edit-d="'+id+'">'+ic("edit")+'Edit</button>'+
@@ -3517,6 +3655,7 @@ function bookingForm(id,pre){
    '<div class="f" style="grid-column:span 2"><label for="b_place">Where (venue / village)</label><input id="b_place" value="'+esc(b.place||"")+'" placeholder="e.g. Sharma Bhawan, Sardarshahar"></div>'+
    '<div class="f"><label for="b_event">Function date</label><input id="b_event" type="date" value="'+esc(b.eventDate||"")+'"></div>'+
    '<div class="f"><label for="b_del">Handover (pick-up)</label><input id="b_del" type="date" value="'+esc(b.deliveryDate)+'"></div>'+
+   '<div class="f"><label for="b_ptime">Pick-up time</label><input id="b_ptime" type="time" value="'+esc(b.pickTime||"")+'"><span class="hint">Blank = shop time ('+esc(pickTimeTxt({}))+')</span></div>'+
    '<div class="f"><label for="b_ret">Return</label><input id="b_ret" type="date" value="'+esc(b.returnDate)+'"></div></div>'+
    '<div class="blk" id="b_blkw"><div id="b_blk" class="small"></div><div class="blk-btns"><button type="button" class="btn sm" id="b_blkbtn">'+ic("edit",14)+'Change days</button><button type="button" class="btn sm ghost" id="b_blkreset" hidden>Use standard days</button></div>'+
    '<div class="fgrid" id="b_blkc" hidden><div class="f"><label for="b_prepfrom">Prep starts (repair / dry-clean / fitting)</label><input id="b_prepfrom" type="date"></div><div class="f"><label for="b_freeon">Free again (next pick-up from)</label><input id="b_freeon" type="date"></div><span class="hint small muted full" style="grid-column:1/-1">For a far village or a long trip, change pick-up and return above, and the cleaning days here. These days count only for this booking.</span></div></div>'+
@@ -3675,7 +3814,7 @@ function bookingForm(id,pre){
     if(hasClash){toast("This dress is already booked on these dates. Choose another dress.","bad");paintItems();return}
     const wasDraft=b.status==="draft";
     b.status=asDraft?"draft":((!id||wasDraft)?"booked":b.status);
-    const o=Object.assign(b,{customerId:cid,items:good.map(i=>({dressId:i.dressId,rent:N(i.rent)})),func:val(el,"b_func"),place:val(el,"b_place"),eventDate:val(el,"b_event"),deliveryDate:del_,returnDate:ret,discount:N(val(el,"b_disc")),deposit:0,partnerId:(P()[val(el,"b_ref")]?val(el,"b_ref"):""),refBy:(P()[val(el,"b_ref")]?P()[val(el,"b_ref")].name:(val(el,"b_ref")==="__legacy"?b.refBy:"")),refCustId:refC,commission:N(val(el,"b_comm")),notes:val(el,"b_notes"),updatedAt:Date.now()});
+    const o=Object.assign(b,{customerId:cid,items:good.map(i=>({dressId:i.dressId,rent:N(i.rent)})),func:val(el,"b_func"),place:val(el,"b_place"),eventDate:val(el,"b_event"),deliveryDate:del_,returnDate:ret,discount:N(val(el,"b_disc")),deposit:0,partnerId:(P()[val(el,"b_ref")]?val(el,"b_ref"):""),refBy:(P()[val(el,"b_ref")]?P()[val(el,"b_ref")].name:(val(el,"b_ref")==="__legacy"?b.refBy:"")),refCustId:refC,commission:N(val(el,"b_comm")),notes:val(el,"b_notes"),pickTime:val(el,"b_ptime"),updatedAt:Date.now()});
     if(cPrep!=null&&cPrep!==dSet("prepBefore",1))o.prep=cPrep;else delete o.prep;if(cAfter!=null&&cAfter!==dSet("buffer",1))o.after=cAfter;else delete o.after;
     {const m={};MEAS.forEach(([k])=>{const v=val(el,"bm_"+k);if(v)m[k]=v});o.meas=m;
      o.fit={done:!!(b.fit&&b.fit.done),doneOn:(b.fit&&b.fit.doneOn)||""};
@@ -3705,7 +3844,7 @@ function bookingDetail(id){
     (late?'<div class="badbox">The return is '+Math.abs(diff(today(),b.returnDate))+' days late. Late fee so far: '+inr(Math.abs(diff(today(),b.returnDate))*ST().lateFee)+'. Call the customer.</div>':"")+
     '<div class="grid cols-2" style="gap:14px">'+
      '<div class="calc" data-open-c="'+b.customerId+'" style="cursor:pointer"><span class="label">Customer</span><b style="font-size:16px">'+esc(c.name||"—")+'</b><span class="num">'+esc(c.phone||"")+'</span><span class="small muted">'+esc(c.address||"")+'</span><span class="small" style="color:var(--accent)">View account →</span></div>'+
-     '<div class="calc"><span class="label">Function</span><b style="font-size:16px">'+esc(b.func||"—")+' · '+fdw(b.eventDate)+'</b><span>'+esc(b.place||"No venue noted")+'</span><span class="small muted">Handover '+fdw(b.deliveryDate)+' → Return '+fdw(b.returnDate)+'</span>'+(b.partnerId&&P()[b.partnerId]?'<span class="small" data-open-p="'+b.partnerId+'" style="cursor:pointer;color:var(--accent)">Referred by: '+esc(P()[b.partnerId].name)+(N(b.commission)?" · commission "+inr(b.commission):"")+' →</span>':(b.refBy?'<span class="small muted">Referred by: '+esc(b.refBy)+'</span>':""))+'</div>'+
+     '<div class="calc"><span class="label">Function</span><b style="font-size:16px">'+esc(b.func||"—")+' · '+fdw(b.eventDate)+'</b><span>'+esc(b.place||"No venue noted")+'</span><span class="small muted">Handover '+esc(pickWhen(b))+' → Return '+fdw(b.returnDate)+'</span>'+(b.partnerId&&P()[b.partnerId]?'<span class="small" data-open-p="'+b.partnerId+'" style="cursor:pointer;color:var(--accent)">Referred by: '+esc(P()[b.partnerId].name)+(N(b.commission)?" · commission "+inr(b.commission):"")+' →</span>':(b.refBy?'<span class="small muted">Referred by: '+esc(b.refBy)+'</span>':""))+'</div>'+
     '</div>'+
     (()=>{const rid=b.refCustId||c.refCust;return rid&&C()[rid]?refCard(rid,"Reference (known to "+esc(c.name||"customer")+")"):""})()+
     '<div class="bd-dresses"><span class="label">Dress booked'+((b.items||[]).length>1?' ('+b.items.length+')':"")+'</span>'+((b.items||[]).length?(b.items||[]).map(i=>{const d=D()[i.dressId];if(!d)return '<div class="bd-dress"><div class="bd-ph"><span>?</span></div><div><b>Dress deleted</b></div><div class="bd-rent num">'+inr(i.rent)+'</div></div>';
@@ -3727,7 +3866,7 @@ function bookingDetail(id){
     (b.paidTo&&b.paidTo.length?'<div class="calc"><span class="label">Advance moved out</span>'+b.paidTo.map(p=>'<div class="ln"><span>To <b>'+esc(p.name)+'</b><span class="small muted"> · '+esc(BN(p.toNo))+' on '+fd(p.on)+'</span></span><span class="num">'+inr(p.amount)+'</span></div>').join("")+'</div>':"")+
     (b.notes?'<div class="calc"><span class="label">Note</span>'+esc(b.notes)+'</div>':"")+
     waPanel(Object.assign({},b,{id}))+histPanel(id,b);
-  },foot:()=>{const b=B()[id]||{};if(b.status==="draft")return '<button type="button" class="btn danger" data-del-b="'+id+'" style="margin-right:auto">'+ic("trash")+'Delete draft</button><button type="button" class="btn pri" data-edit-b="'+id+'">'+ic("edit")+'Open draft &amp; confirm</button>';let a='<button type="button" class="btn" data-edit-b="'+id+'">'+ic("edit")+'Edit</button>'+(b.status!=="cancelled"?'<button type="button" class="btn" data-slip-b="'+id+'">'+ic("print")+'Booking slip</button>':"");
+  },foot:()=>{const b=B()[id]||{};if(b.status==="draft")return '<button type="button" class="btn danger" data-del-b="'+id+'" style="margin-right:auto">'+ic("trash")+'Delete draft</button><button type="button" class="btn pri" data-edit-b="'+id+'">'+ic("edit")+'Open draft &amp; confirm</button>';let a='<button type="button" class="btn" data-edit-b="'+id+'">'+ic("edit")+'Edit</button>'+(b.status!=="cancelled"?SB('data-slip-b="'+id+'"',"booking slip",""):"");
     if(b.status==="booked"||b.status==="ready")a+='<button type="button" class="btn ghost" data-cancel-b="'+id+'">Cancel</button>';
     if(b.status==="booked")a+='<button type="button" class="btn pri" data-ready-b="'+id+'">'+ic("check")+'Mark ready</button>';
     if(b.status==="ready")a+='<button type="button" class="btn pri" data-deliver-b="'+id+'">'+ic("truck")+'Hand over</button>';
@@ -3821,7 +3960,7 @@ function fmtId(t,n){const d=String(n||"").replace(/\s/g,"");if((t||"Aadhaar")===
 function waRemind(b,type){
   const c=C()[b.customerId]||{},st=ST(),f=fin(b),dn=dressNames(b),nm=c.name||"",H="Hello "+nm+",\n",HH="Namaste "+nm+",\n";
   const bal=Math.max(0,Math.round(f.gross-N(b.paid))),bs=bal.toLocaleString("en-IN");
-  if(type==="prep"||type==="del"){const td=b.deliveryDate===today(),pt=String(st.pickTime||"").trim(),day=td?bo("today"+(pt?", "+pt:"")):bo(fdw(b.deliveryDate))+(pt?" ("+pt+")":""),dayH=td?bo("aaj"+(pt?" "+pt:"")):bo(fdw(b.deliveryDate))+(pt?" ("+pt+")":"")+" ko";return waL(H+"Your dress ("+bo(dn)+") for booking "+bo(BN(b.no))+" is ready.\nPlease collect it "+(td?"":"on ")+day+(b.func?" for your "+b.func+" ("+bo(fdw(b.eventDate))+")":"")+".\n"+bo("Please try it on at the shop to check the size and fitting.")+" If anything small needs changing, we will do it right there.\n"+(bal>0?"Balance to pay at pick-up: "+bo("₹"+bs):"Payment: received in full")+"\n"+bo("Please bring your booking slip when you come to collect the dress."),
+  if(type==="prep"||type==="del"){const td=b.deliveryDate===today(),pt=pickTimeTxt(b),day=td?bo("today"+(pt?", "+pt:"")):bo(fdw(b.deliveryDate))+(pt?" ("+pt+")":""),dayH=td?bo("aaj"+(pt?" "+pt:"")):bo(fdw(b.deliveryDate))+(pt?" ("+pt+")":"")+" ko";return waL(H+"Your dress ("+bo(dn)+") for booking "+bo(BN(b.no))+" is ready.\nPlease collect it "+(td?"":"on ")+day+(b.func?" for your "+b.func+" ("+bo(fdw(b.eventDate))+")":"")+".\n"+bo("Please try it on at the shop to check the size and fitting.")+" If anything small needs changing, we will do it right there.\n"+(bal>0?"Balance to pay at pick-up: "+bo("₹"+bs):"Payment: received in full")+"\n"+bo("Please bring your booking slip when you come to collect the dress."),
     HH+"Booking "+bo(BN(b.no))+" ki aapki dress ("+bo(dn)+") taiyar hai.\nKripya "+dayH+" le jaayein"+(b.func?", aapke "+b.func+" ("+bo(fdw(b.eventDate))+") ke liye":"")+".\n"+bo("Shop par dress pehen kar size aur fitting check kar lein.")+" Kuch chhota badlaav ho to wahin kar denge.\n"+(bal>0?"Dress lete samay baaki payment: "+bo("₹"+bs):"Payment: poora mil gaya hai")+"\n"+bo("Dress lene aate samay apni booking slip saath laayein."))}
   if(type==="late-del")return waL(H+"Your dress ("+bo(dn)+") for booking "+bo(BN(b.no))+" was ready for pick-up on "+bo(fdw(b.deliveryDate))+". Please let us know when you will collect it."+"\n"+bo("Please bring your booking slip when you come to collect the dress."),
     HH+"Booking "+bo(BN(b.no))+" ki aapki dress ("+bo(dn)+") "+bo(fdw(b.deliveryDate))+" se taiyar rakhi hai. Kripya batayein aap kab lene aayenge."+"\n"+bo("Dress lene aate samay apni booking slip saath laayein."));
@@ -3955,7 +4094,7 @@ function monthReportHTML(ym){
    '<div class="grid"><div><h2>Profit &amp; loss</h2><table>'+row("Rent + late fees + damage",inr(ms.revenue-ms.cancelKept))+(ms.cancelKept?row("Cancellation charges kept",inr(ms.cancelKept)):"")+row("Revenue",inr(ms.revenue),"tot")+row("(−) Dry-clean, repair, fitting, packing, commission",inr(-ms.direct))+row("(−) Dress depreciation",inr(-ms.dep))+row("Contribution from dresses",inr(ms.contrib),"tot")+row("(−) Shop expenses",inr(-ms.fixed))+row("Net profit",inr(ms.net),ms.net<0?"big neg-big":"big")+'</table></div>'+
    '<div><h2>Money</h2><table>'+row("Received in cash",inr(inCash))+row("Received online",inr(inOn))+(refunds?row("Refunds given",inr(-refunds)):"")+row("Paid out in cash",inr(-outCash))+row("Paid out online",inr(-outOn))+(outPetty?row("Spent from petty cash",inr(-outPetty)):"")+row("Cash in drawer now",inr(MB.cash),"tot")+row("Bank / UPI now",inr(MB.online))+(MB.petty?row("Petty cash box now",inr(MB.petty)):"")+'</table></div></div>'+
    '<div class="grid"><div><h2>Shop expenses</h2>'+(Object.keys(cats).length?'<table>'+Object.keys(cats).sort((a,b)=>cats[b]-cats[a]).map(k=>row(e(k),inr(cats[k]))).join("")+row("Total",inr(ms.fixed),"tot")+'</table>':'<div class="muted">None recorded</div>')+'</div>'+
-   '<div><h2>Tailor &amp; dry-cleaner</h2>'+(Object.keys(work).length?'<table><tr><th>Who</th><th class="r">Dresses</th><th class="r">Cost</th><th class="r">Unpaid</th></tr>'+Object.keys(work).map(k=>'<tr><td>'+e(k)+'</td><td class="r">'+work[k].n+'</td><td class="r">'+inr(work[k].amt)+'</td><td class="r'+(work[k].due?" neg":"")+'">'+inr(work[k].due)+'</td></tr>').join("")+'</table>':'<div class="muted">No work given this month</div>')+'</div></div>'+
+   '<div><h2>Repair &amp; dry-cleaner</h2>'+(Object.keys(work).length?'<table><tr><th>Who</th><th class="r">Dresses</th><th class="r">Cost</th><th class="r">Unpaid</th></tr>'+Object.keys(work).map(k=>'<tr><td>'+e(k)+'</td><td class="r">'+work[k].n+'</td><td class="r">'+inr(work[k].amt)+'</td><td class="r'+(work[k].due?" neg":"")+'">'+inr(work[k].due)+'</td></tr>').join("")+'</table>':'<div class="muted">No work given this month</div>')+'</div></div>'+
    '<h2>Bookings handed over</h2>'+(bk.length?'<table><tr><th>Booking</th><th>Customer</th><th>Dress</th><th>Pick-up</th><th class="r">Revenue</th><th class="r">Profit</th></tr>'+bk.map(b=>{const f=fin(b);return '<tr><td>'+e(BN(b.no))+'</td><td>'+e(custName(b.customerId))+'</td><td>'+e(bookingDresses(b))+'</td><td>'+fd(b.deliveryDate)+'</td><td class="r">'+inr(f.revenue)+'</td><td class="r'+(f.contrib<0?" neg":"")+'">'+inr(f.contrib)+'</td></tr>'}).join("")+'</table>':'<div class="muted">No dress handed over this month</div>')+
    '<div class="grid"><div><h2>Top dresses this month</h2>'+(top.length?'<table>'+top.map(x=>row(e(x.d.code+" · "+x.d.name)+' <span class="muted">('+x.n+'×)</span>',inr(Math.round(x.rev)))).join("")+'</table>':'<div class="muted">—</div>')+'</div>'+
    '<div><h2>Payment still to receive</h2>'+(dues.length?'<table>'+dues.slice(0,8).map(x=>row(e(BN(x.b.no)+" · "+custName(x.b.customerId)),inr(x.f.due))).join("")+row("Total",inr(dueTotal()),"tot")+'</table>':'<div class="muted">All collected</div>')+'</div></div>'+
@@ -4207,7 +4346,7 @@ function receiptRows(b,pi){
   R.push({t:"hr"});
   R.push({t:"lr",l:"Booking No.",r:BN(b.no)||"—"});
   if(b.func)R.push({t:"lr",l:"Function",r:b.func+(b.eventDate?" · "+fd(b.eventDate):"")});
-  R.push({t:"lr",l:"Pick-up",r:fdw(b.deliveryDate)});
+  R.push({t:"lr",l:"Pick-up",r:pickWhen(b)});
   R.push({t:"lr",l:"Return by",r:fdw(b.returnDate)});
   (b.items||[]).forEach(i=>{const d=D()[i.dressId];R.push({t:"p",x:"• "+(d?d.code+" "+d.name:"Dress"),z:"s"})});
   R.push({t:"hr"});
@@ -4250,7 +4389,7 @@ function slipRows(b,kind,pi){
   if(b.eventDate)R.push({t:"lr",l:"Function date",r:fdy(b.eventDate)});
   if(b.place)R.push({t:"p",x:"Venue: "+b.place});
   {const mt=measTxt(b.meas||c.meas||{});if(mt)R.push({t:"p",x:"Size: "+mt,z:"s"})}
-  R.push({t:"lr",l:"Pick-up",r:fdw(b.deliveryDate)});
+  R.push({t:"lr",l:"Pick-up",r:pickWhen(b)});
   R.push({t:"lr",l:"RETURN BY",r:fdw(b.returnDate),b:1,z:"l"});
   if(done&&ri.on)R.push({t:"lr",l:"Returned on",r:fdw(ri.on)});
   R.push({t:"hr"});
@@ -4459,6 +4598,7 @@ function slipModal(id,kind,pi){
   const w=N(ST().slipWidth)===80?80:58;let rows,cv,url;
   const build=()=>{rows=slipRows(b,kind,pi);cv=slipCanvas(rows,w);url=cv.toDataURL("image/png")};build();
   const fname=()=>(kind==="receipt"?"receipt-"+(pi!=null?pi+1:payList(b).length)+"-":"booking-slip-")+fsafe(b.no||"booking")+"-"+String(custName(b.customerId)).replace(/[^\w]+/g,"-")+".png";
+  if(slipGo(rows,w,cv,fname(),"Downloading the slip (PDF)"))return;
   const kinds=[];
   let canShare=false;try{canShare=!!(navigator.canShare&&navigator.canShare({files:[new File([new Blob(["x"])],"a.png",{type:"image/png"})]}))}catch(e){}
   const el=modal({title:(kind==="receipt"?"Payment receipt · ":"Booking slip · ")+BN(b.no),autofocus:false,body:'<div class="slip-prev"><img id="slip_img" src="'+url+'" alt="Slip preview"></div><p class="small muted" style="margin:0">Sized for a '+w+'mm printer (change in Settings). In the print dialog, choose your thermal printer and set Margins to "None". With a Bluetooth printer app (such as RawBT), use "Download image" and print from there.</p>',
@@ -4609,7 +4749,7 @@ function recurringDue(){
 let recRan=false;
 /* daily jobs: add the no-refund line to the slip terms once; auto-cancel bookings nobody picked up */
 const AUTO={day:"",busy:false};
-async function autoJobs(){if(AUTO.busy||AUTO.day===today()||!loaded())return;AUTO.busy=true;
+async function autoJobs(){if(AUTO.busy||AUTO.day===today()||!loaded()||!isOwner())return;AUTO.busy=true;
   try{const t=today(),st=ST(),sm=S.data.settings.main;
     if(sm&&!sm.nrTerm){const o=Object.assign({},sm,{nrTerm:true});if(o.terms!=null&&!/not refundable/i.test(o.terms))o.terms="Advance is not refundable if the booking is cancelled or the dress is not collected.\n"+o.terms;await put("settings","main",o)}
     const nd=N(st.noShowDays);
@@ -4807,7 +4947,7 @@ document.addEventListener("click",async e=>{
   const ds=t.dataset;
   if(ds.close!==undefined){userClose();return}
   if(ds.go){closeAll();go(ds.go);return}
-  if(ds.goto){const [v,f]=ds.goto.split(":");if(v==="rf"){V.rf=f;render();return}if(v==="fitf"){V.fitF=f;render();return}if(f)V.bfilter=f;go(v);return}
+  if(ds.goto){const [v,f]=ds.goto.split(":");if(v==="rf"){V.rf=f;render();return}if(v==="fitf"){V.fitF=f;render();return}if(v==="rptab"){V.rpTab=f;render();return}if(f)V.bfilter=f;go(v);return}
   if(ds.openB){bookingDetail(ds.openB);return}
   if(ds.openD){if(D()[ds.openD])dressDetail(ds.openD);return}
   if(ds.openC){if(C()[ds.openC])custDetail(ds.openC);return}
@@ -4876,19 +5016,27 @@ document.addEventListener("click",async e=>{
   if(ds.qaDay){const day=ds.qaDay,q=V.qa||(V.qa={});const dd=D()[ds.qaDress];if(dd)q.dress=dd.code||q.dress;q.fn=day;q.from=addDays(day,-1)<today()?today():addDays(day,-1);q.to=addDays(day,1);
     const set=(id,v)=>{const x=document.getElementById(id);if(x)x.value=v};set("qa_fn",q.fn);set("qa_from",q.from);set("qa_to",q.to);
     const rs=document.getElementById("qa_res");if(rs)rs.innerHTML=qaResult();return}
+  if(ds.staffEdit){staffForm(ds.staffEdit);return}
+  if(ds.sizeB){sizeForm(ds.sizeB);return}
   if(ds.fitf){V.fitF=ds.fitf;render();return}
+  if(ds.rptab){V.rpTab=ds.rptab;render();return}
+  if(ds.shopFix){const d=D()[ds.shopFix];if(!d)return;const w=d.work||{},toCl=w.need==="both";if(!await askConfirm("<b>"+esc(d.code)+"</b> repaired in the shop"+(w.note?" ("+esc(w.note)+")":"")+".<br>"+(toCl?"It now goes to <b>Dry-cleaning</b>.":"It becomes <b>Available</b>."),toCl?"Yes, send to dry-cleaning":"Yes, repaired"))return;
+    const q=clone(d);delete q.id;q.fixLog=(q.fixLog||[]).concat([{on:today(),note:w.note||"",by:(S.me&&S.me.name)||"Owner"}]);if(toCl){q.status="cleaning";q.work={need:"clean",note:"",bookingId:w.bookingId||"",since:today()};if(w.fitNext)q.work.fitNext=w.fitNext}else{q.status="available";delete q.work}
+    try{await put("dresses",ds.shopFix,q)}catch(x){return}render();toast(toCl?"Repaired. Moved to Dry-cleaning":"Repaired. Dress is available");return}
   if(ds.fitSlip){const [bb,dd]=ds.fitSlip.split("|");fitSlip(bb,dd);return}
   if(ds.fitGive){V.clTab_repair="give";closeAll();go("repair");return}
   if(ds.fitOut){V.clTab_repair="out";closeAll();go("repair");return}
-  if(ds.fitNow){const bk=B()[ds.fitNow];if(!bk)return;const q=clone(bk);delete q.id;q.fit=Object.assign({},q.fit||{},{want:true,noTailor:false});try{LOGCTX.skip=true;await put("bookings",ds.fitNow,q)}catch(x){}finally{LOGCTX.skip=false}render();toast("Added to the tailor list");return}
-  if(ds.fitDone){const bk=B()[ds.fitDone];if(!bk)return;if(!await askConfirm("Mark the fitting for "+BN(bk.no)+" ("+custName(bk.customerId)+") as done?","Yes, fitted"))return;const q=clone(bk);delete q.id;q.fit=Object.assign({},q.fit||{},{done:true,doneOn:today(),want:false});try{await put("bookings",ds.fitDone,q)}catch(x){}
+  if(ds.fitNow){const bk=B()[ds.fitNow];if(!bk)return;const q=clone(bk);delete q.id;q.fit=Object.assign({},q.fit||{},{want:true,noTailor:false});try{LOGCTX.skip=true;await put("bookings",ds.fitNow,q)}catch(x){}finally{LOGCTX.skip=false}render();toast("Added to the fitting list");return}
+  if(ds.fitDone){const bk=B()[ds.fitDone];if(!bk)return;if(!await askConfirm("Mark the fitting for "+BN(bk.no)+" ("+custName(bk.customerId)+") as done?<br><span class=\"small muted\">If the dress is in the shop, the booking is also marked <b>Ready</b> and you can send the customer the pick-up message.</span>","Yes, fitted"))return;const q=clone(bk);delete q.id;q.fit=Object.assign({},q.fit||{},{done:true,doneOn:today(),want:false});try{await put("bookings",ds.fitDone,q)}catch(x){}
     let toCl=0;for(const i of (bk.items||[])){const d=D()[i.dressId];if(!d||d.status!=="repair"||(d.work||{}).fitFor!==ds.fitDone||clOpen(i.dressId))continue;const w=d.work||{},dq=clone(d);delete dq.id;
       if(w.note){dq.work=Object.assign({},w);delete dq.work.fitFor}else{dq.status="cleaning";dq.work={need:"clean",note:"",bookingId:w.bookingId||"",since:today()};toCl++}
       try{await put("dresses",i.dressId,dq)}catch(x){}}
-    render();toast(toCl?"Fitting done. Dress moved to Dry-cleaning":"Fitting marked as done");return}
+    const nb2=B()[ds.fitDone];const atShop=nb2&&(nb2.items||[]).every(i=>{const d=D()[i.dressId];return d&&!["cleaning","repair"].includes(d.status)});
+    if(nb2&&nb2.status==="booked"&&atShop&&!toCl){try{await setStatus(ds.fitDone,"ready",{});render();toast("Fitted and marked ready");readyMsg(ds.fitDone)}catch(x){}return}
+    render();toast(toCl?"Fitting done. Dress moved to Dry-cleaning":"Fitting marked as done"+(nb2&&nb2.status==="booked"&&!atShop?". Mark ready when the dress is back from dry-cleaning":""));return}
   if(ds.fitrm){const bk=B()[ds.fitrm];if(!bk)return;if(!await pinOK("Removing needs the 4-digit PIN."))return;
-    if(!await askConfirm("Remove fitting for <b>"+esc(BN(bk.no)+" · "+custName(bk.customerId))+"</b> from the tailor list?<br><br>Use this if you will do the fitting yourself. You can add it back from <b>+ Add another dress</b>.","Yes, remove",true,"Remove from list?"))return;
-    const q=clone(bk);delete q.id;q.fit=Object.assign({},q.fit||{},{want:false,noTailor:true});try{LOGCTX.skip=true;await put("bookings",ds.fitrm,q)}catch(x){}finally{LOGCTX.skip=false}render();toast("Removed from the tailor list");return}
+    if(!await askConfirm("Remove fitting for <b>"+esc(BN(bk.no)+" · "+custName(bk.customerId))+"</b> from the fitting list?<br><br>Use this when the customer does not need a fitting. You can add it back from <b>All → Needs fitting</b>.","Yes, remove",true,"Remove from list?"))return;
+    const q=clone(bk);delete q.id;q.fit=Object.assign({},q.fit||{},{want:false,noTailor:true});try{LOGCTX.skip=true;await put("bookings",ds.fitrm,q)}catch(x){}finally{LOGCTX.skip=false}render();toast("Removed from the fitting list");return}
   if(ds.clrm){const did=ds.clrm,d=D()[did];if(!d)return;if(!await pinOK("Removing needs the 4-digit PIN."))return;const fromRet=!(d.work&&d.work.manual);const sec=d.status==="repair"?"repair":"dry-cleaning";
     if(!await askConfirm("Remove <b>"+esc(d.code+" · "+d.name)+"</b> from the "+sec+" list?"+(fromRet?"<br><br>This dress came back from a booking. Remove it only if it does not need "+sec+".":"")+"<br><br>It will show as <b>Available</b> again.","Yes, remove",true,"Remove from list?"))return;
     const o=clone(d);delete o.id;o.status="available";delete o.work;delete o.cleanSince;try{await put("dresses",did,o);toast(d.code+" removed from the "+sec+" list")}catch(x){}return}
@@ -4908,9 +5056,7 @@ document.addEventListener("click",async e=>{
   if(ds.slipB){slipModal(ds.slipB,ds.slipK);return}
   if(ds.fitdone){const o=clone(B()[ds.fitdone]);delete o.id;o.fit=Object.assign({},o.fit||{},{done:true,doneOn:today()});try{await put("bookings",ds.fitdone,o);toast("Fitting marked done")}catch(x){}return}
   if(ds.readyB){const bk=B()[ds.readyB]||{};let extra={};const bm=measTxt(bk.meas||((C()[bk.customerId]||{}).meas)||{});if(bm&&!(bk.fit&&bk.fit.done)){if(!await askConfirm("Customer size: <b>"+esc(bm)+"</b>.<br>Is the dress fitted to this size?","Yes, fitted · mark ready",false,"Fitting done?"))return;extra={fit:{done:true,doneOn:today()}}}try{await setStatus(ds.readyB,"ready",extra);if(extra.fit)for(const it of (bk.items||[]))if(fitDressOk(D()[it.dressId]))await setDressFit(it.dressId,ds.readyB,today());toast("Marked ready");
-      {const nb=B()[ds.readyB],c=C()[nb.customerId]||{},txt=waMsg(nb,"pickup"),bt=waBtn(c,txt,false,"Send on WhatsApp",nb.id+"|pickup",false);
-       const el=modal({title:"Tell "+esc(c.name||"the customer")+" the dress is ready",body:'<p style="margin:0 0 10px">Pick-up: <b>'+fdw(nb.deliveryDate)+'</b>'+(String(ST().pickTime||"").trim()?' · '+esc(ST().pickTime):'')+'. The message also asks her to try the dress on at the shop to check size and fitting.</p><div class="small wa-prev">'+waHtml(txt)+'</div>'+(bt?'':'<div class="warnbox" style="margin-top:10px">No phone number saved for this customer.</div>'),foot:'<button type="button" class="btn" data-c="0">Later</button>'+bt,autofocus:false});
-       el.querySelectorAll("[data-c]").forEach(x=>x.addEventListener("click",()=>closeTop()));el.querySelectorAll("a.wa,.wa-menu a").forEach(x=>x.addEventListener("click",()=>setTimeout(closeTop,300)))}
+      readyMsg(ds.readyB);
     }catch(x){}return}
   if(ds.deliverB){deliverForm(ds.deliverB);return}
   if(ds.returnB){returnForm(ds.returnB);return}
@@ -4944,7 +5090,9 @@ document.addEventListener("click",async e=>{
   if(act==="db-all"){const d=V.dbD||today(),n=dayData(d).pays.length;slipPreviewModal("All receipts · "+fdy(d)+" ("+n+")",allReceiptRows(d),"receipts-"+d,"Every receipt of the day, one after another with a cut line between them.");return}
   if(act==="duelist"){dueModal();return}
   if(act==="blist"){bookingListModal();return}
-  if(act==="more"){closeAll();modal({title:"More",body:'<div class="grid" style="gap:8px">'+NAV.filter(n=>!TABS.includes(n[0])).map(n=>'<button type="button" class="nav-btn'+(V.view===n[0]?" on":"")+'" data-go="'+n[0]+'" style="padding:14px 12px">'+ic(n[2])+'<span>'+n[1]+'</span></button>').join("")+'</div>'});return}
+  if(act==="staff-add"){staffForm();return}
+  if(act==="copy-rules"){const t=document.getElementById("st_rules");if(t){const done=()=>toast("Rules copied");try{navigator.clipboard.writeText(t.value).then(done,()=>{t.select();document.execCommand("copy");done()})}catch(e){t.select();document.execCommand("copy");done()}}return}
+  if(act==="more"){closeAll();modal({title:"More",body:'<div class="grid" style="gap:8px">'+NAV.filter(n=>canNav(n[0])&&!(TABS.filter(canNav).length>=2?TABS.filter(canNav):(ROLE_NAV[role()]||TABS).slice(0,4)).includes(n[0])).map(n=>'<button type="button" class="nav-btn'+(V.view===n[0]?" on":"")+'" data-go="'+n[0]+'" style="padding:14px 12px">'+ic(n[2])+'<span>'+n[1]+'</span></button>').join("")+'</div>'+(isOwner()?'':'<div style="margin-top:12px" class="small muted">Signed in as <b>'+esc(meName())+'</b> ('+esc(ROLE_INFO[role()].name)+')<br>'+esc(S.me&&S.me.email||"")+'</div><button type="button" class="btn" data-act="sign-out" style="margin-top:8px">Sign out</button>')});return}
   if(act==="new-exp"){expForm();return}
   if(act==="new-rec"){recForm();return}
   if(act==="exp-clear"){V.ecat="";V.emode="";V.eq="";render();return}
@@ -4953,7 +5101,7 @@ document.addEventListener("click",async e=>{
   if(act==="pin-change"){if(await needPin("Enter the current PIN to change it."))await newPinFlow("Choose a new PIN");return}
   if(act==="pin-off"){if(await needPin("Enter the current PIN to turn it off.")&&await askConfirm("Bookings can then be edited without a PIN.","Turn off",true,"Turn off the PIN?")){try{await savePin("");toast("PIN turned off")}catch(e){}}return}
   if(act==="saave-edit"){saaveForm();return}
-  if(act==="save-settings"){const o=Object.assign({},S.data.settings.main||{});["shop","city","phone","addr","pickTime"].forEach(k=>o[k]=($("#s_"+k).value||"").trim());["expBudget","clean","repair","pack","lateFee","pickBefore","retAfter","prepBefore","buffer","noShowDays","slipWidth","openCash","openBank"].forEach(k=>o[k]=N($("#s_"+k).value));o.openDate=$("#s_openDate").value||"";o.terms=$("#s_terms").value;o.guard=$("#s_guard").checked;o.waLang=$("#s_waLang").value||"both";if(!o.shop)o.shop=DEF.shop;try{await put("settings","main",o);G.pageDirty=false;toast("Settings saved")}catch(x){}return}
+  if(act==="save-settings"){const o=Object.assign({},S.data.settings.main||{});["shop","city","phone","addr","pickFrom","pickTo"].forEach(k=>o[k]=($("#s_"+k).value||"").trim());["expBudget","clean","repair","pack","lateFee","fitHours","pickBefore","retAfter","prepBefore","buffer","noShowDays","slipWidth","openCash","openBank"].forEach(k=>o[k]=N($("#s_"+k).value));o.openDate=$("#s_openDate").value||"";o.terms=$("#s_terms").value;o.guard=$("#s_guard").checked;o.waLang=$("#s_waLang").value||"both";if(!o.shop)o.shop=DEF.shop;try{await put("settings","main",o);G.pageDirty=false;toast("Settings saved")}catch(x){}return}
   if(act==="backup"){saveFile("dress-rental-backup-"+today()+".json",JSON.stringify(S.data,null,1));return}
   if(act==="csv"){saveFile("bookings-"+today()+".csv",csv());return}
   if(act==="cloud-check"){cloudCheck();return}
@@ -4998,8 +5146,9 @@ document.addEventListener("change",async e=>{
   if(id==="cl_all"){document.querySelectorAll(".cl-chk").forEach(c=>c.checked=e.target.checked);clCount();return}
   if(e.target.classList&&e.target.classList.contains("cl-chk")){clCount();return}
   if(id==="cl_mon"){V["clMon_"+(e.target.dataset.sec||"clean")]=e.target.value;render();return}
+  if(e.target.dataset&&e.target.dataset.rpnote){const d=D()[e.target.dataset.rpnote];if(d){const q=clone(d);delete q.id;q.work=Object.assign({},q.work||{},{note:e.target.value.trim()});try{LOGCTX.skip=true;await put("dresses",e.target.dataset.rpnote,q)}catch(x){}finally{LOGCTX.skip=false}toast("Saved")}return}
   if(id==="cl_add"&&e.target.value.startsWith("fit:")){const bid=e.target.value.slice(4),bk=B()[bid];if(bk){const q=clone(bk);delete q.id;q.fit=Object.assign({},q.fit||{},{want:true,noTailor:false});try{LOGCTX.skip=true;await put("bookings",bid,q)}catch(x){}finally{LOGCTX.skip=false}render();toast(BN(bk.no)+" added for fitting")}return}
-  if(id==="cl_add"&&e.target.value){const did=e.target.value,d=D()[did],sec=e.target.dataset.sec||"clean";if(d){const nb=clNextBooking(d.id);if(nb&&diff(today(),nb.deliveryDate)<=1&&!await askConfirm(d.code+" has booking "+BN(nb.no)+" on "+fd(nb.deliveryDate)+". Still send it for "+(sec==="repair"?"repair":"cleaning")+"?","Yes, send"))return;const o=clone(d);o.status=sec==="repair"?"repair":"cleaning";o.cleanSince=today();o.work={need:sec==="repair"?"repair":"clean",note:"",since:today(),manual:true};delete o.id;try{await put("dresses",did,o);toast(d.code+" added to the To give list")}catch(x){}}return}
+  if(id==="cl_add"&&e.target.value){const did=e.target.value,d=D()[did],sec=e.target.dataset.sec||"clean";if(d){const nb=clNextBooking(d.id);if(nb&&diff(today(),nb.deliveryDate)<=1&&!await askConfirm(d.code+" has booking "+BN(nb.no)+" on "+fd(nb.deliveryDate)+". Still send it for "+(sec==="repair"?"repair":"cleaning")+"?","Yes, send"))return;const o=clone(d);o.status=sec==="repair"?"repair":"cleaning";o.cleanSince=today();o.work={need:sec==="repair"?"repair":"clean",note:"",since:today(),manual:true};delete o.id;try{await put("dresses",did,o);toast(d.code+(sec==="repair"?" added to the repair list":" added to the To give list"))}catch(x){}}return}
   if(e.target.dataset&&e.target.dataset.clneed){const did=e.target.dataset.clneed,d=D()[did],v=e.target.value;if(d){const o=clone(d);delete o.id;o.status=v==="clean"?"cleaning":"repair";o.work=Object.assign({},o.work||{},{need:v});try{await put("dresses",did,o);toast(d.code+": "+NEEDT[v]+(v==="clean"?"":" · moved to the Repair list"))}catch(x){}}return}
   if(id==="spin_f"){const f=e.target.files[0];e.target.value="";if(f){try{await spinImport(await f.text())}catch(x){toast("Could not read this file","bad")}}return}
   if(id==="restore_f"){
