@@ -7,7 +7,7 @@
 <title>Dress Rental Ledger</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700;800&family=Cinzel:wght@600&family=Jost:wght@500&display=swap">
 <style>
 /* Layout: app shell — sidebar on desktop, bottom tab bar on phone; sheets slide up for forms and detail */
 :root{
@@ -672,6 +672,28 @@ button.qd:hover{outline:2px solid currentColor;outline-offset:-2px}
 .rt-afnote{margin:6px 0 2px;line-height:1.5}
 .slip2{display:inline-flex;gap:4px;flex-wrap:nowrap}
 body.nomoney .mny{display:none!important}
+
+/* sign-in screens: Surangi Collection brand (gold, from the opening page) */
+#gate{background:radial-gradient(120% 70% at 50% 0%,#F3E9D3 0%,#F9F8F5 55%) #F9F8F5}
+#gate .gate-c{max-width:380px;border:1px solid #E6D9BD;border-top:3px solid #D2AE5C;border-radius:16px;box-shadow:0 18px 50px rgba(116,80,26,.12);padding:28px 24px 22px;color:#3A2A14}
+#gate .gate-c h2{color:#3A2A14;font-size:19px;font-weight:700}
+#gate .gate-c .small.muted,#gate .gate-c .muted{color:#776650}
+.sg-brand{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:4px}
+.sg-dancer{width:62px;aspect-ratio:200/220;background:url(data:image/png;base64,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) center/contain no-repeat}
+.sg-brand.big .sg-dancer{width:92px}
+.sg-name{font-family:'Cinzel',serif;font-weight:600;font-size:27px;letter-spacing:.06em;line-height:1;background:linear-gradient(180deg,#C9A24E,#8C6420 70%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sg-sub{font-family:'Jost',sans-serif;font-weight:500;font-size:10px;letter-spacing:.42em;padding-left:.42em;color:#8C6A2E}
+#gate .gate-c .f label{color:#74501A}
+#gate .gate-c input{border-color:#E6D9BD;background:#FFFDF8}
+#gate .gate-c input:focus{border-color:#D2AE5C;outline:2px solid rgba(210,174,92,.35);outline-offset:0}
+#gate .gate-c .btn.pri{background:linear-gradient(180deg,#A97B2C,#7E571C);border-color:#74501A;color:#fff}
+#gate .gate-c .btn.pri:hover{filter:brightness(1.06)}
+#gate .gate-c .btn.g-google{background:#fff;border:1px solid #E6D9BD;color:#3A2A14;gap:10px}
+#gate .gate-c .linkbtn{color:#9C7026}
+#gate .gate-or{color:#776650}#gate .gate-or:before,#gate .gate-or:after{background:#E6D9BD}
+.pw-wrap{position:relative}.pw-wrap input{padding-right:64px!important}
+.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;color:#9C7026;font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 8px}
+.gate-foot{font-size:12px;color:#776650;margin-top:2px}
 </style>
 </head>
 <body>
@@ -771,7 +793,7 @@ const DST={available:["Available","p-ok"],booked:["Booked","p-info"],out:["Rente
 
 /* ---------- store ---------- */
 const COLS=["dresses","customers","bookings","expenses","settings","partners","recurring","cleanings","deleted","sellers","orders","cashbook"];
-const S={mode:"loading",db:null,dl:null,data:{dresses:{},customers:{},bookings:{},expenses:{},settings:{},partners:{},recurring:{},cleanings:{},deleted:{},sellers:{},orders:{},cashbook:{},staff:{}},got:new Set(),role:"owner",me:null,need:0};
+const S={mode:"loading",db:null,dl:null,data:{dresses:{},customers:{},bookings:{},expenses:{},settings:{},partners:{},recurring:{},cleanings:{},deleted:{},sellers:{},orders:{},cashbook:{},staff:{},staffpw:{}},got:new Set(),role:"owner",me:null,need:0};
 const LKEY="dress-rental-khata-v1";
 function loadLocal(){try{const j=JSON.parse(localStorage.getItem(LKEY)||"null");if(j)COLS.forEach(c=>S.data[c]=j[c]||{})}catch(e){}}
 function saveLocal(){try{localStorage.setItem(LKEY,JSON.stringify(S.data))}catch(e){}}
@@ -788,41 +810,54 @@ const ROLE_INFO={
 const ROLE_NAV={manager:["dash","bookings","returns","repair","cleaning","fitting","dresses","sellers","orders","customers","partners","accounts","expenses","daybook","activity"],
   sales:["dash","bookings","returns","cleaning","dresses","customers"],tailor:["fitting","repair"]};
 const ROLE_W={sales:["dresses","customers","bookings","cleanings"],tailor:["dresses","customers","bookings"]};
-const canWrite=c=>isOwner()||(role()==="manager"?!["staff","settings","deleted"].includes(c):(ROLE_W[role()]||[]).includes(c));
+const canWrite=c=>isOwner()||(role()==="manager"?!["staff","staffpw","settings","deleted"].includes(c):(ROLE_W[role()]||[]).includes(c));
 const ROLE_COLS={sales:["dresses","customers","bookings","settings","cleanings","partners"],tailor:["dresses","customers","bookings","settings"]};
 const role=()=>S.role||"owner",isOwner=()=>role()==="owner",seeMoney=()=>role()==="owner"||role()==="manager";
 const canNav=k=>{if(isOwner())return true;const L=ROLE_NAV[role()]||[];return L.includes(k)||(k==="calendar"&&L.includes("dash"))};
-const roleCols=()=>isOwner()?COLS.concat(["staff"]):ROLE_COLS[role()]||COLS;
+const roleCols=()=>isOwner()?COLS.concat(["staff","staffpw"]):ROLE_COLS[role()]||COLS;
 const meName=()=>(S.me&&S.me.name)||"Owner";
+const STAFF_DOMAIN="staff.surangi.app";
+const unameOf=e=>String(e||"").toLowerCase().split("@")[0].replace(/[^a-z0-9._-]/g,"").slice(0,30);
+const aliasOf=u=>unameOf(u)+"@"+STAFF_DOMAIN;
 const okEmail=u=>!!(u&&u.email&&ALLOW.includes(String(u.email).toLowerCase()));
 let SUBS=[];
 const LOCK={open:false,started:false,fail:0,until:0};
 function gate(html){let g=document.getElementById("gate");if(html==null){if(g)g.remove();return null}
   if(!g){g=document.createElement("div");g.id="gate";document.body.appendChild(g)}g.innerHTML='<div class="gate-c">'+html+'</div>';return g}
-const gateHead=t=>'<div class="gate-shop">'+esc((S.data.settings.main||{}).shop||"Dress Rental Ledger")+'</div><h2>'+t+'</h2>';
-function authErr(e){const c=(e&&e.code)||"";
+const gateBrand=big=>'<div class="sg-brand'+(big?" big":"")+'" role="img" aria-label="Surangi Collection"><i class="sg-dancer" aria-hidden="true"></i><span class="sg-name">SURANGI</span><span class="sg-sub">COLLECTION</span></div>';
+const gateHead=t=>gateBrand(false)+'<h2>'+t+'</h2>';
+function authErr(e){const c=(e&&e.code)||"";if(c==="auth/admin-restricted-operation")return "This Google account is new to the ledger, and Firebase is set to block new accounts. Owner: open Firebase Console → Authentication → Settings → User actions, tick \u201cEnable create (sign-up)\u201d and Save. Then sign in again.";
   if(/wrong-password|invalid-credential|invalid-login|user-not-found|invalid-email/.test(c))return "Email or password is wrong.";
   if(/too-many-requests/.test(c))return "Too many tries. Wait a few minutes and try again.";
   if(/network/.test(c))return "No internet. Connect and try again.";
   if(/popup-closed|cancelled-popup/.test(c))return "";
   if(/unauthorized-domain/.test(c))return "This website address is not allowed yet. Add it in Firebase → Authentication → Settings → Authorized domains.";
   return "Could not sign in ("+c+").";}
-function loginScreen(msg,ok){
-  const g=gate(gateHead("Sign in")+'<p class="small muted" style="margin:0">Only the shop\'s accounts can open this ledger.</p>'+
+function loginScreen(msg,ok,keep){
+  const G='<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
+  const g=gate(gateBrand(true)+'<h2>Sign in</h2>'+
     (msg?'<div class="'+(ok?"gate-ok":"gate-err")+'">'+esc(msg)+'</div>':"")+
-    '<button type="button" class="btn pri" id="g_google">Sign in with Google</button><div class="gate-or">or with email</div>'+
-    '<div class="f"><label for="g_em">Email</label><input id="g_em" type="email" autocomplete="username" inputmode="email"></div>'+
-    '<div class="f"><label for="g_pw">Password</label><input id="g_pw" type="password" autocomplete="current-password"></div>'+
-    '<button type="button" class="btn" id="g_login">Sign in</button><button type="button" class="linkbtn" id="g_reset">Forgot password?</button>');
+    '<div class="f"><label for="g_em">Username</label><input id="g_em" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="e.g. neha" value="'+esc(keep||"")+'"></div>'+
+    '<div class="f"><label for="g_pw">Password</label><div class="pw-wrap"><input id="g_pw" type="password" autocomplete="current-password"><button type="button" class="pw-eye" id="g_eye" aria-label="Show password">Show</button></div></div>'+
+    '<button type="button" class="btn pri" id="g_login">Sign in</button>'+
+    '<div class="gate-or">or</div>'+
+    '<button type="button" class="btn g-google" id="g_google">'+G+'Sign in with Google</button>'+
+    '<button type="button" class="linkbtn" id="g_reset">Forgot password?</button>'+
+    '<div class="gate-foot">Only Surangi Collection’s owner and staff can open this ledger.</div>');
   const A=firebase.auth();
+  g.querySelector("#g_eye").addEventListener("click",e=>{const i=g.querySelector("#g_pw"),sh=i.type==="password";i.type=sh?"text":"password";e.target.textContent=sh?"Hide":"Show";e.target.setAttribute("aria-label",sh?"Hide password":"Show password")});
   g.querySelector("#g_google").addEventListener("click",()=>{const pv=new firebase.auth.GoogleAuthProvider();pv.setCustomParameters({prompt:"select_account"});
     A.signInWithPopup(pv).catch(e=>{if(/popup-blocked|operation-not-supported/.test(e.code||""))A.signInWithRedirect(pv);else{const m=authErr(e);if(m)loginScreen(m)}})});
-  const go=()=>{const em=g.querySelector("#g_em").value.trim(),pw=g.querySelector("#g_pw").value;if(!em||!pw){loginScreen("Enter the email and the password.");return}
-    g.querySelector("#g_login").disabled=true;A.signInWithEmailAndPassword(em,pw).catch(e=>loginScreen(authErr(e)||"Could not sign in."))};
+  const go=()=>{const u=g.querySelector("#g_em").value.trim(),pw=g.querySelector("#g_pw").value;if(!u||!pw){loginScreen("Enter your username and password.",false,u);return}
+    const em=u.includes("@")?u.toLowerCase():aliasOf(u);
+    g.querySelector("#g_login").disabled=true;g.querySelector("#g_login").textContent="Signing in…";
+    A.signInWithEmailAndPassword(em,pw).catch(e=>loginScreen(/wrong-password|user-not-found|invalid-credential|invalid-login|invalid-email/.test((e&&e.code)||"")?"Wrong username or password. Staff: ask the owner to check it.":authErr(e)||"Could not sign in.",false,u))};
   g.querySelector("#g_login").addEventListener("click",go);
   g.querySelector("#g_pw").addEventListener("keydown",e=>{if(e.key==="Enter")go()});
-  g.querySelector("#g_reset").addEventListener("click",()=>{const em=g.querySelector("#g_em").value.trim();if(!em){loginScreen("Type your email above, then tap 'Forgot password?'.");return}
-    A.sendPasswordResetEmail(em).then(()=>loginScreen("A password reset link has been sent to "+em+".",true)).catch(e=>loginScreen(authErr(e)))});
+  g.querySelector("#g_em").addEventListener("keydown",e=>{if(e.key==="Enter")g.querySelector("#g_pw").focus()});
+  g.querySelector("#g_reset").addEventListener("click",()=>{const em=g.querySelector("#g_em").value.trim().toLowerCase();
+    if(!em.includes("@")||!ALLOW.includes(em)){loginScreen("Staff passwords are set by the owner. Ask the owner to tell you or change it. Owner: type your email above, then tap ‘Forgot password?’.",false,em);return}
+    A.sendPasswordResetEmail(em).then(()=>loginScreen("A password reset link has been sent to "+em+".",true,em)).catch(e=>loginScreen(authErr(e)))});
 }
 async function initStore(){
   try{if(window.claude&&window.claude.use)window.claude.use("downloads").then(d=>{S.dl=d;rerender()}).catch(()=>{})}catch(e){}
@@ -2387,7 +2422,9 @@ service cloud.firestore {
     function myEmail() { return request.auth.token.email.lower(); }
     function isOwner() { return signedIn() && myEmail() in [${own}]; }
     function staffPath() { return /databases/$(database)/documents/staff/$(myEmail()); }
-    function isStaff() { return signedIn() && request.auth.token.email_verified == true && exists(staffPath()) && get(staffPath()).data.active == true; }
+    // Google sign-in: verified Gmail. Username sign-in: an account the owner made at @${STAFF_DOMAIN}
+    function okLogin() { return request.auth.token.email_verified == true || myEmail().matches('^[a-z0-9._-]+@staff[.]surangi[.]app$'); }
+    function isStaff() { return signedIn() && okLogin() && exists(staffPath()) && get(staffPath()).data.active == true; }
     function hasRole(r) { return isStaff() && get(staffPath()).data.role in r; }
 
     // staff list: only the owner changes it; each staff member can read their own entry
@@ -2395,44 +2432,76 @@ service cloud.firestore {
       allow read: if isOwner() || (signedIn() && myEmail() == email);
       allow write: if isOwner();
     }
+    // staff passwords: only the owner
+    match /staffpw/{id} {
+      allow read, write: if isOwner();
+    }
     match /{col}/{id} {
       allow read: if isOwner()
-        || (hasRole(['manager']) && col != 'staff')
+        || (hasRole(['manager']) && !(col in ['staff','staffpw']))
         || (hasRole(['sales']) && col in ['dresses','customers','bookings','settings','cleanings','partners'])
         || (hasRole(['tailor']) && col in ['dresses','customers','bookings','settings']);
       allow create, update: if isOwner()
-        || (hasRole(['manager']) && !(col in ['staff','settings','deleted']))
+        || (hasRole(['manager']) && !(col in ['staff','staffpw','settings','deleted']))
         || (hasRole(['sales']) && col in ['dresses','customers','bookings','cleanings'])
         || (hasRole(['tailor']) && col in ['dresses','customers','bookings']);
       allow delete: if isOwner();
     }
   }
 }`}
-function staffPanel(){if(!isOwner())return "";const RO={manager:0,sales:1,tailor:2};const L=list(S.data.staff||{}).sort((a,b)=>(a.active===false)-(b.active===false)||(RO[a.role]-RO[b.role])||String(a.name).localeCompare(String(b.name)));
+function staffPanel(){if(!isOwner())return "";const RO={manager:0,sales:1,tailor:2};const L=list(S.data.staff||{}).filter(x=>!x.alias).sort((a,b)=>(a.active===false)-(b.active===false)||(RO[a.role]-RO[b.role])||String(a.name).localeCompare(String(b.name)));
   return '<div class="panel" style="margin-top:16px"><div class="panel-h"><h3>Staff</h3><button type="button" class="btn sm pri" data-act="staff-add">'+ic("plus",14)+'Add staff</button></div><div class="panel-b">'+
-   '<p class="small muted" style="margin:0 0 10px">Each staff member signs in on their own phone with their own Google account. They see only what their role allows. Only you can delete anything or change settings. Every change they make to a booking is saved with their name.</p>'+
+   '<p class="small muted" style="margin:0 0 10px">Each staff member signs in on their own phone with the <b>username and password you set here</b>, or with their Google account. Only you can see or change their password. They see only what their role allows. Only you can delete anything or change settings. Every change they make to a booking is saved with their name.</p>'+
    '<div class="small" style="margin:0 0 8px"><b>Owner:</b> 1 (you) · <b>Manager:</b> '+L.filter(x=>x.role==="manager"&&x.active!==false).length+' of 1 · <b>Sales team:</b> '+L.filter(x=>x.role==="sales"&&x.active!==false).length+' · <b>Tailor team:</b> '+L.filter(x=>x.role==="tailor"&&x.active!==false).length+'</div>'+
-   (L.length?'<div class="hist">'+L.map(x=>'<div class="due-row"><div class="due-main" data-staff-edit="'+esc(x.id)+'"><span><b>'+esc(x.name||x.id)+'</b> <span class="pill '+(x.active===false?"p-mute":"p-info")+'">'+(x.active===false?"Turned off":esc((ROLE_INFO[x.role]||{}).name||x.role))+'</span><span class="small muted" style="display:block">'+esc(x.id)+(x.phone?" · "+esc(x.phone):"")+'</span></span></div></div>').join("")+'</div>':'<div class="empty" style="padding:14px"><b>No staff yet</b>Tap "Add staff" and enter their Google email.</div>')+
+   (L.length?'<div class="hist">'+L.map(x=>'<div class="due-row"><div class="due-main" data-staff-edit="'+esc(x.id)+'"><span><b>'+esc(x.name||x.id)+'</b> <span class="pill '+(x.active===false?"p-mute":"p-info")+'">'+(x.active===false?"Turned off":esc((ROLE_INFO[x.role]||{}).name||x.role))+'</span><span class="small muted" style="display:block">'+(x.uname?'Username: <b>'+esc(x.uname)+'</b>'+((S.data.staffpw||{})[aliasOf(x.uname)]?' · password set':' · <span class="neg">no password yet</span>'):"")+(x.gmail||!String(x.id).endsWith("@"+STAFF_DOMAIN)?' · Google: '+esc(x.gmail||x.id):"")+(x.phone?" · "+esc(x.phone):"")+'</span></span></div></div>').join("")+'</div>':'<div class="empty" style="padding:14px"><b>No staff yet</b>Tap "Add staff" and enter their Google email.</div>')+
    '<details style="margin-top:12px"><summary class="small"><b>Roles: who can do what</b></summary><div class="small" style="margin-top:8px;line-height:1.6">'+["owner","manager","sales","tailor"].map(r=>'<div><b>'+ROLE_INFO[r].name+':</b> '+ROLE_INFO[r].desc+'</div>').join("")+'</div></details>'+
    '<details style="margin-top:8px"><summary class="small"><b>One-time setup: Firebase rules for staff</b></summary><div class="small" style="margin-top:8px;line-height:1.6">Open <b>console.firebase.google.com</b> → your project → <b>Firestore Database → Rules</b>. Delete the old rules, paste these, and tap <b>Publish</b>. Without this, staff cannot open the ledger.</div><textarea id="st_rules" readonly rows="10" style="width:100%;font-family:monospace;font-size:11px;margin-top:6px">'+esc(rulesText())+'</textarea><button type="button" class="btn sm" data-act="copy-rules" style="margin-top:6px">'+ic("copy",14)+'Copy rules</button></details>'+
   '</div></div>'}
-function staffForm(id){const x=id?(S.data.staff||{})[id]||{}:{};
+async function staffAuth(){let ap;try{ap=firebase.app("staffmaker")}catch(e){ap=firebase.initializeApp(FB_CFG,"staffmaker")}const A=ap.auth();try{await A.setPersistence(firebase.auth.Auth.Persistence.NONE)}catch(e){}return A}
+/* make or change a staff login (username@staff domain) without signing the owner out */
+async function setStaffPw(alias,pw){const A=await staffAuth(),old=(S.data.staffpw||{})[alias];
+  try{if(old&&old.pw){const c=await A.signInWithEmailAndPassword(alias,old.pw);await c.user.updatePassword(pw)}else{await A.createUserWithEmailAndPassword(alias,pw)}}
+  catch(e){const c=(e&&e.code)||"";throw new Error(/email-already-in-use/.test(c)?"This username is already taken. Choose another username.":/weak-password/.test(c)?"Password is too weak. Use at least 6 letters or numbers.":/operation-not-allowed/.test(c)?"Turn on Email/Password in Firebase Console → Authentication → Sign-in method, then try again.":/admin-restricted/.test(c)?"Turn on “Enable create (sign-up)” in Firebase Console → Authentication → Settings → User actions.":/wrong-password|invalid-credential/.test(c)?"The saved password does not match Firebase. Choose a new username for this person.":"Could not save the password ("+c+")")}
+  finally{try{await A.signOut()}catch(e){}}
+  await put("staffpw",alias,{pw,updatedAt:Date.now()})}
+function staffForm(id){const all=S.data.staff||{},x=id?all[id]||{}:{};const gm0=x.gmail||(id&&!String(id).endsWith("@"+STAFF_DOMAIN)?id:"");
+  const un0=x.uname||unameOf(gm0),hasPw=!!(x.uname&&(S.data.staffpw||{})[aliasOf(x.uname)]),pw0=hasPw?(S.data.staffpw[aliasOf(x.uname)].pw||""):"";
   const el=modal({title:id?"Edit staff":"Add staff",body:'<div class="fgrid">'+
-   '<div class="f"><label for="sf_name">Name</label><input id="sf_name" value="'+esc(x.name||"")+'" placeholder="e.g. Pooja"></div>'+
+   '<div class="f"><label for="sf_name">Name</label><input id="sf_name" value="'+esc(x.name||"")+'" placeholder="e.g. Neha"></div>'+
    '<div class="f"><label for="sf_phone">Phone</label><input id="sf_phone" type="tel" inputmode="tel" value="'+esc(x.phone||"")+'"></div>'+
-   '<div class="f full" style="grid-column:1/-1"><label for="sf_email">Google email (Gmail) they sign in with</label><input id="sf_email" type="email" inputmode="email" value="'+esc(id||"")+'"'+(id?" readonly":"")+' placeholder="name@gmail.com"><span class="hint">'+(id?"To change the email, turn this one off and add a new entry.":"They tap “Sign in with Google” on their phone and choose this account.")+'</span></div>'+
+   '<div class="f full" style="grid-column:1/-1"><label for="sf_email">Email (Gmail)</label><input id="sf_email" type="email" inputmode="email" value="'+esc(gm0)+'"'+(id&&gm0?" readonly":"")+' placeholder="neha@gmail.com"><span class="hint">The username is made from this. With a Gmail they can also use “Sign in with Google”.</span></div>'+
+   '<div class="f"><label for="sf_user">Username</label><input id="sf_user" autocapitalize="none" autocorrect="off" spellcheck="false" value="'+esc(un0)+'"'+(hasPw?" readonly":"")+'><span class="hint">'+(hasPw?"Fixed once the password is set.":"Small letters, numbers, dot. Made from the email name.")+'</span></div>'+
+   '<div class="f"><label for="sf_pw">'+(hasPw?"Password (change it here)":"Password")+'</label><div class="pw-wrap"><input id="sf_pw" type="password" autocomplete="new-password" value="'+esc(pw0)+'" placeholder="at least 6 letters / numbers"><button type="button" class="pw-eye" id="sf_eye">Show</button></div><span class="hint">Only you can see and change it. Staff cannot reset it.</span></div>'+
    '<div class="f full" style="grid-column:1/-1"><label>Role</label>'+["manager","sales","tailor"].map(r=>'<label class="chk" style="margin:4px 0"><input type="radio" name="sf_role" value="'+r+'"'+((x.role||"sales")===r?" checked":"")+'> <span><b>'+ROLE_INFO[r].name+'</b><br><span class="small muted">'+ROLE_INFO[r].desc+'</span></span></label>').join("")+'</div>'+
    (id?'<label class="chk full" style="grid-column:1/-1"><input type="checkbox" id="sf_active"'+(x.active===false?"":" checked")+'> <span><b>Can sign in</b><br><span class="small muted">Untick when someone leaves. They cannot open the ledger again.</span></span></label>':"")+
    '</div>',foot:'<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" data-ok>Save</button>'});
-  el.querySelector("[data-ok]").addEventListener("click",async()=>{const name=val(el,"sf_name"),em=val(el,"sf_email").toLowerCase(),r=(el.querySelector('input[name="sf_role"]:checked')||{}).value||"sales";
-    if(!name){toast("Enter a name","bad");return}if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){toast("Enter a valid email","bad");return}
-    if(ALLOW.includes(em)){toast("This is the owner's email","bad");return}
-    if(!id&&(S.data.staff||{})[em]){toast("This email is already added","bad");return}
-    if(r==="manager"&&(id?(el.querySelector("#sf_active")||{}).checked:true)){const other=list(S.data.staff||{}).find(x=>x.id!==em&&x.role==="manager"&&x.active!==false);if(other){toast("There can be only one Manager. "+(other.name||other.id)+" is the Manager now. Change or turn off that entry first.","bad");return}}
+  const ue=el.querySelector("#sf_user"),ee=el.querySelector("#sf_email");let uTouched=!!x.uname;
+  ue.addEventListener("input",()=>{uTouched=true});ee.addEventListener("input",()=>{if(!uTouched&&!hasPw)ue.value=unameOf(ee.value)});
+  el.querySelector("#sf_eye").addEventListener("click",e=>{const i=el.querySelector("#sf_pw"),sh=i.type==="password";i.type=sh?"text":"password";e.target.textContent=sh?"Hide":"Show"});
+  el.querySelector("[data-ok]").addEventListener("click",async e=>{const btn=e.currentTarget;
+    const name=val(el,"sf_name"),gm=val(el,"sf_email").toLowerCase(),un=unameOf(val(el,"sf_user")),pw=el.querySelector("#sf_pw").value,r=(el.querySelector('input[name="sf_role"]:checked')||{}).value||"sales";
+    const active=id?!!(el.querySelector("#sf_active")||{}).checked:true;
+    if(!name){toast("Enter a name","bad");return}
+    if(gm&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(gm)){toast("Enter a valid email","bad");return}
+    if(gm&&ALLOW.includes(gm)){toast("This is the owner's email","bad");return}
+    if(!un||un.length<3){toast("Enter a username (at least 3 letters)","bad");return}
+    if(!gm&&!pw){toast("Enter a Gmail or set a password, so they can sign in","bad");return}
+    if(pw&&pw.length<6){toast("Password must be at least 6 letters / numbers","bad");return}
+    const mainId=id||(gm||aliasOf(un)),alias=aliasOf(un);
+    const clash=list(all).find(y=>y.id!==mainId&&y.id!==alias&&!y.alias&&(y.uname===un||(gm&&(y.id===gm||y.gmail===gm))));if(clash){toast("This "+(clash.uname===un?"username":"email")+" is already used by "+(clash.name||clash.id),"bad");return}
+    if(r==="manager"&&active){const other=list(all).find(y=>!y.alias&&y.id!==mainId&&y.role==="manager"&&y.active!==false);if(other){toast("There can be only one Manager. "+(other.name||other.id)+" is the Manager now. Change or turn off that entry first.","bad");return}}
     if(id&&!await pinOK("Changing staff needs the 4-digit PIN."))return;
-    const o={name,phone:val(el,"sf_phone"),role:r,active:id?!!(el.querySelector("#sf_active")||{}).checked:true,addedOn:x.addedOn||today(),updatedAt:Date.now()};
-    try{await put("staff",em,o);closeTop();toast(id?"Saved":name+" added. Now they can sign in with "+em)}catch(e){}});
+    btn.disabled=true;btn.textContent="Saving…";
+    try{
+      if(pw&&pw!==pw0)await setStaffPw(alias,pw);
+      const o={name,phone:val(el,"sf_phone"),role:r,active,uname:un,gmail:gm,addedOn:x.addedOn||today(),updatedAt:Date.now()};
+      await put("staff",mainId,o);
+      const pwSet=!!(pw||(S.data.staffpw||{})[alias]);
+      if(pwSet&&mainId!==alias)await put("staff",alias,Object.assign({},o,{alias:true,main:mainId}));
+      closeTop();toast(id?"Saved":name+" added · username: "+un)}
+    catch(err){btn.disabled=false;btn.textContent="Save";toast(err.message||"Could not save","bad")}});
 }
+
 function viewSettings(){
   const s=ST();
   const f=(id,l,v,h,type)=>'<div class="f"><label for="s_'+id+'">'+l+'</label><input id="s_'+id+'" type="'+(type||"number")+'" value="'+esc(v)+'"'+(type?"":' inputmode="numeric" min="0"')+'>'+(h?'<span class="hint">'+h+'</span>':"")+'</div>';
