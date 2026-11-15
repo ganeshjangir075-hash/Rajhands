@@ -708,6 +708,20 @@ body.nomoney .mny{display:none!important}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) #side{background:var(--surface)}:root:not([data-theme="light"]) .btn.pri,:root:not([data-theme="light"]) .fab{background:linear-gradient(180deg,#E9C46A,#C9A24E);border-color:#C9A24E;color:#22180A}}
 :root[data-theme="dark"] #side{background:var(--surface)}
 :root[data-theme="dark"] .btn.pri,:root[data-theme="dark"] .fab{background:linear-gradient(180deg,#E9C46A,#C9A24E);border-color:#C9A24E;color:#22180A}
+.off-box{border:1px dashed var(--marigold,#D2AE5C);background:var(--accent-soft);border-radius:10px;padding:10px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px}
+.off-l.off-x{opacity:.65}
+.att-row{display:flex;align-items:center;gap:4px;margin:2px 0}
+.att-b{min-width:30px;height:28px;border-radius:7px;border:1px solid var(--line-2);background:var(--surface);font:700 12px var(--f-body);color:var(--muted);cursor:pointer}
+.att-b.on.ok{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}.att-b.on.warn{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}.att-b.on.bad{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}.att-b.on.info{background:var(--info-soft);color:var(--info);border-color:var(--info)}
+.att-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.att-w{text-align:center;font-size:11px;color:var(--muted);font-weight:700}
+.att-d{display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 0;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-family:inherit}
+.att-d b{font-size:12px}.att-d i{font-style:normal;font-size:11px;font-weight:700;color:var(--faint)}
+.att-d.v-P{background:var(--ok-soft);border-color:var(--ok)}.att-d.v-P i{color:var(--ok)}.att-d.v-H{background:var(--warn-soft);border-color:var(--warn)}.att-d.v-H i{color:var(--warn)}
+.att-d.v-A{background:var(--bad-soft);border-color:var(--bad)}.att-d.v-A i{color:var(--bad)}.att-d.v-L{background:var(--info-soft);border-color:var(--info)}.att-d.v-L i{color:var(--info)}.att-d.fut{opacity:.4;cursor:default}
+.ops-tabs{display:flex;align-items:center;gap:4px;flex-wrap:wrap;background:var(--accent-soft);border:1px solid var(--line);border-radius:12px;padding:6px;margin-bottom:14px}
+.ops-tabs .ops-h{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--gold);padding:0 8px 0 4px;font-size:13px}
+.ops-tabs button{border:0;background:transparent;border-radius:8px;padding:7px 12px;font:600 13px var(--f-body);color:var(--muted);cursor:pointer}
+.ops-tabs button.on{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(116,80,26,.15)}
 </style>
 </head>
 <body>
@@ -807,8 +821,8 @@ const BST={draft:["Draft","p-mute"],booked:["Booked","p-info"],ready:["Ready","p
 const DST={available:["Available","p-ok"],booked:["Booked","p-info"],out:["Rented","p-acc"],cleaning:["Dry-cleaning","p-warn"],repair:["In repair","p-bad"],sold:["Sold","p-mute"],retired:["Retired","p-mute"]};
 
 /* ---------- store ---------- */
-const COLS=["dresses","customers","bookings","expenses","settings","partners","recurring","cleanings","deleted","sellers","orders","cashbook","jobs"];
-const S={mode:"loading",db:null,dl:null,data:{dresses:{},customers:{},bookings:{},expenses:{},settings:{},partners:{},recurring:{},cleanings:{},deleted:{},sellers:{},orders:{},cashbook:{},jobs:{},staff:{},staffpw:{}},got:new Set(),role:"owner",me:null,need:0};
+const COLS=["dresses","customers","bookings","expenses","settings","partners","recurring","cleanings","deleted","sellers","orders","cashbook","jobs","attendance"];
+const S={mode:"loading",db:null,dl:null,data:{dresses:{},customers:{},bookings:{},expenses:{},settings:{},partners:{},recurring:{},cleanings:{},deleted:{},sellers:{},orders:{},cashbook:{},jobs:{},attendance:{},staff:{},staffpw:{}},got:new Set(),role:"owner",me:null,need:0};
 const LKEY="dress-rental-khata-v1";
 function loadLocal(){try{const j=JSON.parse(localStorage.getItem(LKEY)||"null");if(j)COLS.forEach(c=>S.data[c]=j[c]||{})}catch(e){}}
 function saveLocal(){try{localStorage.setItem(LKEY,JSON.stringify(S.data))}catch(e){}}
@@ -818,16 +832,13 @@ const FB_CFG={apiKey:"AIzaSyCHbw0eM0rY3_7hlfNczKxPp0XO_QKICjg",authDomain:"renta
 const ALLOW=["ganeshjangir075@gmail.com"];
 /* ---------- staff roles ---------- */
 const ROLE_INFO={
-  owner:{name:"Owner",desc:"Only one: you. Everything, including settings, staff and deleting",max:1},
-  manager:{name:"Manager",desc:"Only one person. Bookings, customers, payments, expenses, accounts, reports, and also fitting, repair and dry-cleaning. No settings, no staff, no deleting",max:1},
-  sales:{name:"Sales team",desc:"As many as you need. New bookings, customers and their sizes, hand over, returns, dry-cleaning. Sees only what a customer owes, not revenue or profit. No deleting"},
-  ops:{name:"Operations team",desc:"As many as you need. Plans which dress to get ready and when, gives job cards to the Tailor team and checks the work, marks bookings Ready, sends ready and return reminders, handles dry-cleaning. No money, no new bookings, no deleting"},
-  tailor:{name:"Tailor team",desc:"As many as you need. Gets job cards (repair / fitting) with the size and deadline, marks them Started, Done or Problem, prints fitting slips. No money, no customer list"}};
-const ROLE_NAV={ops:["planner","jobs","fitting","repair","cleaning","dresses"],manager:["dash","planner","jobs","bookings","returns","repair","cleaning","fitting","dresses","sellers","orders","customers","partners","accounts","expenses","daybook","activity"],
-  sales:["dash","bookings","returns","cleaning","dresses","customers"],tailor:["jobs"]};
-const ROLE_W={sales:["dresses","customers","bookings","cleanings"],ops:["dresses","bookings","cleanings","jobs"],tailor:["dresses","customers","bookings","jobs"]};
+  owner:{name:"Owner",desc:"Only one: you. Everything, including the Operations tab, money, settings, staff and deleting"},
+  sales:{name:"Sales & Booking team",desc:"As many as you need. Customers, bookings, payments, hand over, returns, dry-cleaning, and the repair / fitting jobs you send them from Operations (they get them done by the shop tailor). Sees only what a customer owes, not revenue or profit. No deleting, no settings"}};
+const ROLE_NAV={ops:[],manager:["dash","planner","jobs","bookings","returns","repair","cleaning","fitting","dresses","sellers","orders","customers","partners","accounts","expenses","daybook","activity","team"],
+  sales:["dash","bookings","returns","jobs","cleaning","dresses","customers"],tailor:[]};
+const ROLE_W={sales:["dresses","customers","bookings","cleanings","jobs"],ops:["dresses","bookings","cleanings","jobs"],tailor:["dresses","customers","bookings","jobs"]};
 const canWrite=c=>isOwner()||(role()==="manager"?!["staff","staffpw","settings","deleted"].includes(c):(ROLE_W[role()]||[]).includes(c));
-const ROLE_COLS={sales:["dresses","customers","bookings","settings","cleanings","partners"],ops:["dresses","customers","bookings","settings","cleanings","jobs","staff"],tailor:["dresses","customers","bookings","settings","jobs"]};
+const ROLE_COLS={sales:["dresses","customers","bookings","settings","cleanings","partners","jobs"],ops:["dresses","customers","bookings","settings","cleanings","jobs","staff"],tailor:["dresses","customers","bookings","settings","jobs"]};
 const role=()=>S.role||"owner",isOwner=()=>role()==="owner",seeMoney=()=>role()==="owner"||role()==="manager";
 const canNav=k=>{if(isOwner())return true;const L=ROLE_NAV[role()]||[];return L.includes(k)||(k==="calendar"&&L.includes("dash"))};
 const roleCols=()=>isOwner()?COLS.concat(["staff","staffpw"]):role()==="manager"?COLS.concat(["staff"]):ROLE_COLS[role()]||COLS;
@@ -889,8 +900,8 @@ async function initStore(){
     if(okEmail(u)){S.role="owner";S.me={name:"Owner",email:String(u.email||"").toLowerCase(),role:"owner",id:"owner"}}
     else{const em=String(u.email||"").toLowerCase();let sd=null;gate(gateHead("Checking your account…")+'<p class="small muted" style="margin:0">'+esc(em)+'</p>');
       try{const sn=await db.collection("staff").doc(em).get();sd=sn.exists?sn.data():null}catch(e){sd=null}
-      if(!sd||sd.active===false||!ROLE_INFO[sd.role]||sd.role==="owner"){firebase.auth().signOut();loginScreen((em||"This account")+(sd&&sd.active===false?" has been turned off by the owner.":" is not added as staff yet. Ask the owner to add this Google email in Settings → Staff."));return}
-      S.role=sd.role;S.me={name:sd.name||u.displayName||em,email:em,role:sd.role,id:sd.main||em}}
+      if(!sd||sd.active===false||sd.role==="owner"){firebase.auth().signOut();loginScreen((em||"This account")+(sd&&sd.active===false?" has been turned off by the owner.":" is not added as staff yet. Ask the owner to add this Google email in Settings → Staff."));return}
+      S.role="sales";S.me={name:sd.name||u.displayName||em,email:em,role:"sales",id:sd.main||em}}
     S.user={email:u.email,name:u.displayName||"",google:(u.providerData||[]).some(x=>x&&x.providerId==="google.com")};
     gate(gateHead("Opening your ledger…")+'<p class="small muted" style="margin:0">Loading your data</p>');
     S.db=db;S.mode="cloud";S.got=new Set();const cols=roleCols();S.need=cols.length;
@@ -1128,7 +1139,8 @@ function thanksDue(){const t=today();return list(B()).filter(b=>(b.status==="ret
 /* ---------- UI state ---------- */
 const V={view:"dash",bfilter:"upcoming",bq:"",dq:"",dcat:"",dstat:"",cq:"",calM:null,accM:null};
 try{const v=localStorage.getItem(LKEY+"-view");if(v)V.view=v}catch(e){}
-const NAV=[["dash","Dashboard","home"],["planner","Planner","cal"],["jobs","Job cards","card"],["bookings","Bookings","book"],["returns","Returns","back"],["repair","Repair","scissors"],["cleaning","Dry-cleaning","drop"],["fitting","Fitting","tape"],["dresses","Dresses","dress"],["sellers","Sellers","store"],["orders","Orders","box"],["customers","Customers","user"],["partners","Referrals","users"],["accounts","Accounts","rupee"],["expenses","Expenses","receipt"],["daybook","Day book","daybook"],["activity","Activity log","clock"],["settings","Settings","gear"]];
+const OPSV=["planner","jobs","repair","cleaning","fitting"],OPSL={planner:"Planner",jobs:"Job cards",repair:"Repair",cleaning:"Dry-cleaning",fitting:"Fitting"};
+const NAV=[["dash","Dashboard","home"],["operations","Operations","card"],["planner","Planner","cal"],["jobs","Job cards","card"],["bookings","Bookings","book"],["returns","Returns","back"],["repair","Repair","scissors"],["cleaning","Dry-cleaning","drop"],["fitting","Fitting","tape"],["dresses","Dresses","dress"],["sellers","Sellers","store"],["orders","Orders","box"],["customers","Customers","user"],["partners","Referrals","users"],["accounts","Accounts","rupee"],["expenses","Expenses","receipt"],["daybook","Day book","daybook"],["activity","Activity log","clock"],["team","Staff & salary","users"],["settings","Settings","gear"]];
 const TABS=["dash","bookings","dresses","customers","accounts"];
 
 let raf=0;
@@ -1141,13 +1153,15 @@ function goNow(v,noHist){if(!noHist&&v!==V.view){V.hist=V.hist||[];V.hist.push(V
 
 function render(){
   const st=ST();
+  if(V.view==="operations")V.view=OPSV.includes(V.opsLast)?V.opsLast:"planner";
+  if(OPSV.includes(V.view))V.opsLast=V.view;
   if(!isOwner()&&!canNav(V.view)&&ROLE_NAV[role()])V.view=ROLE_NAV[role()][0];
   document.body.classList.toggle("nomoney",!seeMoney());
   try{const n=loaded()?urgentAll():0;document.title=(n?"("+n+") ":"")+"Dress Rental Ledger";if(loaded()&&!openShown)setTimeout(openPopup,600)}catch(e){}
   const urgent=tasks().filter(x=>x.date<=today()&&x.type!=="dep").length;
   const navTop=(document.querySelector("#side .side-nav")||{}).scrollTop||0;
   $("#side").innerHTML='<div class="brand"><i class="sg-dancer brand-logo" aria-hidden="true"></i><div><div class="brand-name sg-name">SURANGI</div><div class="sg-sub brand-col">COLLECTION</div><div class="brand-sub">'+(isOwner()?esc(st.city)+' · Rental ledger':esc(meName())+' · '+esc(ROLE_INFO[role()].name))+'</div></div></div><div class="side-nav">'+
-    NAV.filter(n=>canNav(n[0])).map(([k,l,i])=>'<button type="button" class="nav-btn'+(V.view===k||(k==="dash"&&V.view==="calendar")?" on":"")+'" data-go="'+k+'">'+ic(i)+'<span>'+l+'</span>'+(k==="dash"&&urgent?'<span class="badge">'+urgent+'</span>':k==="jobs"&&jobBadge()?'<span class="badge">'+jobBadge()+'</span>':k==="fitting"&&loaded()&&fitRows().filter(r=>r.act).length?'<span class="badge" title="Fittings that need action">'+fitRows().filter(r=>r.act).length+'</span>':(k==="repair"||k==="cleaning")&&loaded()&&collectList(k==="repair"?"repair":"clean").length?'<span class="badge" title="Dresses to bring back">'+collectList(k==="repair"?"repair":"clean").length+'</span>':"")+'</button>').join("")+'</div>'+
+    NAV.filter(n=>canNav(n[0])&&!(isOwner()&&OPSV.includes(n[0]))&&!(n[0]==="operations"&&!isOwner())).map(([k,l,i])=>'<button type="button" class="nav-btn'+(V.view===k||(k==="dash"&&V.view==="calendar")||(k==="operations"&&OPSV.includes(V.view))?" on":"")+'" data-go="'+k+'">'+ic(i)+'<span>'+(k==="jobs"&&!isOwner()?"My jobs":l)+'</span>'+(k==="operations"&&isOwner()&&jobBadge()?'<span class="badge">'+jobBadge()+'</span>':"")+(k==="dash"&&urgent?'<span class="badge">'+urgent+'</span>':k==="jobs"&&jobBadge()?'<span class="badge">'+jobBadge()+'</span>':k==="fitting"&&loaded()&&fitRows().filter(r=>r.act).length?'<span class="badge" title="Fittings that need action">'+fitRows().filter(r=>r.act).length+'</span>':(k==="repair"||k==="cleaning")&&loaded()&&collectList(k==="repair"?"repair":"clean").length?'<span class="badge" title="Dresses to bring back">'+collectList(k==="repair"?"repair":"clean").length+'</span>':"")+'</button>').join("")+'</div>'+
     '<div class="side-foot"'+(SYNC.state==="wait"?' data-act="cloud-check" style="cursor:pointer"':"")+'>'+(S.mode==="local"?'<span class="dot warn"></span><span>Saved on this device only</span>':(()=>{const [c,t]=syncTxt();return '<span class="dot '+c+'"></span><span>'+t+'</span>'})())+'</div>';
   {const sn=document.querySelector("#side .side-nav");if(sn&&navTop)sn.scrollTop=navTop}
   const TB=(()=>{const a=TABS.filter(canNav);return a.length>=2?a:(ROLE_NAV[role()]||TABS).slice(0,4)})();
@@ -1163,9 +1177,9 @@ function render(){
   if(V.view==="expenses"){fab.innerHTML=ic("plus")+"<span>Add expense</span>"}
   const m=$("#main");
   if(!loaded()){m.innerHTML='<div class="empty"><b>Opening your ledger…</b>Loading your data.</div>';return}
-  const fn={dash:viewDash,planner:viewPlanner,jobs:viewJobs,bookings:viewBookings,dresses:viewDresses,customers:viewCustomers,returns:viewReturns,sellers:viewSellers,orders:viewOrders,cleaning:viewCleaning,repair:viewCleaning,fitting:viewFitting,daybook:viewDaybook,activity:viewActivity,partners:viewPartners,calendar:viewCalendar,accounts:viewAccounts,expenses:viewExpenses,settings:viewSettings}[V.view]||viewDash;
+  const fn={dash:viewDash,planner:viewPlanner,jobs:viewJobs,team:viewTeam,bookings:viewBookings,dresses:viewDresses,customers:viewCustomers,returns:viewReturns,sellers:viewSellers,orders:viewOrders,cleaning:viewCleaning,repair:viewCleaning,fitting:viewFitting,daybook:viewDaybook,activity:viewActivity,partners:viewPartners,calendar:viewCalendar,accounts:viewAccounts,expenses:viewExpenses,settings:viewSettings}[V.view]||viewDash;
   const keep=document.activeElement&&document.activeElement.id&&m.contains(document.activeElement)?{id:document.activeElement.id,s:document.activeElement.selectionStart}:null;
-  m.innerHTML=quickBar()+sampleBanner()+fn();fitC6();
+  m.innerHTML=quickBar()+sampleBanner()+(isOwner()&&OPSV.includes(V.view)?'<div class="ops-tabs" role="tablist" aria-label="Operations"><span class="ops-h">'+ic("card",16)+'Operations</span>'+OPSV.map(k=>'<button type="button" role="tab" aria-selected="'+(V.view===k)+'" class="'+(V.view===k?"on":"")+'" data-go="'+k+'">'+OPSL[k]+(k==="jobs"&&jobBadge()?' <span class="badge">'+jobBadge()+'</span>':"")+'</button>').join("")+'</div>':"")+fn();fitC6();
   if(!recRan&&loaded())setTimeout(runRecurring,500);
   if(loaded()&&AUTO.day!==today())setTimeout(autoJobs,700);
   if(!badKeysFixed&&loaded())setTimeout(fixBadKeys,300);
@@ -2222,6 +2236,23 @@ function dressCard(d){
 }
 
 /* ---------- Customers ---------- */
+/* history: late returns, damage, cancellations, money still due */
+function custRisk(id){const bs=list(B()).filter(b=>b.customerId===id&&b.status!=="draft");let late=0,dmg=0,dmgAmt=0,cx=0,lost=0;
+  bs.forEach(b=>{const r=b.ret||{};if(N(r.lateFee)>0||(r.on&&b.returnDate&&r.on>b.returnDate))late++;if(N(r.damage)>0){dmg++;dmgAmt+=N(r.damage)}if((r.lost||[]).length)lost++;if(b.status==="cancelled")cx++});
+  const due=bs.filter(b=>b.status==="returned"||b.status==="closed").reduce((a,b)=>a+Math.max(0,fin(b).due),0);return {late,dmg,dmgAmt,cx,lost,due,flag:(C()[id]||{}).flag||null}}
+const FLAGS={warn:["p-warn","Be careful"],block:["p-bad","Do not rent"]};
+function riskBox(id){if(!id||!C()[id])return "";const r=custRisk(id),f=r.flag,bits=[];
+  if(r.late)bits.push(r.late+" late return"+(r.late>1?"s":""));if(r.dmg)bits.push(r.dmg+" damage"+(r.dmg>1?"s":"")+(seeMoney()?" ("+inr(r.dmgAmt)+")":""));if(r.lost)bits.push("lost a dress");if(r.cx>1)bits.push(r.cx+" cancellations");if(r.due>0)bits.push("still owes "+inr(r.due)+" from past bookings");
+  if(!f&&!bits.length)return "";
+  return '<div class="'+(f&&f.level==="block"?"badbox":"warnbox")+'" style="margin-top:6px">'+(f?'<b>'+FLAGS[f.level][1]+'</b>'+(f.reason?': '+esc(f.reason):"")+(f.by?' <span class="small muted">· marked by '+esc(f.by)+(f.on?", "+fd(f.on):"")+'</span>':"")+(bits.length?"<br>":""):"")+(bits.length?'<span class="small">History: '+bits.join(" · ")+'</span>':"")+(f&&f.level==="block"?'<div class="small">A new booking for this customer needs the owner\u2019s PIN.</div>':"")+'</div>'}
+function flagForm(id){const c=C()[id];if(!c)return;const f=c.flag||{};
+  const el=modal({title:"Mark customer · "+esc(c.name),body:'<div class="seg" id="fl_lv">'+[["","No mark"],["warn","Be careful"],["block","Do not rent"]].map(([k,l])=>'<button type="button" data-lv="'+k+'" class="'+((f.level||"")===k?"on":"")+'">'+l+'</button>').join("")+'</div>'+
+    '<div class="f" style="margin-top:10px"><label for="fl_why">Reason</label><input id="fl_why" value="'+esc(f.reason||"")+'" placeholder="e.g. returned 3 days late, haldi stain, did not pay the balance"></div>'+
+    '<p class="small muted" style="margin:6px 0 0">Everyone who books sees this warning when they choose this customer. \u201cDo not rent\u201d needs the owner\u2019s PIN to book.</p>',
+    foot:'<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" data-ok>Save</button>'});
+  let lv=f.level||"";el.querySelector("#fl_lv").addEventListener("click",e=>{const b=e.target.closest("[data-lv]");if(!b)return;lv=b.dataset.lv;el.querySelectorAll("#fl_lv [data-lv]").forEach(x=>x.classList.toggle("on",x===b))});
+  el.querySelector("[data-ok]").addEventListener("click",async()=>{if(!await pinOK("Marking a customer needs the 4-digit PIN."))return;const q=clone(c);delete q.id;if(lv)q.flag={level:lv,reason:val(el,"fl_why"),on:today(),by:meName()};else delete q.flag;
+    try{LOGCTX.skip=true;await put("customers",id,q)}catch(e){return}finally{LOGCTX.skip=false}closeTop();toast(lv?"Marked: "+FLAGS[lv][1]:"Mark removed")})}
 function custStats(id){
   const bs=list(B()).filter(b=>b.customerId===id&&b.status!=="cancelled"&&b.status!=="draft");
   let spent=0,due=0,held=0;
@@ -2231,12 +2262,27 @@ function custStats(id){
 }
 
 /* ---------- Spin & Win (grand opening) ---------- */
+const SPIN_MIN=999; /* opening coupon needs a rent of at least this */
+/* opening coupon / invite reward: can each be used only once */
+function offerInfo(cid,bid,rent){const c=C()[cid];if(!c)return {};const o={};const sp=c.spin;
+  if(sp&&sp.code){const usedElse=!!(sp.usedIn&&sp.usedIn!==bid&&B()[sp.usedIn]&&!["cancelled"].includes(B()[sp.usedIn].status));const valid=spinValid(sp);
+    o.coupon={code:sp.code,pct:N(sp.pct),valid,usedElse,usedIn:sp.usedIn,ok:valid&&!usedElse&&rent>=SPIN_MIN,why:!valid?"expired":usedElse?"already used in "+BN((B()[sp.usedIn]||{}).no||""):rent<SPIN_MIN?"rent must be at least "+inr(SPIN_MIN):""}}
+  const ru=c.rewardUsed||{},fr=spinFriends(cid).filter(f=>f.booked&&(!ru[f.c.id]||ru[f.c.id]===bid||!B()[ru[f.c.id]]||B()[ru[f.c.id]].status==="cancelled"));
+  if(fr.length)o.reward={ids:fr.map(f=>f.c.id),names:fr.map(f=>f.c.name),amt:fr.length*SPIN_REWARD};
+  const usedR=Object.entries(ru).filter(([f,b])=>b!==bid&&B()[b]&&B()[b].status!=="cancelled").length;if(usedR)o.rewardUsedN=usedR;return o}
+async function markOffers(bid,cid,offers){const c=C()[cid];if(!c)return;const q=clone(c);delete q.id;let ch=false;
+  if(q.spin){if(offers&&offers.coupon){if(q.spin.usedIn!==bid){q.spin=Object.assign({},q.spin,{usedIn:bid,usedOn:today()});ch=true}}else if(q.spin.usedIn===bid){q.spin=Object.assign({},q.spin);delete q.spin.usedIn;delete q.spin.usedOn;ch=true}}
+  const ru=Object.assign({},q.rewardUsed||{}),want=(offers&&offers.reward&&offers.reward.friends)||[];
+  Object.keys(ru).forEach(f=>{if(ru[f]===bid&&!want.includes(f)){delete ru[f];ch=true}});want.forEach(f=>{if(ru[f]!==bid){ru[f]=bid;ch=true}});q.rewardUsed=ru;
+  if(ch){try{await put("customers",cid,q)}catch(e){}}}
+async function releaseOffers(bid){const b=B()[bid];if(!b||!b.offers)return;await markOffers(bid,b.customerId,null)}
 const SPIN_REWARD=150;   /* ₹ off for the inviter, per invited friend who books */
 const p10=x=>{const d=String(x||"").replace(/\D/g,"");return d.length>=10?d.slice(-10):d};
 function spinValid(sp){if(!sp||!sp.valid)return true;const d=new Date(sp.valid);return isNaN(d)||d>=new Date(today()+"T00:00:00")}
 const bMade=b=>(b.log&&b.log[0]&&b.log[0].at)||b.createdAt||0;
 /* a friend counts as "booked" only for bookings made after she joined through the invite link */
 function spinFriends(id){return list(C()).filter(x=>x.refCust===id&&x.spin&&x.spin.invitedBy).map(x=>{const t=N(x.spin.atMs)||0;return {c:x,booked:custStats(x.id).bs.some(b=>!t||!bMade(b)||bMade(b)>=t)}})}
+function flagPill(c){return c&&c.flag?' <span class="pill '+FLAGS[c.flag.level][0]+'">'+FLAGS[c.flag.level][1]+'</span>':""}
 function spinPill(c){if(!c.spin||!c.spin.code)return "";return ' <span class="pill '+(spinValid(c.spin)?"p-gold":"p-mute")+'" title="Opening coupon '+esc(c.spin.code)+'">'+esc(c.spin.pct)+'% coupon</span>'}
 function spinCard(c,id){
   if(!c.spin||!c.spin.code)return (()=>{const fr=spinFriends(id);return fr.length?spinReward(fr):""})();
@@ -2250,9 +2296,9 @@ function spinReward(fr){const bk=fr.filter(f=>f.booked);
    '<div class="small muted">'+fr.length+' friend'+(fr.length>1?"s":"")+' joined with her link · '+bk.length+' booked · '+inr(SPIN_REWARD)+' off per booked friend</div>'+
    '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">'+fr.map(f=>'<button type="button" class="pill '+(f.booked?"p-ok":"p-mute")+'" style="border:0;cursor:pointer" data-open-c="'+f.c.id+'">'+esc(f.c.name)+(f.booked?" ✓":"")+'</button>').join("")+'</div></div>'}
 function spinBanner(cid){const c=C()[cid];if(!c)return "";const parts=[];
-  if(c.spin&&c.spin.code){const ok=spinValid(c.spin);parts.push('<b>'+esc(c.spin.pct)+'% opening coupon</b> <span class="mono">'+esc(c.spin.code)+'</span> · '+(ok?'valid until '+esc(c.spin.validTxt||c.spin.valid):'<span class="neg">expired</span>'))}
+  if(c.spin&&c.spin.code){const ok=spinValid(c.spin);const ub=c.spin.usedIn&&B()[c.spin.usedIn]&&B()[c.spin.usedIn].status!=="cancelled"?B()[c.spin.usedIn]:null;parts.push('<b>'+esc(c.spin.pct)+'% opening coupon</b> <span class="mono">'+esc(c.spin.code)+'</span> · '+(ub?'<span class="neg">used in '+esc(BN(ub.no))+'</span>':ok?'valid until '+esc(c.spin.validTxt||c.spin.valid):'<span class="neg">expired</span>'))}
   const bk=spinFriends(cid).filter(f=>f.booked).length;if(bk)parts.push('<b>Invite reward '+inr(bk*SPIN_REWARD)+'</b> ('+bk+' friend'+(bk>1?"s":"")+' booked)');
-  return parts.length?'<div class="okbox" style="margin-top:6px">'+parts.join('<br>')+'<div class="small muted">Enter it in the booking discount.</div></div>':""}
+  return parts.length?'<div class="okbox" style="margin-top:6px">'+parts.join('<br>')+'<div class="small muted">Tick it under Payment to apply. Each can be used only once.</div></div>':""}
 function parseCSV(t){const rows=[];let r=[],f="",q=false;t=String(t).replace(/^﻿/,"");
   for(let i=0;i<t.length;i++){const ch=t[i];
     if(q){if(ch==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=ch;continue}
@@ -2302,7 +2348,7 @@ function viewCustomers(){
   return top("Customers",all.length+" customer accounts",'<label class="btn" for="spin_f">'+ic("down")+'Import Spin &amp; Win (CSV)</label><input id="spin_f" type="file" accept=".csv,text/csv" hidden>')+
   '<div class="toolbar"><label class="search">'+ic("search")+'<input id="cq" type="search" placeholder="Name, phone, village…" value="'+esc(V.cq)+'" aria-label="Search customers"></label></div>'+
   '<div class="panel tbl-wrap">'+(rows.length?'<table><thead><tr><th>Name</th><th>Phone</th><th>Village / area</th><th class="r">Bookings</th><th class="r">Booking value</th><th class="r">Due</th><th>Last booking</th></tr></thead><tbody>'+
-   rows.map(c=>{const s=custStats(c.id),ab=advBal(c);return '<tr class="row" data-open-c="'+c.id+'"><td><b>'+esc(c.name)+'</b>'+(ab>0?' <span class="pill p-ok">'+inr(ab)+' advance</span>':"")+spinPill(c)+'</td><td class="num">'+esc(c.phone||"—")+'</td><td>'+esc(c.address||"—")+'</td><td class="r num">'+s.bs.length+'</td><td class="r num">'+inr(s.spent)+'</td><td class="r num'+(s.due>0?" neg":"")+'">'+(s.due>0?inr(s.due):"—")+'</td><td class="num">'+(s.last?fd(s.last.deliveryDate):"—")+'</td></tr>'}).join("")+'</tbody></table>'
+   rows.map(c=>{const s=custStats(c.id),ab=advBal(c);return '<tr class="row" data-open-c="'+c.id+'"><td><b>'+esc(c.name)+'</b>'+(ab>0?' <span class="pill p-ok">'+inr(ab)+' advance</span>':"")+spinPill(c)+flagPill(c)+'</td><td class="num">'+esc(c.phone||"—")+'</td><td>'+esc(c.address||"—")+'</td><td class="r num">'+s.bs.length+'</td><td class="r num">'+inr(s.spent)+'</td><td class="r num'+(s.due>0?" neg":"")+'">'+(s.due>0?inr(s.due):"—")+'</td><td class="num">'+(s.last?fd(s.last.deliveryDate):"—")+'</td></tr>'}).join("")+'</tbody></table>'
    :'<div class="empty"><b>No customers yet</b>A customer account is created automatically when you add a booking, or tap "New customer".</div>')+'</div>';
 }
 
@@ -2446,9 +2492,9 @@ service cloud.firestore {
     function isStaff() { return signedIn() && okLogin() && exists(staffPath()) && get(staffPath()).data.active == true; }
     function hasRole(r) { return isStaff() && get(staffPath()).data.role in r; }
 
-    // staff list: only the owner changes it; each person reads their own entry; Manager and Operations see names to give job cards
+    // staff list: only the owner changes it; each person reads their own entry
     match /staff/{email} {
-      allow read: if isOwner() || (signedIn() && myEmail() == email) || hasRole(['manager','ops']);
+      allow read: if isOwner() || (signedIn() && myEmail() == email);
       allow write: if isOwner();
     }
     // staff passwords: only the owner
@@ -2457,15 +2503,9 @@ service cloud.firestore {
     }
     match /{col}/{id} {
       allow read: if isOwner()
-        || (hasRole(['manager']) && !(col in ['staff','staffpw']))
-        || (hasRole(['sales']) && col in ['dresses','customers','bookings','settings','cleanings','partners'])
-        || (hasRole(['ops']) && col in ['dresses','customers','bookings','settings','cleanings','jobs'])
-        || (hasRole(['tailor']) && col in ['dresses','customers','bookings','settings','jobs']);
+        || (isStaff() && col in ['dresses','customers','bookings','settings','cleanings','partners','jobs']);
       allow create, update: if isOwner()
-        || (hasRole(['manager']) && !(col in ['staff','staffpw','settings','deleted']))
-        || (hasRole(['sales']) && col in ['dresses','customers','bookings','cleanings'])
-        || (hasRole(['ops']) && col in ['dresses','bookings','cleanings','jobs'])
-        || (hasRole(['tailor']) && col in ['dresses','customers','bookings','jobs']);
+        || (isStaff() && col in ['dresses','customers','bookings','cleanings','jobs']);
       allow delete: if isOwner();
     }
   }
@@ -2473,9 +2513,9 @@ service cloud.firestore {
 function staffPanel(){if(!isOwner())return "";const RO={manager:0,sales:1,ops:2,tailor:3};const L=list(S.data.staff||{}).filter(x=>!x.alias).sort((a,b)=>(a.active===false)-(b.active===false)||(RO[a.role]-RO[b.role])||String(a.name).localeCompare(String(b.name)));
   return '<div class="panel" style="margin-top:16px"><div class="panel-h"><h3>Staff</h3><button type="button" class="btn sm pri" data-act="staff-add">'+ic("plus",14)+'Add staff</button></div><div class="panel-b">'+
    '<p class="small muted" style="margin:0 0 10px">Each staff member signs in on their own phone with the <b>username and password you set here</b>, or with their Google account. Only you can see or change their password. They see only what their role allows. Only you can delete anything or change settings. Every change they make to a booking is saved with their name.</p>'+
-   '<div class="small" style="margin:0 0 8px"><b>Owner:</b> 1 (you) · <b>Manager:</b> '+L.filter(x=>x.role==="manager"&&x.active!==false).length+' of 1 · <b>Sales team:</b> '+L.filter(x=>x.role==="sales"&&x.active!==false).length+' · <b>Operations team:</b> '+L.filter(x=>x.role==="ops"&&x.active!==false).length+' · <b>Tailor team:</b> '+L.filter(x=>x.role==="tailor"&&x.active!==false).length+'</div>'+
-   (L.length?'<div class="hist">'+L.map(x=>'<div class="due-row"><div class="due-main" data-staff-edit="'+esc(x.id)+'"><span><b>'+esc(x.name||x.id)+'</b> <span class="pill '+(x.active===false?"p-mute":"p-info")+'">'+(x.active===false?"Turned off":esc((ROLE_INFO[x.role]||{}).name||x.role))+'</span><span class="small muted" style="display:block">'+(x.uname?'Username: <b>'+esc(x.uname)+'</b>'+((S.data.staffpw||{})[aliasOf(x.uname)]?' · password set':' · <span class="neg">no password yet</span>'):"")+(x.gmail||!String(x.id).endsWith("@"+STAFF_DOMAIN)?' · Google: '+esc(x.gmail||x.id):"")+(x.phone?" · "+esc(x.phone):"")+'</span></span></div></div>').join("")+'</div>':'<div class="empty" style="padding:14px"><b>No staff yet</b>Tap "Add staff" and enter their Google email.</div>')+
-   '<details style="margin-top:12px"><summary class="small"><b>Roles: who can do what</b></summary><div class="small" style="margin-top:8px;line-height:1.6">'+["owner","manager","sales","ops","tailor"].map(r=>'<div><b>'+ROLE_INFO[r].name+':</b> '+ROLE_INFO[r].desc+'</div>').join("")+'</div></details>'+
+   '<div class="small" style="margin:0 0 8px"><b>Owner:</b> 1 (you) · <b>Sales &amp; Booking team:</b> '+L.filter(x=>x.active!==false).length+'</div>'+
+   (L.length?'<div class="hist">'+L.map(x=>'<div class="due-row"><div class="due-main" data-staff-edit="'+esc(x.id)+'"><span><b>'+esc(x.name||x.id)+'</b> <span class="pill '+(x.active===false?"p-mute":"p-info")+'">'+(x.active===false?"Turned off":esc(ROLE_INFO.sales.name))+'</span><span class="small muted" style="display:block">'+(x.uname?'Username: <b>'+esc(x.uname)+'</b>'+((S.data.staffpw||{})[aliasOf(x.uname)]?' · password set':' · <span class="neg">no password yet</span>'):"")+(x.gmail||!String(x.id).endsWith("@"+STAFF_DOMAIN)?' · Google: '+esc(x.gmail||x.id):"")+(x.phone?" · "+esc(x.phone):"")+'</span></span></div></div>').join("")+'</div>':'<div class="empty" style="padding:14px"><b>No staff yet</b>Tap "Add staff" and enter their Google email.</div>')+
+   '<details style="margin-top:12px"><summary class="small"><b>Roles: who can do what</b></summary><div class="small" style="margin-top:8px;line-height:1.6">'+["owner","sales"].map(r=>'<div><b>'+ROLE_INFO[r].name+':</b> '+ROLE_INFO[r].desc+'</div>').join("")+'</div></details>'+
    '<details style="margin-top:8px"><summary class="small"><b>One-time setup: Firebase rules for staff</b></summary><div class="small" style="margin-top:8px;line-height:1.6">Open <b>console.firebase.google.com</b> → your project → <b>Firestore Database → Rules</b>. Delete the old rules, paste these, and tap <b>Publish</b>. Without this, staff cannot open the ledger.</div><textarea id="st_rules" readonly rows="10" style="width:100%;font-family:monospace;font-size:11px;margin-top:6px">'+esc(rulesText())+'</textarea><button type="button" class="btn sm" data-act="copy-rules" style="margin-top:6px">'+ic("copy",14)+'Copy rules</button></details>'+
   '</div></div>'}
 async function staffAuth(){let ap;try{ap=firebase.app("staffmaker")}catch(e){ap=firebase.initializeApp(FB_CFG,"staffmaker")}const A=ap.auth();try{await A.setPersistence(firebase.auth.Auth.Persistence.NONE)}catch(e){}return A}
@@ -2490,10 +2530,11 @@ function staffForm(id){const all=S.data.staff||{},x=id?all[id]||{}:{};const gm0=
   const el=modal({title:id?"Edit staff":"Add staff",body:'<div class="fgrid">'+
    '<div class="f"><label for="sf_name">Name</label><input id="sf_name" value="'+esc(x.name||"")+'" placeholder="e.g. Neha"></div>'+
    '<div class="f"><label for="sf_phone">Phone</label><input id="sf_phone" type="tel" inputmode="tel" value="'+esc(x.phone||"")+'"></div>'+
+   '<div class="f"><label for="sf_sal">Monthly salary (₹)</label><input id="sf_sal" type="number" inputmode="numeric" min="0" value="'+esc(x.salary||"")+'" placeholder="e.g. 8000"></div><div class="f"><label for="sf_join">Joined on</label><input id="sf_join" type="date" value="'+esc(x.joined||today())+'"></div>'+
    '<div class="f full" style="grid-column:1/-1"><label for="sf_email">Email (Gmail)</label><input id="sf_email" type="email" inputmode="email" value="'+esc(gm0)+'"'+(id&&gm0?" readonly":"")+' placeholder="neha@gmail.com"><span class="hint">The username is made from this. With a Gmail they can also use “Sign in with Google”.</span></div>'+
    '<div class="f"><label for="sf_user">Username</label><input id="sf_user" autocapitalize="none" autocorrect="off" spellcheck="false" value="'+esc(un0)+'"'+(hasPw?" readonly":"")+'><span class="hint">'+(hasPw?"Fixed once the password is set.":"Small letters, numbers, dot. Made from the email name.")+'</span></div>'+
    '<div class="f"><label for="sf_pw">'+(hasPw?"Password (change it here)":"Password")+'</label><div class="pw-wrap"><input id="sf_pw" type="password" autocomplete="new-password" value="'+esc(pw0)+'" placeholder="at least 6 letters / numbers"><button type="button" class="pw-eye" id="sf_eye">Show</button></div><span class="hint">Only you can see and change it. Staff cannot reset it.</span></div>'+
-   '<div class="f full" style="grid-column:1/-1"><label>Role</label>'+["manager","sales","ops","tailor"].map(r=>'<label class="chk" style="margin:4px 0"><input type="radio" name="sf_role" value="'+r+'"'+((x.role||"sales")===r?" checked":"")+'> <span><b>'+ROLE_INFO[r].name+'</b><br><span class="small muted">'+ROLE_INFO[r].desc+'</span></span></label>').join("")+'</div>'+
+   '<div class="f full" style="grid-column:1/-1"><label>Role</label>'+["sales"].map(r=>'<label class="chk" style="margin:4px 0"><input type="radio" name="sf_role" value="'+r+'"'+((x.role||"sales")===r?" checked":"")+'> <span><b>'+ROLE_INFO[r].name+'</b><br><span class="small muted">'+ROLE_INFO[r].desc+'</span></span></label>').join("")+'</div>'+
    (id?'<label class="chk full" style="grid-column:1/-1"><input type="checkbox" id="sf_active"'+(x.active===false?"":" checked")+'> <span><b>Can sign in</b><br><span class="small muted">Untick when someone leaves. They cannot open the ledger again.</span></span></label>':"")+
    '</div>',foot:'<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" data-ok>Save</button>'});
   const ue=el.querySelector("#sf_user"),ee=el.querySelector("#sf_email");let uTouched=!!x.uname;
@@ -2510,12 +2551,12 @@ function staffForm(id){const all=S.data.staff||{},x=id?all[id]||{}:{};const gm0=
     if(pw&&pw.length<6){toast("Password must be at least 6 letters / numbers","bad");return}
     const mainId=id||(gm||aliasOf(un)),alias=aliasOf(un);
     const clash=list(all).find(y=>y.id!==mainId&&y.id!==alias&&!y.alias&&(y.uname===un||(gm&&(y.id===gm||y.gmail===gm))));if(clash){toast("This "+(clash.uname===un?"username":"email")+" is already used by "+(clash.name||clash.id),"bad");return}
-    if(r==="manager"&&active){const other=list(all).find(y=>!y.alias&&y.id!==mainId&&y.role==="manager"&&y.active!==false);if(other){toast("There can be only one Manager. "+(other.name||other.id)+" is the Manager now. Change or turn off that entry first.","bad");return}}
+    if(false){const other=list(all).find(y=>!y.alias&&y.id!==mainId&&y.role==="manager"&&y.active!==false);if(other){toast("There can be only one Manager. "+(other.name||other.id)+" is the Manager now. Change or turn off that entry first.","bad");return}}
     if(id&&!await pinOK("Changing staff needs the 4-digit PIN."))return;
     btn.disabled=true;btn.textContent="Saving…";
     try{
       if(pw&&pw!==pw0)await setStaffPw(alias,pw);
-      const o={name,phone:val(el,"sf_phone"),role:r,active,uname:un,gmail:gm,addedOn:x.addedOn||today(),updatedAt:Date.now()};
+      const o={name,phone:val(el,"sf_phone"),role:"sales",active,uname:un,gmail:gm,salary:N(val(el,"sf_sal")),joined:val(el,"sf_join"),addedOn:x.addedOn||today(),updatedAt:Date.now()};
       await put("staff",mainId,o);
       const pwSet=!!(pw||(S.data.staffpw||{})[alias]);
       if(pwSet&&mainId!==alias)await put("staff",alias,Object.assign({},o,{alias:true,main:mainId}));
@@ -2528,9 +2569,9 @@ function staffForm(id){const all=S.data.staff||{},x=id?all[id]||{}:{};const gm0=
 const JST={new:["p-bad","New"],assigned:["p-info","Given"],doing:["p-warn","Working"],problem:["p-bad","Problem"],done:["p-ok","Done · to check"]};
 const JKIND={repair:"Repair",fit:"Fitting",both:"Repair + fitting"};
 const staffName=id=>{if(!id)return "";const x=(S.data.staff||{})[id];return x?(x.name||id):(S.me&&S.me.id===id?meName():String(id).split("@")[0])};
-const tailors=()=>list(S.data.staff||{}).filter(x=>!x.alias&&x.role==="tailor"&&x.active!==false);
-const jobCheckOn=()=>!!ST().opsOn;
-const canRunJobs=()=>["owner","manager","ops"].includes(role());
+const tailors=()=>list(S.data.staff||{}).filter(x=>!x.alias&&x.active!==false);
+const jobCheckOn=()=>false;
+const canRunJobs=()=>true;
 function jobDueTxt(j){if(!j.due)return "No rush";const w=j.due.day===today()?"Today ":j.due.day===addDays(today(),1)?"Tomorrow ":"";return w+(w?"(":"")+fdw(j.due.day)+(w?")":"")+", before "+t12(j.due.time)}
 function jobLate(j){if(!j.due)return false;const t=today();if(j.due.day<t)return true;if(j.due.day>t)return false;const n=new Date();return pad(n.getHours())+":"+pad(n.getMinutes())>j.due.time}
 function jStored(J,id){const x=J[id];return x&&x.status!=="closed"?x:{}}
@@ -2545,7 +2586,7 @@ function jobList(){const J=S.data.jobs||{},out=[],t=today();
   out.forEach(j=>{if(!j.status||j.status==="closed")j.status=j.assignee?"assigned":"new";j.late=jobLate(j)&&j.status!=="done"});
   return out.filter(j=>j.status!=="closed").sort((a,b)=>(a.due?a.due.day+a.due.time:"9")<(b.due?b.due.day+b.due.time:"9")?-1:1)}
 function myJobs(L){const me=S.me&&S.me.id;return (L||jobList()).filter(j=>j.assignee===me||!j.assignee)}
-function jobBadge(){if(!loaded())return 0;const L=jobList();if(role()==="tailor")return myJobs(L).filter(j=>j.status!=="done").length;return L.filter(j=>j.status==="new"||j.status==="problem"||j.status==="done"||j.late).length}
+function jobBadge(){if(!loaded())return 0;const L=jobList();if(!isOwner())return myJobs(L).filter(j=>j.status!=="done").length;return L.filter(j=>j.status==="new"||j.status==="problem"||j.status==="done"||j.late).length}
 async function jobSave(j,ch,what){const J=S.data.jobs||{},old0=J[j.id]||{},old=old0.status==="closed"?{log:old0.log||[]}:old0;const o=Object.assign({},old,{kind:j.kind,dressId:j.d.id,bookingId:j.b?j.b.id:"",updatedAt:Date.now()},ch);
   o.log=(old.log||[]).concat([{at:Date.now(),by:meName(),t:what}]).slice(-60);delete o.id;await put("jobs",j.id,o)}
 /* the real work behind Repaired / Fitted (used by buttons and by job cards) */
@@ -2560,7 +2601,7 @@ async function doFitted(bid,by,msg){const bk=B()[bid];if(!bk)return "";const q=c
 async function jobFinish(j,by){if(j.small){const d=D()[j.d.id];if(d){const q=clone(d);delete q.id;q.fixLog=(q.fixLog||[]).concat([{on:today(),note:d.pendingFix||"",by:by||meName()}]);delete q.pendingFix;await put("dresses",j.d.id,q)}await jobSave(j,{status:"closed",closedOn:today()},"Checked and closed");return "Small repair done"}
   if(j.kind==="repair"){const toCl=await doRepaired(j.d.id,by);await jobSave(j,{status:"closed",closedOn:today()},"Checked and closed");return toCl?"Repaired. Dress moved to Dry-cleaning":"Repaired. Dress is available"}
   const r=await doFitted(j.b.id,by,canRunJobs());await jobSave(j,{status:"closed",closedOn:today()},"Checked and closed");return r==="ready"?"Fitted. Booking is Ready":"Fitting done"}
-function jobCard(j){const tl=role()==="tailor",st=JST[j.status]||JST.new,me=S.me&&S.me.id;
+function jobCard(j){const tl=!isOwner(),st=JST[j.status]||JST.new,me=S.me&&S.me.id;
   const head='<div class="fit-top"><span class="pill '+(j.kind==="repair"?"p-warn":"p-info")+'">'+JKIND[j.kind]+'</span> <span class="mono muted">'+esc(j.d.code)+'</span> <b>'+esc(j.d.name||"")+'</b> <span class="pill '+st[0]+'">'+st[1]+'</span>'+(j.late?' <span class="pill p-bad">Late</span>':"")+'</div>';
   const due='<div class="small"><b class="'+(j.late?"neg":"")+'">Finish by: '+jobDueTxt(j)+'</b>'+(j.b?' · pick-up '+esc(pickWhen(j.b)):j.nb?' · next pick-up '+fdw(j.nb.deliveryDate):"")+'</div>';
   const who=j.b?'<div class="small">For <b>'+esc(BN(j.b.no))+'</b> · '+esc(custName(j.b.customerId))+'</div>':"";
@@ -2581,16 +2622,16 @@ function jobCard(j){const tl=role()==="tailor",st=JST[j.status]||JST.new,me=S.me
 function jobText(j){const L=["*Job card · "+JKIND[j.kind]+"*",j.d.code+" "+(j.d.name||""),"Finish by: "+jobDueTxt(j)];
   if(j.b){L.push("For "+BN(j.b.no)+" · "+custName(j.b.customerId),"Pick-up: "+pickWhen(j.b));const m=bkMeas(j.b)||{};MEAS.forEach(([k,l])=>{if(m[k])L.push(l+": "+m[k])});if(m.note)L.push("Size note: "+m.note);if((j.b.fit||{}).note)L.push("Fitting note: "+j.b.fit.note)}
   if(j.fix)L.push("Repair: "+j.fix);return L.join("\n")}
-function viewJobs(){const L=jobList(),tl=role()==="tailor",me=S.me&&S.me.id;
+function viewJobs(){const L=jobList(),tl=!isOwner(),me=S.me&&S.me.id;
   if(tl){const mine=L.filter(j=>j.assignee===me),open=L.filter(j=>!j.assignee),f=V.jbF||"mine",show=f==="open"?open:mine;
-    return top("My jobs","Repair and fitting given to you, with the size and the time to finish")+
+    return top("My jobs","Repair and fitting the owner sent you. Get them done by the shop tailor before the time shown")+
       '<div class="rf-bar"><div class="chips"><button type="button" class="chip'+(f==="mine"?" on":"")+'" data-jbf="mine">Mine <span class="rf-n">'+mine.length+'</span></button><button type="button" class="chip'+(f==="open"?" on":"")+'" data-jbf="open">Not taken <span class="rf-n">'+open.length+'</span></button></div></div>'+
-      '<div class="panel">'+(show.length?show.map(jobCard).join(""):'<div class="empty"><b>'+(f==="mine"?"No job for you right now":"No open jobs")+'</b>'+(f==="mine"?"New jobs from the Operations team show here.":"Jobs not given to anyone show here. You can take one.")+'</div>')+'</div>'}
+      '<div class="panel">'+(show.length?show.map(jobCard).join(""):'<div class="empty"><b>'+(f==="mine"?"No job for you right now":"No open jobs")+'</b>'+(f==="mine"?"New jobs from the owner show here.":"Jobs not given to anyone show here. You can take one.")+'</div>')+'</div>'}
   const F={new:L.filter(j=>j.status==="new"),work:L.filter(j=>j.status==="assigned"||j.status==="doing"),problem:L.filter(j=>j.status==="problem"),check:L.filter(j=>j.status==="done"),late:L.filter(j=>j.late),all:L};
-  const f=V.jbF&&F[V.jbF]?V.jbF:"all",FL=[["all","All"],["new","Not given"],["work","With tailor"],["problem","Problem"],["check","To check"],["late","Late"]];
-  return top("Job cards","Repair and fitting for the Tailor team: give, follow and check")+
-   '<div class="kpis" style="grid-template-columns:repeat(4,minmax(0,1fr))">'+kpi("Not given",F.new.length,"give to a tailor",F.new.length?"warnk click":"click","jbf:new")+kpi("With tailor",F.work.length,"working","click","jbf:work")+kpi("To check",F.check.length,"tailor says done",F.check.length?"warnk click":"click","jbf:check")+kpi("Problem / late",F.problem.length+F.late.length,"needs you",(F.problem.length+F.late.length)?"alert click":"click","jbf:late")+'</div>'+
-   (tailors().length||!isOwner()?"":'<div class="warnbox" style="margin-bottom:10px">No one in the Tailor team yet. Add them in Settings → Staff.</div>')+
+  const f=V.jbF&&F[V.jbF]?V.jbF:"all",FL=[["all","All"],["new","Not given"],["work","With staff"],["problem","Problem"],["late","Late"]].concat(F.check.length?[["check","To check"]]:[]);
+  return top("Job cards","Send repair and fitting to the Sales & Booking team, and follow them")+
+   '<div class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))">'+kpi("Not given",F.new.length,"give to Sales & Booking",F.new.length?"warnk click":"click","jbf:new")+kpi("With staff",F.work.length,"being done","click","jbf:work")+kpi("Problem / late",F.problem.length+F.late.length,"needs you",(F.problem.length+F.late.length)?"alert click":"click","jbf:late")+'</div>'+
+   (tailors().length||!isOwner()?"":'<div class="warnbox" style="margin-bottom:10px">No one in the Sales &amp; Booking team yet. Add them in Settings → Staff.</div>')+
    '<div class="rf-bar"><div class="chips">'+FL.map(x=>'<button type="button" class="chip'+(f===x[0]?" on":"")+'" data-jbf="'+x[0]+'">'+x[1]+' <span class="rf-n">'+F[x[0]].length+'</span></button>').join("")+'</div></div>'+
    '<div class="panel">'+(F[f].length?F[f].map(jobCard).join(""):'<div class="empty"><b>Nothing here</b>Dresses waiting for repair, and bookings due for fitting, show here as job cards.</div>')+'</div>'}
 /* ---------- Planner (Operations team) ---------- */
@@ -2627,6 +2668,46 @@ function viewPlanner(){const t=today(),t1=addDays(t,1),L=jobList(),A=list(B());
    sec("Returns to call","late, today and tomorrow",rets)+
    sec("Coming up","pick-ups in the next 7 days",next7.map(b=>row('<div class="fit-top"><b>'+fdw(b.deliveryDate)+'</b> · '+esc(custName(b.customerId))+' <span class="mono muted small">'+esc(BN(b.no))+'</span></div><div class="small">'+esc(bookingDresses(b))+(pickTimeTxt(b)?' · '+esc(pickTimeTxt(b)):"")+' · prep '+fdw(addDays(b.deliveryDate,-Math.max(1,bPrep(b))))+'</div>',"")));
 }
+/* ---------- Staff & salary (owner + manager) ---------- */
+const ATT=()=>S.data.attendance||{};
+const staffList=()=>list(S.data.staff||{}).filter(x=>!x.alias&&x.active!==false).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+const attMark=(ym,sid,d)=>(((ATT()[ym]||{}).marks||{})[sid]||{})[String(+d)]||"";
+async function setAtt(ym,sid,d,v){const o=clone(ATT()[ym]||{marks:{}});delete o.id;o.marks=o.marks||{};o.marks[sid]=Object.assign({},o.marks[sid]||{});if(v)o.marks[sid][String(+d)]=v;else delete o.marks[sid][String(+d)];o.updatedAt=Date.now();await put("attendance",ym,o)}
+function staffMonth(sid,ym){const days=lastDay(ym),m=((ATT()[ym]||{}).marks||{})[sid]||{};let P=0,H=0,A=0,L=0;Object.values(m).forEach(v=>{if(v==="P")P++;else if(v==="H")H++;else if(v==="A")A++;else if(v==="L")L++});
+  const x=(S.data.staff||{})[sid]||{},sal=N(x.salary),worked=P+L+H/2,earned=Math.round(sal*worked/days);
+  const ex=list(E()).filter(e=>e.staffId===sid&&(e.salMonth||String(e.date).slice(0,7))===ym);const adv=ex.filter(e=>e.cat==="Staff advance").reduce((a,e)=>a+N(e.amount),0),paid=ex.filter(e=>e.cat==="Staff salary").reduce((a,e)=>a+N(e.amount),0);
+  return {P,H,A,L,days,sal,worked,earned,adv,paid,bal:earned-adv-paid}}
+function staffPerf(sid,ym){const nm=((S.data.staff||{})[sid]||{}).name;const bs=list(B()).filter(b=>b.status!=="draft");
+  const made=bs.filter(b=>b.createdById===sid&&b.createdAt&&ymd(new Date(b.createdAt)).slice(0,7)===ym);
+  const by=k=>bs.filter(b=>b.by&&b.by[k]===nm&&(b.updatedAt?ymd(new Date(b.updatedAt)).slice(0,7)===ym:true)).length;
+  const jobs=list(S.data.jobs||{}).filter(j=>j.status==="closed"&&(j.closedOn||"").slice(0,7)===ym&&(j.assignee===sid||j.doneBy===nm)).length;
+  return {made:made.length,value:made.reduce((a,b)=>a+fin(b).revenue,0),hand:by("delivered"),ret:by("returned")+by("closed"),jobs}}
+function viewTeam(){const t=today();if(!V.tmM)V.tmM=t.slice(0,7);const ym=V.tmM,[y,m]=ym.split("-").map(Number),L=staffList(),isCur=ym===t.slice(0,7),dd=t.slice(8);
+  const mk=(sid,d,v,lab,cls)=>'<button type="button" class="att-b'+(attMark(ym,sid,d)===v?" on "+cls:"")+'" data-att="'+esc(sid)+'|'+ym+'|'+d+'|'+v+'" title="'+lab+'">'+v+'</button>';
+  const rows=L.map(x=>{const st=staffMonth(x.id,ym),pf=staffPerf(x.id,ym);
+    return '<div class="fit-row"><div class="fit-main"><div class="fit-top"><b>'+esc(x.name)+'</b> <span class="pill p-mute">'+esc(ROLE_INFO.sales.name)+'</span></div>'+
+      (isCur?'<div class="att-row small"><span class="muted">Today:</span>'+mk(x.id,dd,"P","Present","ok")+mk(x.id,dd,"H","Half day","warn")+mk(x.id,dd,"A","Absent","bad")+mk(x.id,dd,"L","Paid leave","info")+'</div>':"")+
+      '<div class="small">This month: <b>'+st.P+'</b> present · '+st.H+' half · '+st.A+' absent'+(st.L?' · '+st.L+' paid leave':"")+'</div>'+
+      '<div class="small">Salary '+(st.sal?inr(st.sal)+'/month · earned <b>'+inr(st.earned)+'</b>':'<span class="neg">not set (Settings → Staff)</span>')+' · advance '+inr(st.adv)+' · paid '+inr(st.paid)+' · <b class="'+(st.bal>0?"neg":"pos")+'">'+(st.bal>=0?"to pay "+inr(st.bal):"paid extra "+inr(-st.bal))+'</b></div>'+
+      '<div class="small muted">Work: '+(x.role==="tailor"?pf.jobs+" job cards done":pf.made+" bookings made"+(pf.made?" ("+inr(pf.value)+")":"")+" · "+pf.hand+" hand overs · "+pf.ret+" returns"+(pf.jobs?" · "+pf.jobs+" job cards":""))+'</div></div>'+
+      '<div class="fit-act"><button type="button" class="btn sm" data-att-cal="'+esc(x.id)+'">'+ic("cal",14)+'Attendance</button><button type="button" class="btn sm" data-sal="'+esc(x.id)+'|adv">Advance</button><button type="button" class="btn sm pri" data-sal="'+esc(x.id)+'|pay">Pay salary</button></div></div>'}).join("");
+  const tot=L.reduce((a,x)=>{const s=staffMonth(x.id,ym);a.e+=s.earned;a.p+=s.adv+s.paid;return a},{e:0,p:0});
+  return top("Staff & salary","Attendance, salary, advances and each person’s work")+
+   '<div class="toolbar"><div class="seg"><button type="button" data-tm="-1">'+ic("left",14)+'</button><button type="button" class="on" style="min-width:120px">'+MON[m-1]+' '+y+'</button><button type="button" data-tm="1" style="transform:scaleX(-1)">'+ic("left",14)+'</button></div></div>'+
+   '<div class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))">'+kpi("Staff",L.length,"active","")+kpi("Salary earned",inr(tot.e),"this month","money")+kpi("Paid",inr(tot.p),"advance + salary","money")+'</div>'+
+   '<div class="panel">'+(L.length?rows:'<div class="empty"><b>No staff yet</b>'+(isOwner()?"Add staff in Settings → Staff, with their monthly salary.":"The owner adds staff in Settings.")+'</div>')+'</div>'+
+   '<p class="small muted">P = present, H = half day, A = absent, L = paid leave. Earned salary = monthly salary × days worked ÷ days in the month. Advance and salary payments are saved as expenses, so the month’s profit stays correct.</p>'}
+function attCal(sid){const ym=V.tmM||today().slice(0,7),x=(S.data.staff||{})[sid]||{},days=lastDay(ym),[y,m]=ym.split("-").map(Number),first=new Date(y,m-1,1).getDay(),t=today();
+  const cell=d=>{const v=attMark(ym,sid,d),fut=ym+"-"+pad(d)>t;return '<button type="button" class="att-d'+(v?" v-"+v:"")+(fut?" fut":"")+'" data-attd="'+d+'"'+(fut?" disabled":"")+'><b>'+d+'</b><i>'+(v||"·")+'</i></button>'};
+  const el=modal({title:"Attendance · "+esc(x.name||sid)+" · "+MON[m-1]+" "+y,body:'<p class="small muted" style="margin:0 0 8px">Tap a day to change it: P → H → A → L → blank.</p><div class="att-grid">'+["S","M","T","W","T","F","S"].map(w=>'<span class="att-w">'+w+'</span>').join("")+'<span></span>'.repeat(first)+Array.from({length:days},(_,i)=>cell(i+1)).join("")+'</div>',foot:'<button type="button" class="btn pri" data-close>Done</button>'});
+  el.querySelector(".att-grid").addEventListener("click",async e=>{const b=e.target.closest("[data-attd]");if(!b||b.disabled)return;const d=b.dataset.attd,cur=attMark(ym,sid,d),nx={"":"P",P:"H",H:"A",A:"L",L:""}[cur];try{await setAtt(ym,sid,d,nx)}catch(x){return}b.className="att-d"+(nx?" v-"+nx:"");b.querySelector("i").textContent=nx||"·"})}
+function salForm(sid,kind){const ym=V.tmM||today().slice(0,7),x=(S.data.staff||{})[sid]||{},st=staffMonth(sid,ym),[y,m]=ym.split("-").map(Number);
+  const def=kind==="pay"?Math.max(0,st.bal):"";
+  const el=modal({title:(kind==="pay"?"Pay salary":"Give advance")+" · "+esc(x.name||sid),body:(kind==="pay"?'<div class="calc"><div class="ln"><span>Earned in '+MON[m-1]+'</span><b class="num">'+inr(st.earned)+'</b></div><div class="ln"><span>Advance given</span><b class="num">−'+inr(st.adv)+'</b></div><div class="ln"><span>Already paid</span><b class="num">−'+inr(st.paid)+'</b></div><div class="ln"><span><b>To pay</b></span><b class="num">'+inr(Math.max(0,st.bal))+'</b></div></div>':'')+
+    '<div class="fgrid"><div class="f"><label for="sl_amt">Amount (₹)</label><input id="sl_amt" type="number" inputmode="numeric" min="1" value="'+def+'"></div><div class="f"><label for="sl_mode">Paid by</label><select id="sl_mode"><option>Cash</option><option>UPI</option><option>Bank transfer</option></select></div>'+
+    '<div class="f full" style="grid-column:1/-1"><label for="sl_note">Note</label><input id="sl_note" placeholder="optional"></div></div>',foot:'<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" data-ok>Save</button>'});
+  el.querySelector("[data-ok]").addEventListener("click",async()=>{const a=N(val(el,"sl_amt"));if(!(a>0)){toast("Enter the amount","bad");return}
+    try{await put("expenses",uid(),{date:today(),cat:kind==="pay"?"Staff salary":"Staff advance",amount:a,note:(x.name||sid)+" · "+MON[m-1]+" "+y+(val(el,"sl_note")?" · "+val(el,"sl_note"):""),mode:val(el,"sl_mode"),staffId:sid,salMonth:ym,createdAt:Date.now(),by:meName()});closeTop();toast((kind==="pay"?"Salary ":"Advance ")+inr(a)+" saved in expenses")}catch(e){}})}
 function viewSettings(){
   const s=ST();
   const f=(id,l,v,h,type)=>'<div class="f"><label for="s_'+id+'">'+l+'</label><input id="s_'+id+'" type="'+(type||"number")+'" value="'+esc(v)+'"'+(type?"":' inputmode="numeric" min="0"')+'>'+(h?'<span class="hint">'+h+'</span>':"")+'</div>';
@@ -2641,7 +2722,7 @@ function viewSettings(){
   '</div></div></div>'+
   '<div class="panel"><div class="panel-h"><h3>Per dress, per booking</h3></div><div class="panel-b"><div class="fgrid">'+
    f("clean","Dry-clean (₹ per dress)",s.clean)+f("repair","Minor repair (₹ per dress)",s.repair)+f("pack","Packing cover (₹)",s.pack)+f("lateFee","Late fee (₹ per day)",s.lateFee)+
-   f("pickFrom","Pick-up time: from",s.pickFrom||"17:00","Customers usually collect dresses in this time window. Shown in the ready message and on slips","time")+f("pickTo","Pick-up time: until",s.pickTo==null?"20:00":s.pickTo,"Leave blank for a single time","time")+f("fitHours","Fitting done how many hours before pick-up",s.fitHours==null?2:s.fitHours,"2 = pick-up 5 pm → fitting must be done before 3 pm. Printed on the fitting slip")+f("pickBefore","Pick-up: days before the function",s.pickBefore==null?1:s.pickBefore,"New bookings fill the pick-up date this many days before the function date. 1 = function 20 → pick-up 19")+f("retAfter","Return: days after the function",s.retAfter==null?1:s.retAfter,"1 = function 20 → return 21 (before noon)")+f("prepBefore","Prep days before pick-up",s.prepBefore==null?1:s.prepBefore,"Repair, dry-clean and fitting are done in these days. 1 = function 20 → prep on 18")+f("noShowDays","Auto-cancel if not picked up (days)",s.noShowDays,"Days after the pick-up date. The booking is cancelled and the advance is kept as cancellation charge. 0 = never")+f("buffer","Cleaning days after return",s.buffer,"Dry-clean (and fitting) after the dress comes back. 1 = function 20 → return 21 → cleaning 22 → free for the next pick-up from 23")+
+   f("reviewLink","Google review link",s.reviewLink||"","Paste your Google Business review link. It goes into the thank-you message after the return.","url")+f("peakPct","Peak-date rent increase (%)",s.peakPct==null?0:s.peakPct,"On Vivah muhurat dates (Upcoming wedding dates on the dashboard), new bookings suggest this much extra rent. 0 = off")+f("pickFrom","Pick-up time: from",s.pickFrom||"17:00","Customers usually collect dresses in this time window. Shown in the ready message and on slips","time")+f("pickTo","Pick-up time: until",s.pickTo==null?"20:00":s.pickTo,"Leave blank for a single time","time")+f("fitHours","Fitting done how many hours before pick-up",s.fitHours==null?2:s.fitHours,"2 = pick-up 5 pm → fitting must be done before 3 pm. Printed on the fitting slip")+f("pickBefore","Pick-up: days before the function",s.pickBefore==null?1:s.pickBefore,"New bookings fill the pick-up date this many days before the function date. 1 = function 20 → pick-up 19")+f("retAfter","Return: days after the function",s.retAfter==null?1:s.retAfter,"1 = function 20 → return 21 (before noon)")+f("prepBefore","Prep days before pick-up",s.prepBefore==null?1:s.prepBefore,"Repair, dry-clean and fitting are done in these days. 1 = function 20 → prep on 18")+f("noShowDays","Auto-cancel if not picked up (days)",s.noShowDays,"Days after the pick-up date. The booking is cancelled and the advance is kept as cancellation charge. 0 = never")+f("buffer","Cleaning days after return",s.buffer,"Dry-clean (and fitting) after the dress comes back. 1 = function 20 → return 21 → cleaning 22 → free for the next pick-up from 23")+
   '</div></div></div></div>'+
   '<div class="panel" style="margin-top:16px"><div class="panel-h"><h3>App PIN</h3></div><div class="panel-b"><p class="small muted" style="margin:0 0 10px">The 4-digit PIN is asked every time the app opens, and before anyone edits a booking that is already confirmed.</p>'+
    (s.editPin?'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill p-ok">PIN is on</span><button type="button" class="btn sm" data-act="pin-change">Change PIN</button><button type="button" class="btn sm ghost" data-act="pin-off">Turn off</button></div>':'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill p-mute">No PIN yet</span><button type="button" class="btn sm pri" data-act="pin-set">Set PIN</button></div>')+'</div></div>'+
@@ -3797,7 +3878,7 @@ function custDetail(id){
     const s=custStats(id), m=c.meas||{};
     const ms=[["Chest",m.bust],["Waist",m.waist],["Hip",m.hip],["Length",m.length],["Blouse",m.blouse],["Height",m.height]].filter(x=>x[1]);
     return '<div class="hero-fin"><div><div class="label">Bookings</div><div class="v">'+s.bs.length+'</div></div><div><div class="label">Booking value</div><div class="v">'+inr(s.spent)+'</div></div><div><div class="label">Total paid</div><div class="v">'+inr(s.held)+'</div></div><div><div class="label">Due</div><div class="v '+(s.due>0?"neg":"")+'">'+inr(s.due)+'</div></div></div>'+
-    '<dl class="dl"><div><dt>Phone</dt><dd class="num">'+esc(c.phone||"—")+(c.alt?" · "+esc(c.alt):"")+'</dd></div><div><dt>Address</dt><dd>'+esc(c.address||"—")+'</dd></div><div><dt>ID proof</dt><dd class="num">'+esc(c.idType||"—")+(c.idNo?" · "+esc(fmtId(c.idType,c.idNo)):"")+'</dd></div><div><dt>Customer since</dt><dd>'+(c.createdAt?fdy(ymd(new Date(c.createdAt))):"—")+'</dd></div>'+(c.partnerId&&P()[c.partnerId]?'<div><dt>Referred by</dt><dd><button type="button" class="pill p-acc" style="border:0;cursor:pointer" data-open-p="'+c.partnerId+'">'+esc(P()[c.partnerId].name)+'</button></dd></div>':"")+'</dl>'+(c.refCust&&C()[c.refCust]?refCard(c.refCust,"Referred by"):"")+spinCard(c,id)+
+    '<dl class="dl"><div><dt>Phone</dt><dd class="num">'+esc(c.phone||"—")+(c.alt?" · "+esc(c.alt):"")+'</dd></div><div><dt>Address</dt><dd>'+esc(c.address||"—")+'</dd></div><div><dt>ID proof</dt><dd class="num">'+esc(c.idType||"—")+(c.idNo?" · "+esc(fmtId(c.idType,c.idNo)):"")+'</dd></div><div><dt>Customer since</dt><dd>'+(c.createdAt?fdy(ymd(new Date(c.createdAt))):"—")+'</dd></div>'+(c.partnerId&&P()[c.partnerId]?'<div><dt>Referred by</dt><dd><button type="button" class="pill p-acc" style="border:0;cursor:pointer" data-open-p="'+c.partnerId+'">'+esc(P()[c.partnerId].name)+'</button></dd></div>':"")+'</dl>'+riskBox(id)+(c.refCust&&C()[c.refCust]?refCard(c.refCust,"Referred by"):"")+spinCard(c,id)+
     (ms.length?'<div><div class="label" style="margin-bottom:6px">Measurements</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+ms.map(x=>'<span class="pill p-mute">'+x[0]+' '+esc(x[1])+'</span>').join("")+'</div></div>':"")+
     ((c.measHist||[]).length?'<div><div class="label" style="margin-bottom:6px">Measurement history</div><div class="panel mh">'+c.measHist.slice().reverse().map(h=>'<div class="mh-row"><div class="mh-h"><b>'+fdy(ymd(new Date(h.at)))+'</b> <span class="small muted">'+pad(new Date(h.at).getHours())+':'+pad(new Date(h.at).getMinutes())+(h.via?' · '+esc(h.via):"")+'</span>'+(h.first?' <span class="pill p-info">First measurements</span>':"")+'</div><div class="small">'+(h.ch||[]).map(x=>esc(x.l)+': '+(h.first||!x.a?'<b>'+esc(x.b||"—")+'</b>':'<s class="muted">'+esc(x.a)+'</s> → <b>'+esc(x.b||"removed")+'</b>')).join(" · ")+'</div></div>').join("")+'</div></div>':"")+
     (()=>{const ab=advBal(c),L=(c.adv||[]);return L.length?'<div class="calc"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="label">Advance in khaata (no booking)</span><b class="num '+(ab>0?"pos":"")+'" style="font-size:20px">'+inr(ab)+'</b></div>'+L.slice().reverse().map(x=>'<div class="ln"><span class="small">'+fd(x.date)+' · '+esc(x.kind||"")+(x.mode&&x.mode!=="Transfer"?' <span class="pill '+(x.mode==="Cash"?"p-gold":"p-info")+'">'+esc(x.mode)+'</span>':"")+(x.note?' <span class="muted">· '+esc(x.note)+'</span>':"")+'</span><span class="num '+(N(x.amount)<0?"neg":"pos")+'">'+(N(x.amount)<0?"− ":"+ ")+inr(Math.abs(N(x.amount)))+(x.mode&&x.mode!=="Transfer"&&x.id?' <button type="button" class="btn sm" style="padding:2px 8px" data-advrc="'+id+'|'+esc(x.id)+'" title="Receipt" aria-label="Receipt">'+ic("print",14)+'</button>':"")+'</span></div>').join("")+(ab>0?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button type="button" class="btn sm" data-advrf-c="'+id+'">'+ic("back")+'Return money</button><button type="button" class="btn sm" data-advmv-c="'+id+'">'+ic("share")+'Move to family member</button><span class="small muted" style="align-self:center">It shows up by itself when you make a booking for her or her family.</span></div>':"")+'</div>':""})()+
@@ -3806,7 +3887,7 @@ function custDetail(id){
     (()=>{const rf=list(C()).filter(x=>x.refCust===id);return rf.length?'<div><div class="label" style="margin-bottom:6px">She referred '+rf.length+' customer'+(rf.length>1?"s":"")+'</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+rf.map(x=>'<button type="button" class="pill p-acc" style="border:0;cursor:pointer" data-open-c="'+x.id+'">'+esc(x.name)+'</button>').join("")+'</div></div>':""})()+
     '<div><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><span class="label">Transaction history</span>'+(custLedger(id).length?'<button type="button" class="btn sm" data-txn-c="'+id+'">'+ic("print")+'Print / download</button>':"")+'</div>'+ledgerTable(custLedger(id))+'</div>'+
     '<div><div class="label" style="margin-bottom:6px">Booking history</div>'+(s.bs.length?'<div class="hist">'+s.bs.map(b=>'<div class="hist-i" data-open-b="'+b.id+'"><div class="hist-d">'+fd(b.deliveryDate)+'<div>'+parseD(b.deliveryDate).getFullYear()+'</div></div><div style="min-width:0"><b>'+esc(b.func||"Function")+'</b> <span class="mono muted">'+esc(BN(b.no))+'</span><div class="small muted">'+esc(bookingDresses(b))+(b.place?" · "+esc(b.place):"")+'</div></div><div class="hist-r"><span class="pill '+BST[b.status][1]+'">'+BST[b.status][0]+'</span><b class="num">'+inr(fin(b).gross)+'</b></div></div>').join("")+'</div>':'<div class="muted small">No bookings yet.</div>')+'</div>';
-  },foot:()=>{const c=C()[id]||{};return '<button type="button" class="btn" data-edit-c="'+id+'">'+ic("edit")+'Edit</button><button type="button" class="btn" data-stmt-c="'+id+'">'+ic("print")+'Final statement</button><button type="button" class="btn" data-adv-c="'+id+'">'+ic("wallet")+'Receive advance</button>'+waBtn(c,"")+'<button type="button" class="btn pri" data-new-b-cust="'+id+'">'+ic("plus")+'New booking</button>'}});
+  },foot:()=>{const c=C()[id]||{};return '<button type="button" class="btn" data-edit-c="'+id+'">'+ic("edit")+'Edit</button>'+(isOwner()||role()==="manager"?'<button type="button" class="btn" data-flag-c="'+id+'">'+(c.flag?FLAGS[c.flag.level][1]:"Mark customer")+'</button>':"")+'<button type="button" class="btn" data-stmt-c="'+id+'">'+ic("print")+'Final statement</button><button type="button" class="btn" data-adv-c="'+id+'">'+ic("wallet")+'Receive advance</button>'+waBtn(c,"")+'<button type="button" class="btn pri" data-new-b-cust="'+id+'">'+ic("plus")+'New booking</button>'}});
 }
 
 /* ---------- Booking form ---------- */
@@ -3839,7 +3920,7 @@ function bookingForm(id,pre){
    '<div class="fsec">Customer</div>'+
    '<div class="f picker" id="bc_pick"><label for="bc_q">Customer</label><div class="picker-box">'+ic("search")+'<input id="bc_q" type="search" autocomplete="off" placeholder="Search old customer by name, phone, village or Aadhaar…" value="'+esc(b.customerId&&C()[b.customerId]?C()[b.customerId].name+(C()[b.customerId].phone?" · "+C()[b.customerId].phone:""):"")+'"><button type="button" class="pclear" data-bcclear aria-label="Clear customer"'+(b.customerId&&C()[b.customerId]?"":" hidden")+'>'+ic("x")+'</button></div><div class="picker-list" role="listbox" hidden></div>'+
    '<span class="hint" id="bc_hint">'+(b.customerId&&C()[b.customerId]?"Existing customer selected":"Not found? Just fill in the new customer details below.")+'</span>'+
-   '<div id="bc_spin">'+spinBanner(b.customerId)+'</div>'+
+   '<div id="bc_spin">'+spinBanner(b.customerId)+riskBox(b.customerId)+'</div>'+
    '<select id="b_cust" hidden aria-hidden="true"><option value="__new"'+(!b.customerId?" selected":"")+'>+ New customer</option>'+custs.map(c=>'<option value="'+c.id+'"'+(b.customerId===c.id?" selected":"")+'>'+esc(c.name)+'</option>').join("")+'</select></div>'+
    '<div id="b_newc"'+(b.customerId?" hidden":"")+'><div class="fgrid"><div class="f"><label for="nc_name">Name</label><input id="nc_name"></div><div class="f"><label for="nc_phone">Phone / WhatsApp</label><input id="nc_phone" type="tel" inputmode="tel"></div><div class="f"><label for="nc_alt">Alternate number (home / family) <span class="neg">*</span></label><input id="nc_alt" type="tel" inputmode="tel" required placeholder="Different from her own number"></div><div class="f"><label for="nc_addr">Village / area</label><input id="nc_addr"></div><div class="f"><label for="nc_idn">Aadhaar number (12 digits)</label><input id="nc_idn" inputmode="numeric" maxlength="14" placeholder="1234 5678 9012"></div></div><span class="hint small muted">You can add measurements and other details to the customer account later.</span></div>'+
    '<div id="b_altw" class="f" hidden><label for="b_alt">Alternate number (home / family) <span class="neg">*</span></label><input id="b_alt" type="tel" inputmode="tel" placeholder="Different from her own number"><span class="hint">This customer has no alternate number saved yet. It is saved to her account.</span></div>'+
@@ -3861,7 +3942,7 @@ function bookingForm(id,pre){
    '<div id="b_measlock"></div><div id="b_sizehint"></div>'+
 
    '<div id="b_block" hidden></div><div id="b_paysec"><div class="fsec">Payment</div><div id="b_famadv"></div>'+
-   '<div class="fgrid c3"><div class="f"><label for="b_disc">Discount (₹)</label><input id="b_disc" type="number" inputmode="numeric" min="0" value="'+esc(b.discount||0)+'"></div>'+
+   '<div id="b_offers"></div><div class="fgrid c3"><div class="f"><label for="b_disc">Discount (₹)</label><input id="b_disc" type="number" inputmode="numeric" min="0" value="'+esc(b.discount||0)+'"></div>'+
    '<div class="f"><label for="b_paid">Advance paid (₹) · full amount by default</label><input id="b_paid" type="number" inputmode="numeric" min="0" value="'+esc(b.paid||0)+'"></div>'+
    '<div class="f"><label for="b_mode">Payment mode</label>'+modeSel("b_mode")+'</div>'+
    '<div class="f"><label for="b_ref">Referred by (parlour / photographer)</label><select id="b_ref">'+partnerOptions(b.partnerId&&P()[b.partnerId]?b.partnerId:(!id&&!b.partnerId&&P()[(C()[b.customerId]||{}).partnerId]?(C()[b.customerId]||{}).partnerId:""),(!b.partnerId||!P()[b.partnerId])&&b.refBy?b.refBy:"")+'</select></div>'+
@@ -3869,6 +3950,19 @@ function bookingForm(id,pre){
    '<div class="f"><label for="b_notes">Note</label><input id="b_notes" value="'+esc(b.notes||"")+'" placeholder="fitting, blouse alteration…"></div>'+(id&&b.status!=="draft"?'<div class="f full"><label for="b_why">Reason for this change <span class="muted">(saved in the booking history)</span></label><input id="b_why" placeholder="e.g. customer wanted a different colour, function date moved"></div>':"")+'</div>'+
    '<div class="calc" id="b_calc"></div>'+(id&&b.status!=="draft"?"":'<label class="chk"><input type="checkbox" id="b_slip" checked> Print the customer\'s <b>booking slip</b> after saving</label>')+'</div>',
    foot:(id?'<button type="button" class="btn danger" data-del style="margin-right:auto">'+ic("trash")+'Delete</button>':"")+'<button type="button" class="btn" data-close>Cancel</button>'+((!id||b.status==="draft")?'<button type="button" class="btn" data-draft>'+ic("edit")+'Save as draft</button>':"")+'<button type="button" class="btn pri" data-save>'+(id&&b.status!=="draft"?"Save booking":"Confirm booking")+'</button>'});
+  const OF={c:!!(b.offers&&b.offers.coupon),cAmt:N(b.offers&&b.offers.coupon&&b.offers.coupon.amt),r:!!(b.offers&&b.offers.reward),rAmt:N(b.offers&&b.offers.reward&&b.offers.reward.amt),cid:b.customerId||""};
+  const offRent=()=>{try{return items.reduce((a,i)=>a+N(i.rent),0)}catch(e){return 0}};
+  const paintOff=()=>{const box=el.querySelector("#b_offers");if(!box)return;const cid=val(el,"b_cust");if(cid!==OF.cid){const dl=el.querySelector("#b_disc");if(dl)dl.value=Math.max(0,N(dl.value)-OF.cAmt-OF.rAmt);OF.c=OF.r=false;OF.cAmt=OF.rAmt=0;OF.cid=cid}
+    const inf=offerInfo(cid,id||"__new",offRent());let h="";
+    if(inf.coupon){const cp=inf.coupon,can=cp.ok||OF.c;h+='<label class="chk off-l'+(can?"":" off-x")+'"><input type="checkbox" id="of_c"'+(OF.c?" checked":"")+(can?"":" disabled")+'> <span><b>Opening coupon '+esc(cp.code)+' · '+cp.pct+'% off rent</b>'+(can?' → <b class="pos">−'+inr(Math.round(offRent()*cp.pct/100))+'</b>':'')+'<br><span class="small '+(cp.why?"neg":"muted")+'">'+(cp.why?"Cannot use: "+esc(cp.why):"Minimum rent "+inr(SPIN_MIN)+" · can be used once")+'</span></span></label>'}
+    if(inf.reward||OF.r){const rw=inf.reward||{amt:OF.rAmt,names:[]};h+='<label class="chk off-l"><input type="checkbox" id="of_r"'+(OF.r?" checked":"")+'> <span><b>Invite reward · '+(rw.names.length||"")+' friend'+(rw.names.length===1?"":"s")+' booked</b> → <b class="pos">−'+inr(rw.amt)+'</b><br><span class="small muted">'+esc(rw.names.join(", "))+' · can be used once</span></span></label>'}
+    if(inf.rewardUsedN&&!inf.reward)h+='<div class="small muted">'+inf.rewardUsedN+' invite reward'+(inf.rewardUsedN>1?"s":"")+' already used in earlier bookings.</div>';
+    box.innerHTML=h?'<div class="off-box"><div class="small" style="font-weight:700;margin-bottom:4px">Offers for this customer</div>'+h+'</div>':"";
+    const oc=box.querySelector("#of_c"),orr=box.querySelector("#of_r");if(oc)oc.addEventListener("change",()=>{OF.c=oc.checked;calcB();paintOff()});if(orr)orr.addEventListener("change",()=>{OF.r=orr.checked;calcB();paintOff()})};
+  const syncOff=()=>{const dl=el.querySelector("#b_disc");if(!dl)return;const cid=val(el,"b_cust"),inf=offerInfo(cid,id||"__new",offRent());
+    if(OF.c&&inf.coupon&&!inf.coupon.ok){OF.c=false;toast("Coupon removed: "+inf.coupon.why,"bad");setTimeout(paintOff,0)}
+    const nc=OF.c&&inf.coupon?Math.round(offRent()*inf.coupon.pct/100):0,nr=OF.r?(inf.reward?inf.reward.amt:OF.rAmt):0;
+    if(nc!==OF.cAmt||nr!==OF.rAmt){dl.value=Math.max(0,N(dl.value)-OF.cAmt-OF.rAmt+nc+nr);OF.cAmt=nc;OF.rAmt=nr}clearTimeout(OF.t);OF.t=setTimeout(paintOff,30)};
   let cPrep=b.prep!=null&&b.prep!==""?N(b.prep):null,cAfter=b.after!=null&&b.after!==""?N(b.after):null;
   const fA=()=>cAfter!=null?cAfter:dSet("buffer",1),fP=()=>cPrep!=null?cPrep:dSet("prepBefore",1);
   const updBlk=()=>{const w=el.querySelector("#b_blk");if(!w)return;const dl=val(el,"b_del"),rt=val(el,"b_ret"),ev=val(el,"b_event");
@@ -3904,7 +3998,7 @@ function bookingForm(id,pre){
     calcB();
   };
   const calcB=()=>{
-    const rent=items.reduce((a,i)=>a+N(i.rent),0),disc=N(val(el,"b_disc")),gross=Math.max(0,rent-disc);
+    syncOff();try{if(!id&&N(ST().peakPct)>0)saavaHint()}catch(e){}const rent=items.reduce((a,i)=>a+N(i.rent),0),disc=N(val(el,"b_disc")),gross=Math.max(0,rent-disc);
     const famL=[...el.querySelectorAll("#b_famadv .fa-chk:checked")].map(c=>({cid:c.dataset.cid,amt:Math.min(advBal(C()[c.dataset.cid]),Math.max(0,Math.round(N((el.querySelector('#b_famadv .fa-amt[data-cid="'+c.dataset.cid+'"]')||{}).value))))})).filter(x=>x.amt>0),fam=famL.reduce((a,x)=>a+x.amt,0);
     if(!paidTouched)el.querySelector("#b_paid").value=Math.max(0,gross-fam);const paid=N(val(el,"b_paid")),got=paid+fam;
     const st=ST(),n=items.filter(i=>i.dressId).length;
@@ -3915,7 +4009,8 @@ function bookingForm(id,pre){
      '<div class="ln tot"><span class="muted">Your contribution from this booking (after costs + depreciation)</span><span class="num '+(gross-direct-ghisai>=0?"pos":"neg")+'">'+inr(gross-direct-ghisai)+'</span></div>';
   };
   const syncDeposit=()=>{};
-  const saavaHint=()=>{const e=val(el,"b_event");el.querySelector("#b_saava").innerHTML=e&&saave().includes(e)?'<div class="okbox">'+fdw(e)+' · '+esc(saaveNote(e))+': an auspicious wedding date; demand will be highest, so take the full advance now.</div>':""};
+  let peakDone=!!b.peak;const saavaHint=()=>{const e=val(el,"b_event"),pk=N(ST().peakPct),on=e&&saave().includes(e),rent=items.reduce((a,i)=>a+N(i.rent),0);el.querySelector("#b_saava").innerHTML=on?'<div class="okbox">'+fdw(e)+' · '+esc(saaveNote(e))+': an auspicious wedding date; demand will be highest, so take the full advance now.'+(pk>0&&rent>0&&!id?(peakDone?'<div class="small" style="margin-top:4px"><b>Peak rent +'+pk+'% applied.</b></div>':'<div style="margin-top:6px"><button type="button" class="btn sm pri" id="b_peak">Add peak rent +'+pk+'% (+'+inr(Math.round(rent*pk/100))+')</button></div>'):"")+'</div>':"";
+    const pb=el.querySelector("#b_peak");if(pb)pb.addEventListener("click",()=>{items.forEach(i=>{i.rent=Math.round(N(i.rent)*(1+pk/100))});peakDone=true;paintItems();saavaHint();toast("Peak rent added")})};
   paintItems();saavaHint();
   {
    const sizeHint=()=>{const ds=items.map(i=>D()[i.dressId]).filter(Boolean);const m={};MEAS.forEach(([k])=>m[k]=val(el,"bm_"+k));el.querySelector("#b_sizehint").innerHTML=ds.length?'<div class="small muted" style="margin:2px 0 4px">'+ds.map(d=>'<b>'+esc(d.code)+'</b> size: '+esc(d.size||"not set")).join(" · ")+(measTxt(m)?' · Customer: '+esc(measTxt(m)):"")+'</div>':""};
@@ -3926,7 +4021,7 @@ function bookingForm(id,pre){
      MEAS.forEach(([k])=>{const n=el.querySelector("#bm_"+k);if(n){n.readOnly=locked;n.classList.toggle("ro",locked)}});
      el.querySelector("#b_measlock").innerHTML=c&&hasMeas(c.meas)?(measUnlocked?'<div class="small" style="color:#a86b00;margin:2px 0 6px">🔓 Unlocked. Changes are saved to the customer and kept in her measurement history.</div>':'<div class="meas-lock"><span class="small">🔒 Saved measurements of <b>'+esc(c.name)+'</b>'+((c.measHist||[]).length?' · last updated '+fd(ymd(new Date(c.measHist[c.measHist.length-1].at))):"")+'</span><button type="button" class="btn sm" data-measunlock>'+ic("edit")+'Change (PIN)</button></div>'):(c?'<div class="small muted" style="margin:2px 0 6px">No measurements saved for this customer yet. Fill them now (optional).</div>':"")};
    el.querySelector("#b_measlock").addEventListener("click",async e=>{if(!e.target.closest("[data-measunlock]"))return;if(!await needPin("Changing saved measurements needs the 4-digit PIN."))return;measUnlocked=true;lockMeas();const f=el.querySelector("#bm_bust");if(f)f.focus()});
-   el.querySelector("#b_cust").addEventListener("change",()=>{{const sb=el.querySelector("#bc_spin");if(sb)sb.innerHTML=spinBanner(val(el,"b_cust"))}const c=C()[val(el,"b_cust")];{const r=el.querySelector("#b_ref");if(r&&!r.value&&c&&P()[c.partnerId]){r.value=c.partnerId;r.dispatchEvent(new Event("change",{bubbles:true}))}}measUnlocked=false;MEAS.forEach(([k])=>{const n=el.querySelector("#bm_"+k);if(n)n.value=c&&c.meas&&c.meas[k]?c.meas[k]:""});lockMeas();sizeHint()});
+   el.querySelector("#b_cust").addEventListener("change",()=>{{const sb=el.querySelector("#bc_spin");if(sb)sb.innerHTML=spinBanner(val(el,"b_cust"))+riskBox(val(el,"b_cust"))}const c=C()[val(el,"b_cust")];{const r=el.querySelector("#b_ref");if(r&&!r.value&&c&&P()[c.partnerId]){r.value=c.partnerId;r.dispatchEvent(new Event("change",{bubbles:true}))}}measUnlocked=false;MEAS.forEach(([k])=>{const n=el.querySelector("#bm_"+k);if(n)n.value=c&&c.meas&&c.meas[k]?c.meas[k]:""});lockMeas();sizeHint()});
    lockMeas()}
   wirePickers(el);
   {const w=el.querySelector("#bc_pick"),q=w.querySelector("#bc_q"),lst=w.querySelector(".picker-list"),sel=w.querySelector("#b_cust"),clr=w.querySelector("[data-bcclear]"),hint=w.querySelector("#bc_hint");
@@ -3956,7 +4051,7 @@ function bookingForm(id,pre){
   {let prevTot=0;const fb=el.querySelector("#b_famadv");const famSync=()=>{let tot=0;fb.querySelectorAll(".fa-amt").forEach(a=>{const cid=a.dataset.cid,bl=advBal(C()[cid]),v=Math.round(N(a.value)),bad=v>bl,er=fb.querySelector('.fa-err[data-cid="'+cid+'"]');a.classList.toggle("fa-bad",bad);if(er){er.hidden=!bad;er.textContent="Only "+inr(bl)+" in khaata"}const ck=fb.querySelector('.fa-chk[data-cid="'+cid+'"]');if(ck&&ck.checked)tot+=Math.min(bl,Math.max(0,v))});
      const bp=el.querySelector("#b_paid");if(bp&&paidTouched){bp.value=Math.max(0,N(bp.value)+prevTot-tot)}prevTot=tot;calcB()};
    if(fb){fb.addEventListener("change",famSync);fb.addEventListener("input",e=>{if(e.target.classList.contains("fa-amt"))famSync()})}
-   el.querySelector("#b_cust").addEventListener("change",()=>{prevTot=0;setTimeout(()=>{famBox();calcB()},0)})}
+   el.querySelector("#b_cust").addEventListener("change",()=>{prevTot=0;setTimeout(()=>{paintOff();famBox();calcB()},0)})}setTimeout(paintOff,0);
   {const rcH=el.querySelector("#b_refc");if(rcH)rcH.addEventListener("change",famBox)}
   setTimeout(famBox,0);
   const altW=()=>{const v=val(el,"b_cust"),c=C()[v];el.querySelector("#b_altw").hidden=!(c&&!String(c.alt||"").trim())};altW();
@@ -4002,29 +4097,31 @@ function bookingForm(id,pre){
       else{cid=uid();try{await put("customers",cid,{partnerId:P()[val(el,"b_ref")]?val(el,"b_ref"):"",name:nm,phone:ph,alt:val(el,"nc_alt"),address:val(el,"nc_addr"),idType:"Aadhaar",idNo:val(el,"nc_idn").replace(/\D/g,""),refCust:val(el,"b_refc"),...(()=>{const m={};MEAS.forEach(([k])=>{const v=val(el,"bm_"+k);if(v)m[k]=v});return hasMeas(m)?{meas:cleanMeas(m),measHist:[{at:Date.now(),via:"Booking "+BN(b.no),first:true,ch:measDiff({},m)}]}:{meas:{}}})(),createdAt:Date.now()})}catch(e){return}}
     }
     if(cid&&C()[cid]&&!String(C()[cid].alt||"").trim()){const av=val(el,"b_alt");if(!asDraft||av){const e=altErr(av,C()[cid].phone);if(e){toast(e,"bad");const x=el.querySelector("#b_alt");if(x)x.focus();return}const co=clone(C()[cid]);co.alt=av;delete co.id;try{await put("customers",cid,co)}catch(e){return}}}
+    if(!asDraft&&(!id||b.status==="draft")&&cid&&C()[cid]&&C()[cid].flag&&C()[cid].flag.level==="block"){if(!await pinOK(esc(custName(cid))+" is marked \u201cDo not rent\u201d"+(C()[cid].flag.reason?" ("+esc(C()[cid].flag.reason)+")":"")+". Owner\u2019s PIN is needed to book."))return}
     let refC=val(el,"b_refc");if(refC===cid)refC="";
     if(refC&&cid&&C()[cid]&&!C()[cid].refCust){const co=clone(C()[cid]);co.refCust=refC;delete co.id;try{await put("customers",cid,co)}catch(e){}}
     const hasClash=good.some(i=>clashes(i.dressId,del_,ret,id,fA()).length);
     if(hasClash){toast("This dress is already booked on these dates. Choose another dress.","bad");paintItems();return}
     const wasDraft=b.status==="draft";
     b.status=asDraft?"draft":((!id||wasDraft)?"booked":b.status);
-    const o=Object.assign(b,{customerId:cid,items:good.map(i=>({dressId:i.dressId,rent:N(i.rent)})),func:val(el,"b_func"),place:val(el,"b_place"),eventDate:val(el,"b_event"),deliveryDate:del_,returnDate:ret,discount:N(val(el,"b_disc")),deposit:0,partnerId:(P()[val(el,"b_ref")]?val(el,"b_ref"):""),refBy:(P()[val(el,"b_ref")]?P()[val(el,"b_ref")].name:(val(el,"b_ref")==="__legacy"?b.refBy:"")),refCustId:refC,commission:N(val(el,"b_comm")),notes:val(el,"b_notes"),pickTime:val(el,"b_ptime"),updatedAt:Date.now()});
+    const o=Object.assign(b,{customerId:cid,items:good.map(i=>({dressId:i.dressId,rent:N(i.rent)})),func:val(el,"b_func"),place:val(el,"b_place"),eventDate:val(el,"b_event"),deliveryDate:del_,returnDate:ret,discount:N(val(el,"b_disc")),deposit:0,partnerId:(P()[val(el,"b_ref")]?val(el,"b_ref"):""),refBy:(P()[val(el,"b_ref")]?P()[val(el,"b_ref")].name:(val(el,"b_ref")==="__legacy"?b.refBy:"")),refCustId:refC,commission:N(val(el,"b_comm")),notes:val(el,"b_notes"),pickTime:val(el,"b_ptime"),updatedAt:Date.now()});if(peakDone&&!b.peak)o.peak=N(ST().peakPct);
+    {const inf=offerInfo(cid,id||"__new",good.reduce((a,i)=>a+N(i.rent),0)),of={};if(OF.c&&inf.coupon)of.coupon={code:inf.coupon.code,pct:inf.coupon.pct,amt:OF.cAmt};if(OF.r&&inf.reward)of.reward={friends:inf.reward.ids,amt:OF.rAmt};if(of.coupon||of.reward)o.offers=of;else delete o.offers}
     if(cPrep!=null&&cPrep!==dSet("prepBefore",1))o.prep=cPrep;else delete o.prep;if(cAfter!=null&&cAfter!==dSet("buffer",1))o.after=cAfter;else delete o.after;
     {const m={};MEAS.forEach(([k])=>{const v=val(el,"bm_"+k);if(v)m[k]=v});o.meas=m;
      o.fit={done:!!(b.fit&&b.fit.done),doneOn:(b.fit&&b.fit.doneOn)||""};
      if(cid&&C()[cid]&&hasMeas(m)&&(!hasMeas(C()[cid].meas)||el.dataset.mu==="1")){const nc=withMeas(C()[cid],m,"Booking "+BN(o.no));if(nc){try{await put("customers",cid,nc)}catch(e){}}}}
-    if(!o.createdAt)o.createdAt=Date.now();delete o.id;
+    if(!o.createdAt)o.createdAt=Date.now();if(!o.createdBy){o.createdBy=meName();o.createdById=(S.me&&S.me.id)||"owner"}delete o.id;
     {const newPaid=N(val(el,"b_paid")),cur=payList(b).reduce((a,x)=>a+N(x.amount),0),df=newPaid-cur;Object.assign(o,withPay(b,df,cur===0?"Advance":"Adjustment (edited)",modeVal(el,"b_mode")));delete o.id}
     LOGCTX.reason=val(el,"b_why");
     const nid=id||uid();const wantSlip=!asDraft&&(!id||wasDraft)&&el.querySelector("#b_slip")&&el.querySelector("#b_slip").checked;
     const famUse=asDraft?[]:[...el.querySelectorAll(".fa-chk:checked")].map(c=>({cid:c.dataset.cid,amt:Math.round(N((el.querySelector('.fa-amt[data-cid="'+c.dataset.cid+'"]')||{}).value))})).filter(x=>x.amt>0);
     for(const u of famUse){const bl=advBal(C()[u.cid]);if(u.amt>bl){toast(custName(u.cid)+" has only "+inr(bl)+" in khaata","bad");return}}
-    try{await put("bookings",nid,o);for(const u of famUse){await advApply(nid,u.cid==="__new"?"":u.cid,u.amt,"")}closeTop();toast(asDraft?"Saved as draft "+BN(o.no):(id&&!wasDraft)?"Booking updated":"Booking "+BN(o.no)+" confirmed");if(!id){bookingDetail(nid)}const slipGo=()=>{if(wantSlip)setTimeout(()=>slipModal(nid,"booking"),120)};slipGo()}catch(e){}
+    try{await put("bookings",nid,o);if(!asDraft||(id&&b.offers))await markOffers(nid,cid,asDraft?null:o.offers);for(const u of famUse){await advApply(nid,u.cid==="__new"?"":u.cid,u.amt,"")}closeTop();toast(asDraft?"Saved as draft "+BN(o.no):(id&&!wasDraft)?"Booking updated":"Booking "+BN(o.no)+" confirmed");if(!id){bookingDetail(nid)}const slipGo=()=>{if(wantSlip)setTimeout(()=>slipModal(nid,"booking"),120)};slipGo()}catch(e){}
   };
   el.querySelector("[data-save]").addEventListener("click",()=>saveB(false));
   const dfb=el.querySelector("[data-draft]");if(dfb)dfb.addEventListener("click",()=>saveB(true));
   const db=el.querySelector("[data-del]");
-  if(db)db.addEventListener("click",async()=>{const r=await askReason("Delete booking "+BN(b.no)+"?","It will be removed from your accounts and lists. A copy stays in the Activity log, where you can restore it. If the customer backed out, 'Cancel' is better.","Yes, delete",true,"e.g. entered by mistake");if(!r.ok)return;LOGCTX.reason=r.reason;try{await del("bookings",id);closeAll();toast("Booking deleted · restore it from the Activity log")}catch(e){}});
+  if(db)db.addEventListener("click",async()=>{const r=await askReason("Delete booking "+BN(b.no)+"?","It will be removed from your accounts and lists. A copy stays in the Activity log, where you can restore it. If the customer backed out, 'Cancel' is better.","Yes, delete",true,"e.g. entered by mistake");if(!r.ok)return;LOGCTX.reason=r.reason;try{await releaseOffers(id);await del("bookings",id);closeAll();toast("Booking deleted · restore it from the Activity log")}catch(e){}});
 }
 
 /* ---------- Booking detail & actions ---------- */
@@ -4105,7 +4202,7 @@ function rowMsg(b){const c=C()[b.customerId]||{},w=b.wa||{};
   const bt=waBtn(c,waMsg(b,k),true,w[k]?L+" sent":L,b.id+"|"+k,!!w[k]);
   return '<div class="msg-cell">'+(bt||'<span class="small muted">No phone</span>')+(k==="confirm"?'<button type="button" class="btn sm ghost" data-share-slip="'+b.id+'|pdf">'+ic("share")+'Slip PDF</button>':"")+'</div>'}
 /* WhatsApp messages sent from a booking */
-const WAK={cancel:"Booking cancelled",confirm:"Booking confirmed",pickup:"Ready for pick-up",ret:"Return reminder",late:"Late return reminder",pay:"Payment reminder",thanks:"Thank you"};
+const WAK={cancel:"Booking cancelled",confirm:"Booking confirmed",pickup:"Ready for pick-up",ret:"Return reminder",late:"Late return reminder",pay:"Payment reminder",thanks:"Thank you + Google review"};
 const WAMAP={thanks:"thanks",prep:"pickup",del:"pickup","late-del":"pickup",ret:"ret",late:"late",pay:"pay",dep:"pay"};
 function waSentTxt(x){if(!x||!x.at)return "";const d=new Date(x.at);return fdy(ymd(d))+", "+pad(d.getHours())+":"+pad(d.getMinutes())}
 function waMsg(b,k){
@@ -4123,8 +4220,8 @@ function waMsg(b,k){
   if(k==="ret")return waRemind(b,"ret");
   if(k==="late")return waRemind(b,"late");
   if(k==="pay")return waRemind(b,"pay");
-  const c=C()[b.customerId]||{},st=ST(),nm=c.name||"";return waL("Hello "+nm+",\nThank you for renting from "+st.shop+". We hope you loved the dress. Remember us for your next function; new collections arrive regularly.",
-    "Namaste "+nm+",\n"+st.shop+" se dress rent karne ke liye Thank you. Umeed hai aapko dress pasand aayi. Agle function ke liye hamein zaroor yaad karein, nayi collection aati rehti hai.");
+  const c=C()[b.customerId]||{},st=ST(),nm=c.name||"",rv=String(st.reviewLink||"").trim();return waL("Hello "+nm+",\nThank you for renting from "+st.shop+". We hope you loved the dress. Remember us for your next function; new collections arrive regularly."+(rv?"\n\n⭐ Please share your experience on Google. It takes 1 minute and helps us a lot:\n"+rv:""),
+    "Namaste "+nm+",\n"+st.shop+" se dress rent karne ke liye Thank you. Umeed hai aapko dress pasand aayi. Agle function ke liye hamein zaroor yaad karein, nayi collection aati rehti hai."+(rv?"\n\n⭐ Google pe apna review zaroor dein, 1 minute lagega aur humein bahut madad milegi:\n"+rv:""));
 }
 function waKeys(b){
   const s=b.status,w=b.wa||{},k=[];if(s==="cancelled")return ["cancel"];if(s==="draft")return k;
@@ -4802,7 +4899,7 @@ function slipModal(id,kind,pi){
   el.querySelector("[data-sd]").addEventListener("click",()=>pdfDl(cv,fname(),w,"Downloading the slip (PDF)"));
   const sb=el.querySelector("[data-ss]");if(sb)sb.addEventListener("click",()=>{cv.toBlob(async bl=>{try{await navigator.share({files:[new File([bl],fname(),{type:"image/png"})],title:"Rental slip "+BN(b.no)})}catch(e){}},"image/png")});
 }
-async function setStatus(id,status,extra){const o=clone(B()[id]);o.status=status;Object.assign(o,extra||{});o.updatedAt=Date.now();delete o.id;await put("bookings",id,o)}
+async function setStatus(id,status,extra){if(status==="cancelled")try{await releaseOffers(id)}catch(e){}const o=clone(B()[id]);o.status=status;Object.assign(o,extra||{});o.by=Object.assign({},o.by||{},{[status]:meName()});o.updatedAt=Date.now();delete o.id;await put("bookings",id,o)}
 function deliverForm(id){
   const b=B()[id],f=fin(b);const bal=Math.max(0,f.gross-N(b.paid));
   const busy=(b.items||[]).filter(i=>{const s=dressState(i.dressId);return s==="out"||s==="repair"});
@@ -4841,7 +4938,9 @@ function returnForm(id){
    '<div class="fgrid"><div class="f"><label for="rt_on">Return date</label><input id="rt_on" type="date" value="'+today()+'"></div>'+
    '<div class="f"><label for="rt_late">Late fee (₹)</label><input id="rt_late" type="number" inputmode="numeric" min="0" value="'+late*st.lateFee+'"><span class="hint" id="rt_lh">'+(late?late+" days late × "+inr(st.lateFee):"Returned on time")+'</span></div></div>'+
    '<div class="fsec">1 · Check every item</div><div id="rt_checks" class="rchecks"></div>'+
-   '<div class="fsec">2 · Extra charges</div><div id="rt_charges" style="display:flex;flex-direction:column;gap:8px"></div>'+
+   '<div class="fsec">2 · Extra charges</div>'+
+   '<div id="rt_lost" class="small" style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">'+[...new Set((b.items||[]).map(i=>i.dressId))].filter(x=>D()[x]).map(x=>'<label class="chk"><input type="checkbox" class="rt-lost" data-dress="'+x+'"> <span><b>'+esc(D()[x].code)+'</b> is <b>lost or ruined</b> and cannot be rented again</span></label>').join("")+'</div>'+
+   '<div id="rt_charges" style="display:flex;flex-direction:column;gap:8px"></div>'+
    '<div style="display:flex;gap:8px;flex-wrap:wrap"><select id="rt_addsel" aria-label="Add a charge"><option value="">+ Add a charge…</option>'+RREASONS.map((r,k)=>'<option value="'+k+'">'+esc(r[0])+(r[1]?" · "+inr(r[1]):"")+'</option>').join("")+'</select></div>'+
    '<div class="fsec">3 · Photos of damage (optional)</div>'+(b.outPhotos&&b.outPhotos.length?'<div class="small muted">Photos taken at handover ('+fdy(b.deliveredOn||b.deliveryDate)+'), to compare:</div><div class="rphotos">'+b.outPhotos.map(ph=>'<span class="rph" data-zph="1"><img src="'+esc(ph)+'" alt="Handover photo"></span>').join("")+'</div>':"")+'<div class="rphotos" id="rt_ph"></div><input id="rt_photo" type="file" accept="image/*" multiple>'+
    '<div class="fsec">4 · Payment</div>'+
@@ -4899,6 +4998,9 @@ function returnForm(id){
     const px=e.target.closest("[data-px]");if(px){photos.splice(+px.dataset.px,1);paintPhotos();return}
   });
   el.querySelector("#rt_addsel").addEventListener("change",e=>{const k=e.target.value;if(k==="")return;const r=RREASONS[+k];charges.push({reason:r[0],note:"",amount:r[1]||""});e.target.value="";paintCharges();const inp=el.querySelectorAll("[data-ca]");const last=r[1]?el.querySelectorAll("[data-cn]")[charges.length-1]:inp[inp.length-1];if(last)last.focus()});
+  el.querySelectorAll(".rt-lost").forEach(cb=>cb.addEventListener("change",()=>{const did=cb.dataset.dress,d=D()[did]||{},tag="Dress lost / ruined: "+(d.code||"");
+    if(cb.checked){charges.push({reason:tag,note:"Value of the dress",amount:Math.round(landed(d))||""})}else{const k=charges.findIndex(c=>c.reason===tag);if(k>=0)charges.splice(k,1)}paintCharges();
+    const nx=list(B()).filter(x=>x.id!==id&&(x.status==="booked"||x.status==="ready")&&(x.items||[]).some(i=>i.dressId===did));if(cb.checked&&nx.length)toast(d.code+" is booked again in "+nx.map(x=>BN(x.no)).join(", ")+". Change the dress in those bookings.","bad")}));
   el.querySelector("#rt_charges").addEventListener("input",e=>{const t=e.target;if(t.dataset.cr!=null)charges[+t.dataset.cr].reason=t.value;if(t.dataset.cn!=null)charges[+t.dataset.cn].note=t.value;if(t.dataset.ca!=null){charges[+t.dataset.ca].amount=t.value;calc()}});
   el.querySelector("#rt_photo").addEventListener("change",async e=>{for(const f of [...e.target.files].slice(0,4-photos.length)){try{photos.push(await shrink(f))}catch(x){}}e.target.value="";paintPhotos()});
   el.querySelector("#rt_on").addEventListener("change",()=>{const l=Math.max(0,diff(b.returnDate,val(el,"rt_on")));el.querySelector("#rt_late").value=l*st.lateFee;calc()});
@@ -4906,17 +5008,19 @@ function returnForm(id){
   el.querySelector("#rt_pay").addEventListener("input",()=>{touched=true;calc()});
   el.querySelector("[data-ok]").addEventListener("click",async()=>{
     const cl=charges.filter(c=>N(c.amount)>0||c.reason).map(c=>({reason:(c.reason||"Other").trim(),note:(c.note||"").trim(),amount:N(c.amount)}));
+    const lostIds=[...el.querySelectorAll(".rt-lost:checked")].map(x=>x.dataset.dress);
+    if(lostIds.length&&!await askConfirm("<b>"+lostIds.map(x=>esc(D()[x].code)).join(", ")+"</b> will be taken out of stock (Retired · lost / ruined). It cannot be booked again.","Yes, continue",true))return;
     if(cl.some(c=>!c.amount)&&!await askConfirm("Some charges have no amount. Save them as ₹0?","Yes, save"))return;
     const fix=AF_REP(after)?val(el,"rt_fix"):"";const fitMap=fitPick();
     if(AF_FIT(after)&&!Object.keys(fitMap).length){toast(fitList.length?"Choose the booking the fitting is for":"No upcoming booking to fit for. Choose another option.");return}
     const issues=checks.filter(c=>c.status==="issue"||c.status==="missing").map(c=>c.item+" "+(c.status==="missing"?"missing":"damaged"));
     const note=[issues.length?issues.join(", "):"All items OK",val(el,"rt_note")].filter(Boolean).join(" · ");
-    const ret={on:val(el,"rt_on"),lateFee:N(val(el,"rt_late")),charges:cl,damage:cl.reduce((a,c)=>a+N(c.amount),0),checks:checks.map(c=>({item:c.item,status:c.status})),photos,clean:after==="repair"?0:n*N(st.clean),repair:AF_REP(after)?n*N(st.repair):0,cleanEst:after==="repair"?0:n*N(st.clean),repairEst:AF_REP(after)?n*st.repair:0,after,fitFor:fitMap,depositReturned:0,note,checkedAt:Date.now()};
+    const ret={on:val(el,"rt_on"),lateFee:N(val(el,"rt_late")),charges:cl,lost:lostIds,damage:cl.reduce((a,c)=>a+N(c.amount),0),checks:checks.map(c=>({item:c.item,status:c.status})),photos,clean:after==="repair"?0:n*N(st.clean),repair:AF_REP(after)?n*N(st.repair):0,cleanEst:after==="repair"?0:n*N(st.clean),repairEst:AF_REP(after)?n*st.repair:0,after,fitFor:fitMap,depositReturned:0,note,checkedAt:Date.now()};
     const left=Math.max(0,owed()-N(val(el,"rt_pay")));
     const wantSlip=el.querySelector("#rt_slip").checked;
     try{
       await setStatus(id,left>0?"returned":"closed",Object.assign({ret},withPay(b,N(val(el,"rt_pay")),"At return",modeVal(el,"rt_mode"))));
-            for(const i of (b.items||[])){const d=D()[i.dressId];if(d&&d.status!=="sold"){const o=clone(d);const ff=fitMap[i.dressId],small=AF_REP(after)&&fsz==="small";const need=after==="repair"?"repair":AF_REP(after)&&!small?"both":"clean";o.status=need==="clean"?"cleaning":"repair";o.work={need,note:small?"":fix,bookingId:id,since:ret.on||today()};if(small&&fix)o.pendingFix=fix;if(ff)o.work.fitNext=ff;delete o.id;await put("dresses",i.dressId,o)}}
+            for(const i of (b.items||[])){const d=D()[i.dressId];if(d&&lostIds.includes(i.dressId)){const o=clone(d);delete o.id;o.status="retired";delete o.work;o.retired={on:ret.on||today(),reason:"Lost / ruined in "+BN(b.no),by:meName()};await put("dresses",i.dressId,o);continue}if(d&&d.status!=="sold"){const o=clone(d);const ff=fitMap[i.dressId],small=AF_REP(after)&&fsz==="small";const need=after==="repair"?"repair":AF_REP(after)&&!small?"both":"clean";o.status=need==="clean"?"cleaning":"repair";o.work={need,note:small?"":fix,bookingId:id,since:ret.on||today()};if(small&&fix)o.pendingFix=fix;if(ff)o.work.fitNext=ff;delete o.id;await put("dresses",i.dressId,o)}}
             for(const nbId of [...new Set(Object.values(fitMap))]){const nb=B()[nbId];if(!nb||(nb.fit&&nb.fit.done))continue;const q=clone(nb);delete q.id;q.fit=Object.assign({},q.fit||{},{want:true,noTailor:false});try{LOGCTX.skip=true;await put("bookings",nbId,q)}catch(x){}finally{LOGCTX.skip=false}}
       closeTop();toast(left>0?"Return accepted; "+inr(left)+" still due":"Return accepted, booking closed");
       if(wantSlip)setTimeout(()=>slipModal(id,"wapsi"),150);
@@ -5214,12 +5318,17 @@ document.addEventListener("click",async e=>{
     const set=(id,v)=>{const x=document.getElementById(id);if(x)x.value=v};set("qa_fn",q.fn);set("qa_from",q.from);set("qa_to",q.to);
     const rs=document.getElementById("qa_res");if(rs)rs.innerHTML=qaResult();return}
   if(ds.staffEdit){staffForm(ds.staffEdit);return}
+  if(ds.flagC){flagForm(ds.flagC);return}
+  if(ds.tm){const [y,m]=(V.tmM||today().slice(0,7)).split("-").map(Number);V.tmM=ymd(new Date(y,m-1+ +ds.tm,1)).slice(0,7);render();return}
+  if(ds.att){const [sid,ym,d,v]=ds.att.split("|");try{await setAtt(ym,sid,d,attMark(ym,sid,d)===v?"":v)}catch(x){}render();return}
+  if(ds.attCal){attCal(ds.attCal);return}
+  if(ds.sal){const [sid,k]=ds.sal.split("|");salForm(sid,k);return}
   if(ds.jbf){V.jbF=ds.jbf;render();return}
   if(ds.job){const [jid,act]=ds.job.split("|"),j=jobList().find(x=>x.id===jid);if(!j){toast("This job is already finished");render();return}
     try{
       if(act==="take"){await jobSave(j,{assignee:S.me.id,status:"assigned"},"Taken by "+meName());toast("Job is yours")}
       else if(act==="start"){await jobSave(j,{status:"doing"},"Started");toast("Started")}
-      else if(act==="problem"){const r=await askReason("What is the problem?","The Operations team will see this.","Send",false,"e.g. size not given, button needed, cloth torn");if(!r.ok)return;await jobSave(j,{status:"problem",problem:r.reason||"Problem"},"Problem: "+(r.reason||""));toast("Sent to the Operations team")}
+      else if(act==="problem"){const r=await askReason("What is the problem?","The owner will see this.","Send",false,"e.g. size not given, button needed, cloth torn");if(!r.ok)return;await jobSave(j,{status:"problem",problem:r.reason||"Problem"},"Problem: "+(r.reason||""));toast("Sent to the owner")}
       else if(act==="done"){if(j.kind!=="repair"&&j.noSize){toast("Add the size first","bad");return}const r=await askReason("Job done?",esc(JKIND[j.kind])+" · "+esc(j.d.code)+(jobCheckOn()?"<br>The Operations team will check it.":""),"Yes, done",false,"Note (optional), e.g. waist 1 inch in");if(!r.ok)return;
         if(jobCheckOn()&&role()==="tailor"){await jobSave(j,{status:"done",doneNote:r.reason||"",doneBy:meName()},"Done"+(r.reason?": "+r.reason:""));toast("Done. Sent for checking")}
         else{await jobSave(j,{doneNote:r.reason||"",doneBy:meName()},"Done"+(r.reason?": "+r.reason:""));toast(await jobFinish(Object.assign({},j),meName()))}}
@@ -5303,7 +5412,7 @@ document.addEventListener("click",async e=>{
   if(act==="blist"){bookingListModal();return}
   if(act==="staff-add"){staffForm();return}
   if(act==="copy-rules"){const t=document.getElementById("st_rules");if(t){const done=()=>toast("Rules copied");try{navigator.clipboard.writeText(t.value).then(done,()=>{t.select();document.execCommand("copy");done()})}catch(e){t.select();document.execCommand("copy");done()}}return}
-  if(act==="more"){closeAll();modal({title:"More",body:'<div class="grid" style="gap:8px">'+NAV.filter(n=>canNav(n[0])&&!(TABS.filter(canNav).length>=2?TABS.filter(canNav):(ROLE_NAV[role()]||TABS).slice(0,4)).includes(n[0])).map(n=>'<button type="button" class="nav-btn'+(V.view===n[0]?" on":"")+'" data-go="'+n[0]+'" style="padding:14px 12px">'+ic(n[2])+'<span>'+n[1]+'</span></button>').join("")+'</div>'+(isOwner()?'':'<div style="margin-top:12px" class="small muted">Signed in as <b>'+esc(meName())+'</b> ('+esc(ROLE_INFO[role()].name)+')<br>'+esc(S.me&&S.me.email||"")+'</div><button type="button" class="btn" data-act="sign-out" style="margin-top:8px">Sign out</button>')});return}
+  if(act==="more"){closeAll();modal({title:"More",body:'<div class="grid" style="gap:8px">'+NAV.filter(n=>canNav(n[0])&&!(isOwner()&&OPSV.includes(n[0]))&&!(n[0]==="operations"&&!isOwner())&&!(TABS.filter(canNav).length>=2?TABS.filter(canNav):(ROLE_NAV[role()]||TABS).slice(0,4)).includes(n[0])).map(n=>'<button type="button" class="nav-btn'+(V.view===n[0]?" on":"")+'" data-go="'+n[0]+'" style="padding:14px 12px">'+ic(n[2])+'<span>'+n[1]+'</span></button>').join("")+'</div>'+(isOwner()?'':'<div style="margin-top:12px" class="small muted">Signed in as <b>'+esc(meName())+'</b> ('+esc(ROLE_INFO[role()].name)+')<br>'+esc(S.me&&S.me.email||"")+'</div><button type="button" class="btn" data-act="sign-out" style="margin-top:8px">Sign out</button>')});return}
   if(act==="new-exp"){expForm();return}
   if(act==="new-rec"){recForm();return}
   if(act==="exp-clear"){V.ecat="";V.emode="";V.eq="";render();return}
@@ -5312,7 +5421,7 @@ document.addEventListener("click",async e=>{
   if(act==="pin-change"){if(await needPin("Enter the current PIN to change it."))await newPinFlow("Choose a new PIN");return}
   if(act==="pin-off"){if(await needPin("Enter the current PIN to turn it off.")&&await askConfirm("Bookings can then be edited without a PIN.","Turn off",true,"Turn off the PIN?")){try{await savePin("");toast("PIN turned off")}catch(e){}}return}
   if(act==="saave-edit"){saaveForm();return}
-  if(act==="save-settings"){const o=Object.assign({},S.data.settings.main||{});["shop","city","phone","addr","pickFrom","pickTo"].forEach(k=>o[k]=($("#s_"+k).value||"").trim());["expBudget","clean","repair","pack","lateFee","fitHours","pickBefore","retAfter","prepBefore","buffer","noShowDays","slipWidth","openCash","openBank"].forEach(k=>o[k]=N($("#s_"+k).value));o.openDate=$("#s_openDate").value||"";o.terms=$("#s_terms").value;o.guard=$("#s_guard").checked;o.waLang=$("#s_waLang").value||"both";if(!o.shop)o.shop=DEF.shop;try{await put("settings","main",o);G.pageDirty=false;toast("Settings saved")}catch(x){}return}
+  if(act==="save-settings"){const o=Object.assign({},S.data.settings.main||{});["shop","city","phone","addr","pickFrom","pickTo","reviewLink"].forEach(k=>o[k]=($("#s_"+k).value||"").trim());["expBudget","clean","repair","pack","lateFee","fitHours","peakPct","pickBefore","retAfter","prepBefore","buffer","noShowDays","slipWidth","openCash","openBank"].forEach(k=>o[k]=N($("#s_"+k).value));o.openDate=$("#s_openDate").value||"";o.terms=$("#s_terms").value;o.guard=$("#s_guard").checked;o.waLang=$("#s_waLang").value||"both";if(!o.shop)o.shop=DEF.shop;try{await put("settings","main",o);G.pageDirty=false;toast("Settings saved")}catch(x){}return}
   if(act==="backup"){saveFile("dress-rental-backup-"+today()+".json",JSON.stringify(S.data,null,1));return}
   if(act==="csv"){saveFile("bookings-"+today()+".csv",csv());return}
   if(act==="cloud-check"){cloudCheck();return}
