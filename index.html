@@ -722,6 +722,7 @@ body.nomoney .mny{display:none!important}
 .ops-tabs .ops-h{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--gold);padding:0 8px 0 4px;font-size:13px}
 .ops-tabs button{border:0;background:transparent;border-radius:8px;padding:7px 12px;font:600 13px var(--f-body);color:var(--muted);cursor:pointer}
 .ops-tabs button.on{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(116,80,26,.15)}
+.staff-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.staff-row .due-main{flex:1;min-width:220px;background:none;border:0;font:inherit;color:inherit;cursor:pointer;padding:10px 0}.staff-acts{display:flex;gap:6px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -2510,11 +2511,14 @@ service cloud.firestore {
     }
   }
 }`}
+/* a staff member has a main entry (Gmail or username) and, with a password, a username entry too */
+function staffDocIds(id){const all=S.data.staff||{},x=all[id]||{},ids=[id];if(x.uname){const a=aliasOf(x.uname);if(a!==id&&all[a])ids.push(a)}Object.keys(all).forEach(k=>{if(all[k].main===id&&!ids.includes(k))ids.push(k)});return ids}
+async function rawDel(col,id){if(!isOwner())throw new Error("owner only");if(S.mode==="cloud"){const pr=S.db.collection(col).doc(id).delete();syncTrack(pr);await Promise.race([pr,new Promise(r=>setTimeout(r,1500))])}else{delete S.data[col][id];saveLocal()}}
 function staffPanel(){if(!isOwner())return "";const RO={manager:0,sales:1,ops:2,tailor:3};const L=list(S.data.staff||{}).filter(x=>!x.alias).sort((a,b)=>(a.active===false)-(b.active===false)||(RO[a.role]-RO[b.role])||String(a.name).localeCompare(String(b.name)));
   return '<div class="panel" style="margin-top:16px"><div class="panel-h"><h3>Staff</h3><button type="button" class="btn sm pri" data-act="staff-add">'+ic("plus",14)+'Add staff</button></div><div class="panel-b">'+
    '<p class="small muted" style="margin:0 0 10px">Each staff member signs in on their own phone with the <b>username and password you set here</b>, or with their Google account. Only you can see or change their password. They see only what their role allows. Only you can delete anything or change settings. Every change they make to a booking is saved with their name.</p>'+
    '<div class="small" style="margin:0 0 8px"><b>Owner:</b> 1 (you) · <b>Sales &amp; Booking team:</b> '+L.filter(x=>x.active!==false).length+'</div>'+
-   (L.length?'<div class="hist">'+L.map(x=>'<div class="due-row"><div class="due-main" data-staff-edit="'+esc(x.id)+'"><span><b>'+esc(x.name||x.id)+'</b> <span class="pill '+(x.active===false?"p-mute":"p-info")+'">'+(x.active===false?"Turned off":esc(ROLE_INFO.sales.name))+'</span><span class="small muted" style="display:block">'+(x.uname?'Username: <b>'+esc(x.uname)+'</b>'+((S.data.staffpw||{})[aliasOf(x.uname)]?' · password set':' · <span class="neg">no password yet</span>'):"")+(x.gmail||!String(x.id).endsWith("@"+STAFF_DOMAIN)?' · Google: '+esc(x.gmail||x.id):"")+(x.phone?" · "+esc(x.phone):"")+'</span></span></div></div>').join("")+'</div>':'<div class="empty" style="padding:14px"><b>No staff yet</b>Tap "Add staff" and enter their Google email.</div>')+
+   (L.length?'<div class="hist">'+L.map(x=>'<div class="due-row staff-row"><button type="button" class="due-main" data-staff-edit="'+esc(x.id)+'" style="text-align:left"><span><b>'+esc(x.name||x.id)+'</b> <span class="pill '+(x.active===false?"p-mute":"p-info")+'">'+(x.active===false?"Turned off":esc(ROLE_INFO.sales.name))+'</span><span class="small muted" style="display:block">'+(x.uname?'Username: <b>'+esc(x.uname)+'</b>'+((S.data.staffpw||{})[aliasOf(x.uname)]?' · password set':' · <span class="neg">no password yet</span>'):"")+(x.gmail||!String(x.id).endsWith("@"+STAFF_DOMAIN)?' · Google: '+esc(x.gmail||x.id):"")+(x.phone?" · "+esc(x.phone):"")+'</span></span></button><div class="staff-acts"><button type="button" class="btn sm" data-staff-pause="'+esc(x.id)+'">'+(x.active===false?"Resume":"Pause")+'</button><button type="button" class="btn sm" data-staff-edit="'+esc(x.id)+'">'+ic("edit",14)+'Edit</button><button type="button" class="btn sm danger" data-staff-del="'+esc(x.id)+'">'+ic("trash",14)+'Delete</button></div></div>').join("")+'</div>':'<div class="empty" style="padding:14px"><b>No staff yet</b>Tap "Add staff" and enter their Google email.</div>')+
    '<details style="margin-top:12px"><summary class="small"><b>Roles: who can do what</b></summary><div class="small" style="margin-top:8px;line-height:1.6">'+["owner","sales"].map(r=>'<div><b>'+ROLE_INFO[r].name+':</b> '+ROLE_INFO[r].desc+'</div>').join("")+'</div></details>'+
    '<details style="margin-top:8px"><summary class="small"><b>One-time setup: Firebase rules for staff</b></summary><div class="small" style="margin-top:8px;line-height:1.6">Open <b>console.firebase.google.com</b> → your project → <b>Firestore Database → Rules</b>. Delete the old rules, paste these, and tap <b>Publish</b>. Without this, staff cannot open the ledger.</div><textarea id="st_rules" readonly rows="10" style="width:100%;font-family:monospace;font-size:11px;margin-top:6px">'+esc(rulesText())+'</textarea><button type="button" class="btn sm" data-act="copy-rules" style="margin-top:6px">'+ic("copy",14)+'Copy rules</button></details>'+
   '</div></div>'}
@@ -2536,7 +2540,7 @@ function staffForm(id){const all=S.data.staff||{},x=id?all[id]||{}:{};const gm0=
    '<div class="f"><label for="sf_pw">'+(hasPw?"Password (change it here)":"Password")+'</label><div class="pw-wrap"><input id="sf_pw" type="password" autocomplete="new-password" value="'+esc(pw0)+'" placeholder="at least 6 letters / numbers"><button type="button" class="pw-eye" id="sf_eye">Show</button></div><span class="hint">Only you can see and change it. Staff cannot reset it.</span></div>'+
    '<div class="f full" style="grid-column:1/-1"><label>Role</label>'+["sales"].map(r=>'<label class="chk" style="margin:4px 0"><input type="radio" name="sf_role" value="'+r+'"'+((x.role||"sales")===r?" checked":"")+'> <span><b>'+ROLE_INFO[r].name+'</b><br><span class="small muted">'+ROLE_INFO[r].desc+'</span></span></label>').join("")+'</div>'+
    (id?'<label class="chk full" style="grid-column:1/-1"><input type="checkbox" id="sf_active"'+(x.active===false?"":" checked")+'> <span><b>Can sign in</b><br><span class="small muted">Untick when someone leaves. They cannot open the ledger again.</span></span></label>':"")+
-   '</div>',foot:'<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" data-ok>Save</button>'});
+   '</div>',foot:(id?'<button type="button" class="btn danger" data-staff-del="'+esc(id)+'" style="margin-right:auto">'+ic("trash",14)+'Delete</button>':'')+'<button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn pri" data-ok>Save</button>'});
   const ue=el.querySelector("#sf_user"),ee=el.querySelector("#sf_email");let uTouched=!!x.uname;
   ue.addEventListener("input",()=>{uTouched=true});ee.addEventListener("input",()=>{if(!uTouched&&!hasPw)ue.value=unameOf(ee.value)});
   el.querySelector("#sf_eye").addEventListener("click",e=>{const i=el.querySelector("#sf_pw"),sh=i.type==="password";i.type=sh?"text":"password";e.target.textContent=sh?"Hide":"Show"});
@@ -5243,7 +5247,7 @@ document.addEventListener("click",async e=>{
   const wm=e.target.closest("[data-wa-menu]");
   document.querySelectorAll(".wa-menu").forEach(m=>{if(!wm||m!==wm.nextElementSibling){m.hidden=true;const bt=m.previousElementSibling;if(bt)bt.setAttribute("aria-expanded","false")}});
   if(wm){const m=wm.nextElementSibling;m.hidden=!m.hidden;wm.setAttribute("aria-expanded",String(!m.hidden));return}
-  const t=e.target.closest("[data-zph],[data-zoom],[data-zqr],[data-zbilty],button,[data-open-b],[data-open-d],[data-open-c],[data-open-e],[data-open-p],[data-open-s],[data-open-o],[data-goto],[data-act],a");
+  const t=e.target.closest("[data-staff-edit],[data-staff-pause],[data-staff-del],[data-zph],[data-zoom],[data-zqr],[data-zbilty],button,[data-open-b],[data-open-d],[data-open-c],[data-open-e],[data-open-p],[data-open-s],[data-open-o],[data-goto],[data-act],a");
   if(!t)return;
   const ds=t.dataset;
   if(ds.close!==undefined){userClose();return}
@@ -5318,6 +5322,14 @@ document.addEventListener("click",async e=>{
     const set=(id,v)=>{const x=document.getElementById(id);if(x)x.value=v};set("qa_fn",q.fn);set("qa_from",q.from);set("qa_to",q.to);
     const rs=document.getElementById("qa_res");if(rs)rs.innerHTML=qaResult();return}
   if(ds.staffEdit){staffForm(ds.staffEdit);return}
+  if(ds.staffPause){const id=ds.staffPause,x=(S.data.staff||{})[id];if(!x)return;const on=x.active===false;
+    if(!await askConfirm(on?"Let <b>"+esc(x.name)+"</b> sign in again?":"Pause <b>"+esc(x.name)+"</b>? They are signed out and cannot open the ledger until you resume.",on?"Yes, resume":"Yes, pause",!on))return;
+    if(!await pinOK("Changing staff needs the 4-digit PIN."))return;
+    try{for(const k of staffDocIds(id)){const y=(S.data.staff||{})[k];if(y){const q=clone(y);delete q.id;q.active=on;q.updatedAt=Date.now();await put("staff",k,q)}}toast(on?x.name+" can sign in again":x.name+" is paused")}catch(e){}render();return}
+  if(ds.staffDel){const id=ds.staffDel,x=(S.data.staff||{})[id];if(!x)return;
+    if(!await askConfirm("Delete <b>"+esc(x.name)+"</b> from staff?<br><span class=\"small muted\">They cannot sign in any more. Their old bookings, attendance and salary records stay. To bring them back, add them again with the same username.</span>","Yes, delete",true))return;
+    if(!await pinOK("Deleting staff needs the 4-digit PIN."))return;
+    try{for(const k of staffDocIds(id))await rawDel("staff",k);closeAll();toast(x.name+" deleted")}catch(e){toast("Could not delete. Check the internet and try again.","bad")}render();return}
   if(ds.flagC){flagForm(ds.flagC);return}
   if(ds.tm){const [y,m]=(V.tmM||today().slice(0,7)).split("-").map(Number);V.tmM=ymd(new Date(y,m-1+ +ds.tm,1)).slice(0,7);render();return}
   if(ds.att){const [sid,ym,d,v]=ds.att.split("|");try{await setAtt(ym,sid,d,attMark(ym,sid,d)===v?"":v)}catch(x){}render();return}
