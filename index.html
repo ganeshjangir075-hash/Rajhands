@@ -861,6 +861,12 @@ function authErr(e){const c=(e&&e.code)||"";if(c==="auth/admin-restricted-operat
   if(/popup-closed|cancelled-popup/.test(c))return "";
   if(/unauthorized-domain/.test(c))return "This website address is not allowed yet. Add it in Firebase → Authentication → Settings → Authorized domains.";
   return "Could not sign in ("+c+").";}
+/* paused, deleted or unknown staff: just the logo, "Not found" and Try again */
+function notFound(){try{SUBS.forEach(f=>f&&f())}catch(e){}SUBS=[];S.mode="";S.got=new Set();
+  NF_SHOW=true;try{firebase.auth().signOut()}catch(e){}
+  const g=gate(gateBrand(true)+'<h2 style="margin:6px 0 2px">Not found</h2><button type="button" class="btn pri" id="g_retry">Try again</button>');
+  g.querySelector("#g_retry").addEventListener("click",()=>{NF_SHOW=false;loginScreen()})}
+let NF_SHOW=false;
 function loginScreen(msg,ok,keep){
   const G='<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
   const g=gate(gateBrand(true)+'<h2>Sign in</h2>'+
@@ -897,11 +903,11 @@ async function initStore(){
   try{await db.enablePersistence({synchronizeTabs:true})}catch(e){}
   firebase.auth().onAuthStateChanged(async u=>{
     SUBS.forEach(f=>{try{f()}catch(e){}});SUBS=[];
-    if(!u){S.mode="loading";LOCK.open=false;LOCK.started=false;loginScreen();return}
+    if(!u){S.mode="loading";LOCK.open=false;LOCK.started=false;if(NF_SHOW)return;loginScreen();return}
     if(okEmail(u)){S.role="owner";S.me={name:"Owner",email:String(u.email||"").toLowerCase(),role:"owner",id:"owner"}}
     else{const em=String(u.email||"").toLowerCase();let sd=null;gate(gateHead("Checking your account…")+'<p class="small muted" style="margin:0">'+esc(em)+'</p>');
       try{const sn=await db.collection("staff").doc(em).get();sd=sn.exists?sn.data():null}catch(e){sd=null}
-      if(!sd||sd.active===false||sd.role==="owner"){firebase.auth().signOut();loginScreen((em||"This account")+(sd&&sd.active===false?" has been turned off by the owner.":" is not added as staff yet. Ask the owner to add this Google email in Settings → Staff."));return}
+      if(!sd||sd.active===false||sd.role==="owner"){notFound();return}
       S.role="sales";S.me={name:sd.name||u.displayName||em,email:em,role:"sales",id:sd.main||em}}
     S.user={email:u.email,name:u.displayName||"",google:(u.providerData||[]).some(x=>x&&x.providerId==="google.com")};
     gate(gateHead("Opening your ledger…")+'<p class="small muted" style="margin:0">Loading your data</p>');
@@ -909,7 +915,7 @@ async function initStore(){
     if(!isOwner()&&ROLE_NAV[role()]&&!canNav(V.view))V.view=ROLE_NAV[role()][0];
     SUBS=cols.map(c=>db.collection(c).onSnapshot(snap=>{
       const o={};snap.docs.forEach(d=>{o[d.id]=d.data()});S.data[c]=o;S.got.add(c);rerender();afterLoad();
-    },err=>{if(err&&err.code==="permission-denied"){gate(gateHead("No access")+'<p style="margin:0">'+esc(u.email)+' does not have permission to read the ledger. Check the Firestore rules.</p><button type="button" class="btn" id="g_out">Sign out</button>');document.getElementById("g_out").onclick=()=>signOutNow()}
+    },err=>{if(err&&err.code==="permission-denied"){if(!isOwner()){notFound();return}gate(gateHead("No access")+'<p style="margin:0">'+esc(u.email)+' does not have permission to read the ledger. Check the Firestore rules.</p><button type="button" class="btn" id="g_out">Sign out</button>');document.getElementById("g_out").onclick=()=>signOutNow()}
       else toast("Could not load data ("+(err&&err.code)+"). Reopen the page.","bad")}));
   });
   window.addEventListener("offline",()=>toast("No internet. Entries are kept on this phone and go to the cloud when the internet is back."));
